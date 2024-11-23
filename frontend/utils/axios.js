@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL;
+const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 if (!baseURL) {
   console.warn('NEXT_PUBLIC_API_URL is not defined in environment variables');
@@ -8,7 +8,7 @@ if (!baseURL) {
 
 // Create axios instance with config
 const instance = axios.create({
-  baseURL: baseURL || 'http://localhost:5000',
+  baseURL: `${baseURL}/api`, // Add back the /api prefix
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
@@ -18,19 +18,13 @@ const instance = axios.create({
 // Add request interceptor
 instance.interceptors.request.use(
   (config) => {
-    // Only run on client side
-    if (typeof window === 'undefined') {
-      return config;
+    // Get token from localStorage only on client side
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
-    
-    // Get token from localStorage
-    const token = localStorage.getItem('token');
-    
-    // If token exists, add to headers
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    
     return config;
   },
   (error) => {
@@ -42,25 +36,27 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Only run on client side
-    if (typeof window === 'undefined') {
-      return Promise.reject(error);
-    }
-
-    // Handle 401 (Unauthorized) errors
-    if (error.response?.status === 401) {
-      // Clear auth data
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      
-      // Use window.location for hard redirect to avoid Next.js routing issues
-      const loginPath = '/login';
-      if (window.location.pathname !== loginPath) {
-        window.location.href = loginPath;
+    if (error.response) {
+      // Handle 401 Unauthorized responses
+      if (error.response.status === 401) {
+        if (typeof window !== 'undefined') {
+          // Clear local storage
+          localStorage.clear();
+          // Redirect to login page if not already on login page
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        }
       }
+      
+      // Extract error message from response
+      const message = error.response.data?.message || 
+                     error.response.data?.error || 
+                     'Something went wrong';
+                     
+      return Promise.reject({ message });
     }
-    
-    return Promise.reject(error);
+    return Promise.reject({ message: 'Network error. Please check your connection.' });
   }
 );
 

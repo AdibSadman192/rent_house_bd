@@ -233,10 +233,12 @@ userSchema.pre('save', async function(next) {
 
 // Password verification method
 userSchema.methods.comparePassword = async function(candidatePassword) {
+  if (!this.password) return false;
   try {
     return await bcrypt.compare(candidatePassword, this.password);
   } catch (error) {
-    throw new Error('Error comparing passwords');
+    console.error('Password comparison error:', error);
+    return false;
   }
 };
 

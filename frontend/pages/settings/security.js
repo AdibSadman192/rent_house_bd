@@ -19,7 +19,9 @@ import {
   DialogActions,
   IconButton,
   InputAdornment,
-  Paper
+  Fade,
+  Grow,
+  Zoom
 } from '@mui/material';
 import {
   Security as SecurityIcon,
@@ -32,7 +34,6 @@ import {
   Lock as LockIcon
 } from '@mui/icons-material';
 import SettingsLayout from '../../components/layout/SettingsLayout';
-import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 
 const SecuritySettings = () => {
@@ -152,186 +153,190 @@ const SecuritySettings = () => {
 
   return (
     <SettingsLayout title="Security Settings">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
+      <Fade in={true} timeout={500}>
         <Grid container spacing={3}>
           {/* Password Section */}
           <Grid item xs={12} md={6}>
-            <Card 
-              elevation={0}
-              sx={{ 
-                height: '100%',
-                border: `1px solid ${theme.palette.divider}`
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <KeyIcon color="primary" />
-                  <Typography variant="h6">
-                    Password
+            <Grow in={true} timeout={300}>
+              <Card 
+                elevation={0}
+                sx={{ 
+                  height: '100%',
+                  border: `1px solid ${theme.palette.divider}`
+                }}
+              >
+                <CardContent>
+                  <Box display="flex" alignItems="center" gap={1} mb={2}>
+                    <KeyIcon color="primary" />
+                    <Typography variant="h6">
+                      Password
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ mb: 3 }} />
+                  <Typography variant="body2" color="text.secondary" paragraph>
+                    It's a good idea to use a strong password that you're not using elsewhere
                   </Typography>
-                </Box>
-                <Divider sx={{ mb: 3 }} />
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  It's a good idea to use a strong password that you're not using elsewhere
-                </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={() => setOpenPasswordDialog(true)}
-                  startIcon={<LockIcon />}
-                >
-                  Change Password
-                </Button>
-              </CardContent>
-            </Card>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setOpenPasswordDialog(true)}
+                    startIcon={<LockIcon />}
+                  >
+                    Change Password
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grow>
           </Grid>
 
           {/* Two-Factor Authentication */}
           <Grid item xs={12} md={6}>
-            <Card 
-              elevation={0}
-              sx={{ 
-                height: '100%',
-                border: `1px solid ${theme.palette.divider}`
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <PhoneIcon color="primary" />
-                  <Typography variant="h6">
-                    Two-Factor Authentication
+            <Grow in={true} timeout={300}>
+              <Card 
+                elevation={0}
+                sx={{ 
+                  height: '100%',
+                  border: `1px solid ${theme.palette.divider}`
+                }}
+              >
+                <CardContent>
+                  <Box display="flex" alignItems="center" gap={1} mb={2}>
+                    <PhoneIcon color="primary" />
+                    <Typography variant="h6">
+                      Two-Factor Authentication
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ mb: 3 }} />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={securitySettings.twoFactorEnabled}
+                        onChange={handleSettingChange('twoFactorEnabled')}
+                        color="primary"
+                      />
+                    }
+                    label="Enable Two-Factor Authentication"
+                  />
+                  <Typography variant="body2" color="text.secondary" mt={1}>
+                    Add an extra layer of security to your account by requiring both your password and phone.
                   </Typography>
-                </Box>
-                <Divider sx={{ mb: 3 }} />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={securitySettings.twoFactorEnabled}
-                      onChange={handleSettingChange('twoFactorEnabled')}
-                      color="primary"
-                    />
-                  }
-                  label="Enable Two-Factor Authentication"
-                />
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  Add an extra layer of security to your account by requiring both your password and phone.
-                </Typography>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Grow>
           </Grid>
 
           {/* Security Notifications */}
           <Grid item xs={12}>
-            <Card 
-              elevation={0}
-              sx={{ 
-                border: `1px solid ${theme.palette.divider}`
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <EmailIcon color="primary" />
-                  <Typography variant="h6">
-                    Security Notifications
-                  </Typography>
-                </Box>
-                <Divider sx={{ mb: 3 }} />
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={securitySettings.emailNotifications}
-                          onChange={handleSettingChange('emailNotifications')}
-                          color="primary"
-                        />
-                      }
-                      label="Email notifications for suspicious activity"
-                    />
+            <Grow in={true} timeout={300}>
+              <Card 
+                elevation={0}
+                sx={{ 
+                  border: `1px solid ${theme.palette.divider}`
+                }}
+              >
+                <CardContent>
+                  <Box display="flex" alignItems="center" gap={1} mb={2}>
+                    <EmailIcon color="primary" />
+                    <Typography variant="h6">
+                      Security Notifications
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ mb: 3 }} />
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={securitySettings.emailNotifications}
+                            onChange={handleSettingChange('emailNotifications')}
+                            color="primary"
+                          />
+                        }
+                        label="Email notifications for suspicious activity"
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={securitySettings.loginAlerts}
+                            onChange={handleSettingChange('loginAlerts')}
+                            color="primary"
+                          />
+                        }
+                        label="Login alerts for unrecognized devices"
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={securitySettings.requirePasswordChange}
+                            onChange={handleSettingChange('requirePasswordChange')}
+                            color="primary"
+                          />
+                        }
+                        label="Require password change every 3 months"
+                      />
+                    </Grid>
                   </Grid>
-                  <Grid item xs={12}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={securitySettings.loginAlerts}
-                          onChange={handleSettingChange('loginAlerts')}
-                          color="primary"
-                        />
-                      }
-                      label="Login alerts for unrecognized devices"
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={securitySettings.requirePasswordChange}
-                          onChange={handleSettingChange('requirePasswordChange')}
-                          color="primary"
-                        />
-                      }
-                      label="Require password change every 3 months"
-                    />
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Grow>
           </Grid>
 
           {/* Recent Activity */}
           <Grid item xs={12}>
-            <Card 
-              elevation={0}
-              sx={{ 
-                border: `1px solid ${theme.palette.divider}`
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <HistoryIcon color="primary" />
-                  <Typography variant="h6">
-                    Recent Activity
-                  </Typography>
-                </Box>
-                <Divider sx={{ mb: 3 }} />
-                {recentActivity.map((activity, index) => (
-                  <Paper
-                    key={index}
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      mb: 2,
-                      border: `1px solid ${theme.palette.divider}`,
-                      bgcolor: activity.status === 'failed' ? 'error.lighter' : 'background.paper'
-                    }}
-                  >
-                    <Grid container spacing={2} alignItems="center">
-                      <Grid item xs={12} sm={4}>
-                        <Typography variant="subtitle2">
-                          {activity.action}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {activity.time}
-                        </Typography>
+            <Grow in={true} timeout={300}>
+              <Card 
+                elevation={0}
+                sx={{ 
+                  border: `1px solid ${theme.palette.divider}`
+                }}
+              >
+                <CardContent>
+                  <Box display="flex" alignItems="center" gap={1} mb={2}>
+                    <HistoryIcon color="primary" />
+                    <Typography variant="h6">
+                      Recent Activity
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ mb: 3 }} />
+                  {recentActivity.map((activity, index) => (
+                    <Paper
+                      key={index}
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        mb: 2,
+                        border: `1px solid ${theme.palette.divider}`,
+                        bgcolor: activity.status === 'failed' ? 'error.lighter' : 'background.paper'
+                      }}
+                    >
+                      <Grid container spacing={2} alignItems="center">
+                        <Grid item xs={12} sm={4}>
+                          <Typography variant="subtitle2">
+                            {activity.action}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {activity.time}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                          <Typography variant="body2">
+                            {activity.device}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                          <Typography variant="body2">
+                            {activity.location}
+                          </Typography>
+                        </Grid>
                       </Grid>
-                      <Grid item xs={12} sm={4}>
-                        <Typography variant="body2">
-                          {activity.device}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12} sm={4}>
-                        <Typography variant="body2">
-                          {activity.location}
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </Paper>
-                ))}
-              </CardContent>
-            </Card>
+                    </Paper>
+                  ))}
+                </CardContent>
+              </Card>
+            </Grow>
           </Grid>
 
           {/* Save Button */}
@@ -444,7 +449,7 @@ const SecuritySettings = () => {
             </DialogActions>
           </form>
         </Dialog>
-      </motion.div>
+      </Fade>
     </SettingsLayout>
   );
 };

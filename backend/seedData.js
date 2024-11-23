@@ -6,7 +6,8 @@ const Property = require('./models/Property');
 
 const users = [
   {
-    name: 'Super Admin',
+    firstName: 'Super',
+    lastName: 'Admin',
     email: 'superadmin@houserental.com',
     password: 'SuperAdmin@123',
     role: 'super-admin',
@@ -16,7 +17,8 @@ const users = [
     phone: '+8801700000001'
   },
   {
-    name: 'Admin User',
+    firstName: 'Admin',
+    lastName: 'User',
     email: 'admin@houserental.com',
     password: 'Admin@123',
     role: 'admin',
@@ -26,7 +28,8 @@ const users = [
     phone: '+8801700000002'
   },
   {
-    name: 'Property Renter',
+    firstName: 'Property',
+    lastName: 'Renter',
     email: 'renter@houserental.com',
     password: 'Renter@123',
     role: 'renter',
@@ -36,7 +39,8 @@ const users = [
     phone: '+8801700000003'
   },
   {
-    name: 'Alice Cooper',
+    firstName: 'Alice',
+    lastName: 'Cooper',
     email: 'alice@example.com',
     password: 'User@123',
     role: 'user',
@@ -46,7 +50,8 @@ const users = [
     phone: '+8801700000004'
   },
   {
-    name: 'Charlie Brown',
+    firstName: 'Charlie',
+    lastName: 'Brown',
     email: 'charlie@example.com',
     password: 'User@123',
     role: 'user',

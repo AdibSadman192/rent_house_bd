@@ -12,7 +12,10 @@ import {
   IconButton,
   CircularProgress,
   Paper,
-  useTheme
+  useTheme,
+  Fade,
+  Grow,
+  Zoom
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -21,7 +24,6 @@ import {
   Cancel as CancelIcon
 } from '@mui/icons-material';
 import SettingsLayout from '../../components/layout/SettingsLayout';
-import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 
 const ProfileSettings = () => {
@@ -113,15 +115,11 @@ const ProfileSettings = () => {
 
   return (
     <SettingsLayout title="Profile Settings">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            {/* Profile Image Section */}
-            <Grid item xs={12}>
+      <Fade in={true} timeout={500}>
+        <Grid container spacing={3}>
+          {/* Profile Image Section */}
+          <Grid item xs={12}>
+            <Grow in={true} timeout={300}>
               <Paper 
                 elevation={0}
                 sx={{ 
@@ -192,10 +190,12 @@ const ProfileSettings = () => {
                   </Box>
                 </Box>
               </Paper>
-            </Grid>
+            </Grow>
+          </Grid>
 
-            {/* Personal Information */}
-            <Grid item xs={12} md={6}>
+          {/* Personal Information */}
+          <Grid item xs={12} md={6}>
+            <Grow in={true} timeout={300}>
               <Card 
                 elevation={0}
                 sx={{ 
@@ -253,10 +253,12 @@ const ProfileSettings = () => {
                   </Grid>
                 </CardContent>
               </Card>
-            </Grid>
+            </Grow>
+          </Grid>
 
-            {/* Additional Information */}
-            <Grid item xs={12} md={6}>
+          {/* Additional Information */}
+          <Grid item xs={12} md={6}>
+            <Grow in={true} timeout={300}>
               <Card 
                 elevation={0}
                 sx={{ 
@@ -313,10 +315,12 @@ const ProfileSettings = () => {
                   </Grid>
                 </CardContent>
               </Card>
-            </Grid>
+            </Grow>
+          </Grid>
 
-            {/* Bio Section */}
-            <Grid item xs={12}>
+          {/* Bio Section */}
+          <Grid item xs={12}>
+            <Grow in={true} timeout={300}>
               <Card 
                 elevation={0}
                 sx={{ 
@@ -340,27 +344,27 @@ const ProfileSettings = () => {
                   />
                 </CardContent>
               </Card>
-            </Grid>
-
-            {/* Save Button */}
-            {editMode && (
-              <Grid item xs={12}>
-                <Box display="flex" justifyContent="flex-end">
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    disabled={saving}
-                    startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-                  >
-                    {saving ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </Box>
-              </Grid>
-            )}
+            </Grow>
           </Grid>
-        </form>
-      </motion.div>
+
+          {/* Save Button */}
+          {editMode && (
+            <Grid item xs={12}>
+              <Box display="flex" justifyContent="flex-end">
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={saving}
+                  startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </Box>
+            </Grid>
+          )}
+        </Grid>
+      </Fade>
     </SettingsLayout>
   );
 };

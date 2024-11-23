@@ -5,7 +5,8 @@ import {
   CardContent,
   Typography,
   CardActionArea,
-  Box
+  Box,
+  Grow
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -18,122 +19,109 @@ import {
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import SettingsLayout from '../../components/layout/SettingsLayout';
-import { motion } from 'framer-motion';
+
+const SettingCard = ({ title, icon: Icon, path, description, color }) => {
+  const router = useRouter();
+  
+  return (
+    <Grow in={true} timeout={300}>
+      <Card 
+        sx={{
+          height: '100%',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: 4
+          }
+        }}
+      >
+        <CardActionArea
+          onClick={() => router.push(path)}
+          sx={{ height: '100%', p: 2 }}
+        >
+          <CardContent>
+            <Box display="flex" alignItems="center" mb={2}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: '50%',
+                  bgcolor: `${color}20`,
+                  color: color
+                }}
+              >
+                <Icon sx={{ fontSize: 32 }} />
+              </Box>
+              <Typography variant="h6">{title}</Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              {description}
+            </Typography>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    </Grow>
+  );
+};
 
 const settingsCards = [
   {
     title: 'Profile',
     description: 'Update your personal information and preferences',
-    icon: <ProfileIcon sx={{ fontSize: 40 }} />,
+    icon: ProfileIcon,
     path: '/settings/profile',
     color: '#4CAF50'
   },
   {
     title: 'Notifications',
     description: 'Manage your notification preferences',
-    icon: <NotificationsIcon sx={{ fontSize: 40 }} />,
+    icon: NotificationsIcon,
     path: '/settings/notifications',
     color: '#2196F3'
   },
   {
     title: 'Security',
     description: 'Configure your security settings and password',
-    icon: <SecurityIcon sx={{ fontSize: 40 }} />,
+    icon: SecurityIcon,
     path: '/settings/security',
     color: '#F44336'
   },
   {
     title: 'Privacy',
     description: 'Control your privacy settings and data sharing',
-    icon: <PrivacyIcon sx={{ fontSize: 40 }} />,
+    icon: PrivacyIcon,
     path: '/settings/privacy',
     color: '#9C27B0'
   },
   {
     title: 'Payment Methods',
     description: 'Manage your payment methods and billing',
-    icon: <PaymentIcon sx={{ fontSize: 40 }} />,
+    icon: PaymentIcon,
     path: '/settings/payment',
     color: '#FF9800'
   },
   {
     title: 'Theme',
     description: 'Customize the appearance of your dashboard',
-    icon: <ThemeIcon sx={{ fontSize: 40 }} />,
+    icon: ThemeIcon,
     path: '/settings/theme',
     color: '#795548'
   },
   {
     title: 'Language',
     description: 'Change your preferred language',
-    icon: <LanguageIcon sx={{ fontSize: 40 }} />,
+    icon: LanguageIcon,
     path: '/settings/language',
     color: '#607D8B'
   }
 ];
 
 const SettingsPage = () => {
-  const router = useRouter();
-
   return (
     <SettingsLayout title="Settings">
       <Grid container spacing={3}>
         {settingsCards.map((card, index) => (
           <Grid item xs={12} sm={6} md={4} key={card.path}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card
-                sx={{
-                  height: '100%',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 4,
-                    transition: 'all 0.3s ease-in-out'
-                  }
-                }}
-              >
-                <CardActionArea
-                  onClick={() => router.push(card.path)}
-                  sx={{ height: '100%' }}
-                >
-                  <CardContent>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        textAlign: 'center',
-                        gap: 2
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          p: 2,
-                          borderRadius: '50%',
-                          bgcolor: `${card.color}20`,
-                          color: card.color
-                        }}
-                      >
-                        {card.icon}
-                      </Box>
-                      <Typography variant="h6" component="div">
-                        {card.title}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ minHeight: 40 }}
-                      >
-                        {card.description}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </motion.div>
+            <SettingCard {...card} />
           </Grid>
         ))}
       </Grid>

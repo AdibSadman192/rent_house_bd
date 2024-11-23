@@ -23,6 +23,7 @@ import {
   TableRow,
   LinearProgress,
   Fade,
+  Grow,
   Zoom,
   Tab,
   Tabs,
@@ -48,7 +49,6 @@ import {
 } from '@mui/icons-material';
 import dynamic from 'next/dynamic';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { debounce } from 'lodash';
 import { adminAPI, analyticsAPI, propertyAPI } from '../../lib/api';
@@ -56,19 +56,21 @@ import { adminAPI, analyticsAPI, propertyAPI } from '../../lib/api';
 // Dynamic imports for better performance
 const ChatbotAnalytics = dynamic(() => import('../../components/ChatbotAnalytics'), {
   ssr: false,
-  loading: () => <LoadingPlaceholder />
+  loading: () => (
+    <Box display="flex" justifyContent="center" p={4}>
+      <CircularProgress />
+    </Box>
+  ),
 });
 
 const PropertyMap = dynamic(() => import('../../components/PropertyMap'), {
   ssr: false,
-  loading: () => <LoadingPlaceholder />
+  loading: () => (
+    <Box display="flex" justifyContent="center" p={4}>
+      <CircularProgress />
+    </Box>
+  ),
 });
-
-const LoadingPlaceholder = () => (
-  <Box display="flex" justifyContent="center" alignItems="center" p={4}>
-    <CircularProgress />
-  </Box>
-);
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -198,12 +200,8 @@ const AdminDashboard = () => {
       <Grid container spacing={3}>
         {stats.map((stat, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
-            <Zoom in={!loading} style={{ transitionDelay: `${index * 100}ms` }}>
-              <Card
-                component={motion.div}
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
+            <Zoom in={!loading} timeout={500}>
+              <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 2 }}>
@@ -403,34 +401,23 @@ const AdminDashboard = () => {
 
   return (
     <DashboardLayout>
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Admin Dashboard
-          </Typography>
-          <IconButton onClick={handleRefresh} disabled={loading}>
-            <RefreshIcon />
-          </IconButton>
-        </Box>
+      <Fade in={true}>
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h4" component="h1" gutterBottom>
+              Admin Dashboard
+            </Typography>
+            <IconButton onClick={handleRefresh} disabled={loading}>
+              <RefreshIcon />
+            </IconButton>
+          </Box>
 
-        <AnimatePresence>
-          {loading ? (
-            <LinearProgress />
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Grid container spacing={3}>
-                {stats.map((stat, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={index}>
-                    <Card
-                      component={motion.div}
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                    >
+          <Grow in={!loading} timeout={500}>
+            <Grid container spacing={3}>
+              {stats.map((stat, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Zoom in={!loading} timeout={500}>
+                    <Card>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 2 }}>
@@ -453,36 +440,42 @@ const AdminDashboard = () => {
                         </Box>
                       </CardContent>
                     </Card>
-                  </Grid>
-                ))}
-              </Grid>
+                  </Zoom>
+                </Grid>
+              ))}
+            </Grid>
+          </Grow>
 
-              <Box sx={{ mt: 4 }}>
-                <Tabs
-                  value={tabValue}
-                  onChange={handleTabChange}
-                  variant={isMobile ? "scrollable" : "fullWidth"}
-                  scrollButtons="auto"
-                >
-                  <Tab label="Analytics" />
-                  <Tab label="Properties" />
-                  <Tab label="Users" />
-                  <Tab label="Reports" />
-                </Tabs>
+          <Zoom in={!loading} timeout={800}>
+            <Box width="100%" mt={3}>
+              <Tabs
+                value={tabValue}
+                onChange={handleTabChange}
+                variant={isMobile ? "scrollable" : "fullWidth"}
+                scrollButtons="auto"
+              >
+                <Tab label="Analytics" />
+                <Tab label="Properties" />
+                <Tab label="Users" />
+                <Tab label="Reports" />
+              </Tabs>
 
-                <Box sx={{ mt: 2 }}>
-                  <Suspense fallback={<LoadingPlaceholder />}>
-                    {tabValue === 0 && <ChatbotAnalytics />}
-                    {tabValue === 1 && <PropertyMap />}
-                    {tabValue === 2 && renderUsersTable()}
-                    {tabValue === 3 && renderPropertiesTable()}
-                  </Suspense>
-                </Box>
+              <Box sx={{ mt: 2 }}>
+                <Suspense fallback={
+                  <Box display="flex" justifyContent="center" p={4}>
+                    <CircularProgress />
+                  </Box>
+                }>
+                  {tabValue === 0 && <ChatbotAnalytics />}
+                  {tabValue === 1 && <PropertyMap />}
+                  {tabValue === 2 && renderUsersTable()}
+                  {tabValue === 3 && renderPropertiesTable()}
+                </Suspense>
               </Box>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Box>
+            </Box>
+          </Zoom>
+        </Box>
+      </Fade>
     </DashboardLayout>
   );
 };

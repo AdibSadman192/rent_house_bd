@@ -19,7 +19,9 @@ import {
   ListItemText,
   Divider,
   Tooltip,
-  Fade
+  Fade,
+  Grow,
+  Zoom
 } from '@mui/material';
 import {
   ViewModule as GridViewIcon,
@@ -35,7 +37,6 @@ import {
 import { useRouter } from 'next/router';
 import axios from '../../utils/axios';
 import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
@@ -53,14 +54,15 @@ const ITEMS_PER_PAGE = 12;
 
 // Map loading fallback component
 const MapLoadingFallback = () => (
-  <Box 
-    sx={{ 
-      height: 400, 
-      display: 'flex', 
-      alignItems: 'center', 
+  <Box
+    sx={{
+      height: '100%',
+      minHeight: 400,
+      display: 'flex',
+      alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: 'background.paper',
-      borderRadius: 1
+      bgcolor: 'grey.100',
+      borderRadius: 1,
     }}
   >
     <CircularProgress />
@@ -76,12 +78,11 @@ const ErrorFallback = ({ error, resetError }) => (
       flexDirection: 'column',
       alignItems: 'center',
       gap: 2,
-      textAlign: 'center'
     }}
   >
     <ErrorIcon color="error" sx={{ fontSize: 48 }} />
-    <Typography variant="h6" color="error">
-      {error.message || 'Something went wrong'}
+    <Typography variant="h6" color="error" gutterBottom>
+      {error}
     </Typography>
     <Button
       startIcon={<RefreshIcon />}
@@ -95,58 +96,75 @@ const ErrorFallback = ({ error, resetError }) => (
 
 const Properties = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const router = useRouter();
   const { user } = useAuth();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isHighRefreshRate = useMediaQuery('(min-resolution: 120dpi)');
-
-  // Refs for infinite scroll and animation frame
-  const observerRef = useRef(null);
-  const animationFrameRef = useRef(null);
-
-  // State management
+  const [viewMode, setViewMode] = useState('grid');
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [viewMode, setViewMode] = useState('grid');
-  const [showMap, setShowMap] = useState(false);
-  const [favorites, setFavorites] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [propertyTypes, setPropertyTypes] = useState([]);
-  
-  // Sort menu state
-  const [sortAnchorEl, setSortAnchorEl] = useState(null);
-  const [sortBy, setSortBy] = useState('newest');
-
-  // Filters state
+  const [sortBy, setSortBy] = useState('createdAt_desc');
+  const [anchorEl, setAnchorEl] = useState(null);
   const [filters, setFilters] = useState({
-    search: '',
     location: '',
     propertyType: '',
-    priceRange: [0, 100000],
+    priceRange: '',
     bedrooms: '',
     bathrooms: '',
-    amenities: []
   });
+  const [locations, setLocations] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const observerRef = useRef();
+  const animationFrameRef = useRef();
 
-  // Optimized fetch function with debounce
+  // Fetch locations from API
+  const fetchLocations = async () => {
+    try {
+      const response = await axios.get('/properties/locations');
+      setLocations(response.data);
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+    }
+  };
+
+  // Fetch property types from API
+  const fetchPropertyTypes = async () => {
+    try {
+      const response = await axios.get('/properties/types');
+      setPropertyTypes(response.data);
+    } catch (error) {
+      console.error('Error fetching property types:', error);
+    }
+  };
+
+  // Fetch user favorites
+  const fetchFavorites = async () => {
+    try {
+      const response = await axios.get('/users/favorites');
+      setFavorites(response.data.map(fav => fav._id));
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    }
+  };
+
+  // Debounced fetch function
   const debouncedFetch = useCallback(
     debounce(async () => {
-      try {
-        setLoading(true);
-        setError(null);
+      setLoading(true);
+      setError(null);
 
-        const response = await axios.get('/api/properties', {
-          params: {
-            page,
-            limit: ITEMS_PER_PAGE,
-            sortBy,
-            ...filters,
-            priceRange: filters.priceRange.join('-')
-          }
+      try {
+        const params = new URLSearchParams({
+          page,
+          limit: ITEMS_PER_PAGE,
+          sortBy,
+          ...filters
         });
+
+        const response = await axios.get(`/properties?${params}`);
 
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
@@ -226,6 +244,38 @@ const Properties = () => {
     debouncedFetch();
   };
 
+  // Handle sort menu
+  const handleSortClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleSortClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSortSelect = (value) => {
+    setSortBy(value);
+    setAnchorEl(null);
+    setPage(1);
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
+
+  // Handle view mode toggle
+  const toggleViewMode = () => {
+    setViewMode(prev => prev === 'grid' ? 'map' : 'grid');
+  };
+
+  // Handle pagination
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Render loading skeletons
   const renderSkeletons = () => (
     <Grid container spacing={3}>
@@ -241,165 +291,207 @@ const Properties = () => {
     </Grid>
   );
 
-  // Render property grid with animations
-  const renderPropertyGrid = () => (
-    <AnimatePresence mode="wait">
+  const renderPropertyGrid = () => {
+    if (!properties || properties.length === 0) {
+      return (
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          py: 8 
+        }}>
+          <ErrorIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No properties found
+          </Typography>
+          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
+            Try adjusting your search filters or check back later
+          </Typography>
+          <Button
+            startIcon={<RefreshIcon />}
+            onClick={() => {
+              setPage(1);
+              setFilters({
+                location: '',
+                propertyType: '',
+                priceRange: '',
+                bedrooms: '',
+                bathrooms: '',
+              });
+              debouncedFetch();
+            }}
+            variant="outlined"
+            color="primary"
+          >
+            Reset Filters
+          </Button>
+        </Box>
+      );
+    }
+
+    return (
       <Grid container spacing={3}>
-        {properties.map((property, index) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={property._id}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{
-                duration: isHighRefreshRate ? 0.2 : 0.3,
-                delay: index * (isHighRefreshRate ? 0.05 : 0.1)
-              }}
-            >
-              <PropertyCard
-                property={property}
-                isFavorite={favorites.includes(property._id)}
-                onFavoriteToggle={handleFavoriteToggle}
-                isHighRefreshRate={isHighRefreshRate}
-              />
-            </motion.div>
+        {properties.map((property) => (
+          <Grid item key={property._id} xs={12} sm={6} md={4}>
+            <Grow in={true} timeout={300}>
+              <Card
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: theme.shadows[4]
+                  }
+                }}
+              >
+                <PropertyCard
+                  property={property}
+                  isFavorite={favorites.includes(property._id)}
+                  onToggleFavorite={() => handleToggleFavorite(property._id)}
+                />
+              </Card>
+            </Grow>
           </Grid>
         ))}
       </Grid>
-    </AnimatePresence>
-  );
+    );
+  };
+
+  const renderMapView = () => {
+    if (!properties || properties.length === 0) {
+      return (
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          py: 8 
+        }}>
+          <ErrorIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No properties to display on map
+          </Typography>
+          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
+            Try adjusting your search filters or check back later
+          </Typography>
+          <Button
+            startIcon={<RefreshIcon />}
+            onClick={() => {
+              setPage(1);
+              setFilters({
+                location: '',
+                propertyType: '',
+                priceRange: '',
+                bedrooms: '',
+                bathrooms: '',
+              });
+              debouncedFetch();
+            }}
+            variant="outlined"
+            color="primary"
+          >
+            Reset Filters
+          </Button>
+        </Box>
+      );
+    }
+
+    return (
+      <Box sx={{ height: 'calc(100vh - 200px)', width: '100%', minHeight: 400 }}>
+        <MapView properties={properties} />
+      </Box>
+    );
+  };
+
+  if (error) {
+    return <ErrorFallback error={error} resetError={resetError} />;
+  }
 
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ mb: 4 }}>
-          <SearchFilters
-            filters={filters}
-            onFilterChange={setFilters}
-            locations={locations}
-            propertyTypes={propertyTypes}
-          />
-        </Box>
+    <Fade in={true} timeout={500}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <SearchFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          locations={locations}
+          propertyTypes={propertyTypes}
+        />
 
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4" component="h1">
-            Properties
-            {!loading && ` (${properties.length})`}
-          </Typography>
-
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Tooltip title="Toggle Map View">
-              <IconButton onClick={() => setShowMap(!showMap)} color={showMap ? 'primary' : 'default'}>
-                <MapIcon />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Change View">
-              <IconButton onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}>
-                {viewMode === 'grid' ? <ListViewIcon /> : <GridViewIcon />}
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Sort Properties">
-              <IconButton onClick={(e) => setSortAnchorEl(e.currentTarget)}>
-                <SortIcon />
-              </IconButton>
-            </Tooltip>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+          <Box>
+            <Button
+              startIcon={viewMode === 'grid' ? <MapIcon /> : <GridViewIcon />}
+              onClick={toggleViewMode}
+              variant="outlined"
+              sx={{ mr: 2 }}
+            >
+              {viewMode === 'grid' ? 'Map View' : 'Grid View'}
+            </Button>
           </Box>
+
+          <Button
+            startIcon={<SortIcon />}
+            onClick={handleSortClick}
+            variant="outlined"
+          >
+            Sort By
+          </Button>
         </Box>
 
-        {error && (
+        {error ? (
           <Alert 
             severity="error" 
-            sx={{ mb: 3 }}
             action={
-              <Button color="inherit" size="small" onClick={resetError}>
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                  debouncedFetch();
+                }}
+              >
                 Retry
               </Button>
             }
+            sx={{ mb: 3 }}
           >
             {error}
           </Alert>
+        ) : null}
+
+        {loading ? renderSkeletons() : (
+          viewMode === 'grid' ? renderPropertyGrid() : renderMapView()
         )}
 
-        <Fade in={showMap}>
-          <Box sx={{ mb: 3, display: showMap ? 'block' : 'none' }}>
-            <MapView properties={properties} />
-          </Box>
-        </Fade>
-
-        {loading ? renderSkeletons() : renderPropertyGrid()}
-
-        {!isMobile && !loading && (
+        {!isMobile && viewMode === 'grid' && (
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
             <Pagination
               count={totalPages}
               page={page}
-              onChange={(_, value) => setPage(value)}
+              onChange={handlePageChange}
               color="primary"
               size={isMobile ? 'small' : 'medium'}
             />
           </Box>
         )}
 
-        {isMobile && <div id="scroll-sentinel" style={{ height: '20px' }} />}
-
-        <Menu
-          anchorEl={sortAnchorEl}
-          open={Boolean(sortAnchorEl)}
-          onClose={() => setSortAnchorEl(null)}
-        >
-          <MenuItem 
-            onClick={() => {
-              setSortBy('newest');
-              setSortAnchorEl(null);
+        {isMobile && viewMode === 'grid' && (
+          <Box
+            id="scroll-sentinel"
+            sx={{
+              width: '100%',
+              height: '20px',
+              mt: 2,
+              display: 'flex',
+              justifyContent: 'center',
             }}
-            selected={sortBy === 'newest'}
           >
-            <ListItemIcon>
-              <TimeIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Newest First</ListItemText>
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setSortBy('price_asc');
-              setSortAnchorEl(null);
-            }}
-            selected={sortBy === 'price_asc'}
-          >
-            <ListItemIcon>
-              <PriceIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Price: Low to High</ListItemText>
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setSortBy('price_desc');
-              setSortAnchorEl(null);
-            }}
-            selected={sortBy === 'price_desc'}
-          >
-            <ListItemIcon>
-              <PriceIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Price: High to Low</ListItemText>
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setSortBy('popular');
-              setSortAnchorEl(null);
-            }}
-            selected={sortBy === 'popular'}
-          >
-            <ListItemIcon>
-              <TrendingIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Most Popular</ListItemText>
-          </MenuItem>
-        </Menu>
+            {loading && <CircularProgress size={24} />}
+          </Box>
+        )}
       </Container>
-    </ErrorBoundary>
+    </Fade>
   );
 };
 

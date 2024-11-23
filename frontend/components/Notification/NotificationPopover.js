@@ -7,7 +7,8 @@ import {
   Typography,
   Button,
   Divider,
-  useTheme
+  useTheme,
+  Fade
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -18,7 +19,6 @@ import {
 import { useRouter } from 'next/router';
 import { useNotification } from '../../contexts/NotificationContext';
 import NotificationList from './NotificationList';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const NotificationPopover = () => {
   const theme = useTheme();
@@ -77,25 +77,19 @@ const NotificationPopover = () => {
         onClick={handleClick}
         size="large"
       >
-        <AnimatePresence>
+        <Fade in={showBadge}>
           {showBadge ? (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
+            <Badge
+              badgeContent={unreadCount}
+              color="error"
+              overlap="circular"
             >
-              <Badge
-                badgeContent={unreadCount}
-                color="error"
-                overlap="circular"
-              >
-                <NotificationsIcon />
-              </Badge>
-            </motion.div>
+              <NotificationsIcon />
+            </Badge>
           ) : (
             <NotificationsIcon />
           )}
-        </AnimatePresence>
+        </Fade>
       </IconButton>
 
       <Popover

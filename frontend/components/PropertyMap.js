@@ -9,11 +9,12 @@ import {
   CardContent,
   IconButton,
   Tooltip,
+  Fade,
+  Grow,
 } from '@mui/material';
 import { LocationOn as LocationIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import axios from '../utils/axios';
 import { toast } from 'react-toastify';
-import { motion, AnimatePresence } from 'framer-motion';
 import debounce from 'lodash/debounce';
 
 const PropertyMap = () => {
@@ -137,73 +138,64 @@ const PropertyMap = () => {
   }, 1000);
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Paper elevation={3} sx={{ position: 'relative', height: '600px', mb: 3 }}>
-          {loading && (
+    <Box sx={{ position: 'relative', width: '100%', height: '600px' }}>
+      <Fade in={loading}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      </Fade>
+      
+      <Grow in={!loading}>
+        <Box sx={{ height: '100%' }}>
+          <Paper elevation={3} sx={{ position: 'relative', height: '100%', mb: 3 }}>
             <Box
               sx={{
                 position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                top: 16,
+                right: 16,
                 zIndex: 1,
               }}
             >
-              <CircularProgress />
+              <Card>
+                <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
+                  <Tooltip title="Refresh Properties">
+                    <IconButton
+                      onClick={debouncedRefresh}
+                      disabled={loading}
+                      size="small"
+                    >
+                      <RefreshIcon />
+                    </IconButton>
+                  </Tooltip>
+                </CardContent>
+              </Card>
             </Box>
-          )}
-          
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              zIndex: 1,
-            }}
-          >
-            <Card>
-              <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
-                <Tooltip title="Refresh Properties">
-                  <IconButton
-                    onClick={debouncedRefresh}
-                    disabled={loading}
-                    size="small"
-                  >
-                    <RefreshIcon />
-                  </IconButton>
-                </Tooltip>
-              </CardContent>
-            </Card>
+
+            <Box
+              id="map"
+              sx={{
+                height: '100%',
+                width: '100%',
+              }}
+            />
+          </Paper>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <LocationIcon color="primary" sx={{ mr: 1 }} />
+            <Typography variant="body2" color="text.secondary">
+              Showing {markers.length} properties on the map
+            </Typography>
           </Box>
-
-          <Box
-            id="map"
-            sx={{
-              height: '100%',
-              width: '100%',
-            }}
-          />
-        </Paper>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <LocationIcon color="primary" sx={{ mr: 1 }} />
-          <Typography variant="body2" color="text.secondary">
-            Showing {markers.length} properties on the map
-          </Typography>
         </Box>
-      </motion.div>
-    </AnimatePresence>
+      </Grow>
+    </Box>
   );
 };
 

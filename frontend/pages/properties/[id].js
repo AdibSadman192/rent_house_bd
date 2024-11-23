@@ -70,9 +70,21 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import { format } from 'date-fns';
 
-const PropertyDetail = ({ property, error }) => {
+// Fallback component while generating static page
+function PropertyDetailFallback() {
+  return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress />
+      </Box>
+    </Container>
+  );
+}
+
+const PropertyDetail = ({ property: initialProperty, error }) => {
   const router = useRouter();
   const { user } = useAuth();
+  const [property, setProperty] = useState(initialProperty);
   const [loading, setLoading] = useState(false);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
@@ -406,11 +418,7 @@ const PropertyDetail = ({ property, error }) => {
   }
 
   if (router.isFallback) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <CircularProgress />
-      </Container>
-    );
+    return <PropertyDetailFallback />;
   }
 
   return (
@@ -1128,6 +1136,7 @@ const PropertyDetail = ({ property, error }) => {
   );
 };
 
+// This function gets called at request time on server-side.
 export async function getServerSideProps({ params }) {
   try {
     const response = await axios.get(

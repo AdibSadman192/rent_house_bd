@@ -3,9 +3,15 @@ const nextConfig = {
   reactStrictMode: false,
   poweredByHeader: false,
   pageExtensions: ['js', 'jsx'],
+  images: {
+    domains: ['cdni.iconscout.com'],
+    unoptimized: true
+  },
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
   },
+  output: 'export',
+  trailingSlash: true,
   // Disable file watching for certain directories
   webpack: (config, { isServer }) => {
     config.watchOptions = {
@@ -18,16 +24,7 @@ const nextConfig = {
       poll: 1000,
     };
     return config;
-  },
-  // Add rewrites for API calls
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
-      },
-    ];
-  },
-}
+  }
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

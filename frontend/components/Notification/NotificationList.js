@@ -11,7 +11,9 @@ import {
   useTheme,
   Divider,
   Badge,
-  Tooltip
+  Tooltip,
+  Collapse,
+  Fade,
 } from '@mui/material';
 import {
   CheckCircle as SuccessIcon,
@@ -27,7 +29,6 @@ import {
   BookOnline as BookingIcon
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const NotificationList = ({
   notifications = [],
@@ -102,20 +103,11 @@ const NotificationList = ({
         maxHeight,
         overflow: 'auto',
         bgcolor: 'background.paper',
-        '& .MuiListItem-root': {
-          transition: 'background-color 0.2s ease'
-        }
       }}
     >
-      <AnimatePresence>
-        {notifications.map((notification) => (
-          <motion.div
-            key={notification._id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.2 }}
-          >
+      {notifications.map((notification, index) => (
+        <Fade key={notification._id} in={true}>
+          <Box>
             <ListItem
               sx={{
                 ...getNotificationStyle(notification.priority),
@@ -174,10 +166,10 @@ const NotificationList = ({
                 </Tooltip>
               </ListItemSecondaryAction>
             </ListItem>
-            <Divider variant="inset" component="li" />
-          </motion.div>
-        ))}
-      </AnimatePresence>
+            {index < notifications.length - 1 && <Divider variant="inset" component="li" />}
+          </Box>
+        </Fade>
+      ))}
     </List>
   );
 };

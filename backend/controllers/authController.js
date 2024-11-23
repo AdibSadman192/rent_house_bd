@@ -18,14 +18,14 @@ const generateToken = (id) => {
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, nid, address, role } = req.body;
+    const { firstName, lastName, email, password, phone, nid, address, role } = req.body;
 
     // Check if user already exists
     const userExists = await User.findOne({ $or: [{ email }, { nid }] });
     if (userExists) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists with this email or NID',
+        message: userExists.email === email ? 'Email already registered' : 'NID already registered',
       });
     }
 
@@ -39,9 +39,11 @@ exports.register = async (req, res) => {
 
     // Create user
     const user = await User.create({
-      name,
+      firstName,
+      lastName,
       email,
       password,
+      phone,
       nid,
       address,
       role: role || 'user', // Default to 'user' if role not specified
@@ -49,24 +51,31 @@ exports.register = async (req, res) => {
     });
 
     if (user) {
+      // Generate token
+      const token = generateToken(user._id);
+
       res.status(201).json({
         success: true,
+        message: 'Registration successful',
         data: {
           _id: user._id,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
+          phone: user.phone,
           nid: user.nid,
           address: user.address,
           role: user.role,
           isVerified: user.isVerified,
-          token: generateToken(user._id),
+          token
         },
       });
     }
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(400).json({
       success: false,
-      message: error.message,
+      message: error.message || 'Registration failed',
     });
   }
 };
@@ -96,7 +105,15 @@ exports.login = async (req, res) => {
       });
     }
 
-    // For renters, check if they are verified
+    // Check if user is active
+    if (user.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your account is not active. Please contact support.',
+      });
+    }
+
+    // For renters, check verification
     if (user.role === 'renter' && !user.isVerified) {
       return res.status(403).json({
         success: false,
@@ -104,23 +121,30 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Generate token
+    const token = generateToken(user._id);
+
     res.status(200).json({
       success: true,
+      message: 'Login successful',
       data: {
         _id: user._id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
+        phone: user.phone,
         nid: user.nid,
         address: user.address,
         role: user.role,
         isVerified: user.isVerified,
-        token: generateToken(user._id),
+        token
       },
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Login error:', error);
+    res.status(500).json({
       success: false,
-      message: error.message,
+      message: 'Login failed. Please try again.',
     });
   }
 };
@@ -156,7 +180,7 @@ exports.createAdmin = async (req, res) => {
       });
     }
 
-    const { name, email, password, nid, address } = req.body;
+    const { firstName, lastName, email, password, phone, nid, address } = req.body;
 
     // Check if user already exists
     const userExists = await User.findOne({ $or: [{ email }, { nid }] });
@@ -169,9 +193,11 @@ exports.createAdmin = async (req, res) => {
 
     // Create admin user
     const admin = await User.create({
-      name,
+      firstName,
+      lastName,
       email,
       password,
+      phone,
       nid,
       address,
       role: 'admin',
@@ -182,8 +208,10 @@ exports.createAdmin = async (req, res) => {
       success: true,
       data: {
         _id: admin._id,
-        name: admin.name,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
         email: admin.email,
+        phone: admin.phone,
         nid: admin.nid,
         address: admin.address,
         role: admin.role,

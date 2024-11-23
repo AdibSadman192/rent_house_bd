@@ -49,20 +49,21 @@ const Navbar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [anchorElNotifications, setAnchorElNotifications] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
-  const { user, logout, hasPermission } = useAuth();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 20;
-      setScrolled(isScrolled);
+      const isScrolled = window.scrollY > 50;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [scrolled]);
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -80,420 +81,319 @@ const Navbar = () => {
     setAnchorElNotifications(null);
   };
 
-  const handleMobileMenuToggle = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
   const handleLogout = async () => {
     try {
-      handleCloseUserMenu();
       await logout();
+      router.push('/');
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
-  const getRoleBasedDashboardLink = () => {
-    if (hasPermission('super-admin')) return '/super-admin/dashboard';
-    if (hasPermission('admin')) return '/admin/dashboard';
-    if (hasPermission('renter')) return '/renter/dashboard';
-    return '/dashboard';
-  };
-
-  const navigationItems = [
-    { text: 'Home', href: '/', icon: <HomeIcon /> },
-    { text: 'Search', href: '/search', icon: <SearchIcon /> },
-    { text: 'Properties', href: '/properties', icon: <ApartmentIcon /> },
-  ];
-
-  const userMenuItems = user ? [
-    { 
-      text: 'Profile', 
-      href: '/profile', 
-      icon: <PersonIcon />,
-      show: true 
-    },
-    { 
-      text: 'Dashboard', 
-      href: getRoleBasedDashboardLink(),
-      icon: <DashboardIcon />,
-      show: true 
-    },
-    { 
-      text: 'Admin Panel', 
-      href: '/admin/dashboard',
-      icon: <AdminIcon />,
-      show: hasPermission('admin')
-    },
-    { 
-      text: 'Super Admin', 
-      href: '/super-admin/dashboard',
-      icon: <SecurityIcon />,
-      show: hasPermission('super-admin')
-    },
-    { 
-      text: 'Messages', 
-      href: '/messages',
-      icon: <ChatIcon />,
-      show: true
-    },
-    { 
-      text: 'Settings', 
-      href: '/settings',
-      icon: <SettingsIcon />,
-      show: true
-    }
-  ].filter(item => item.show) : [
-    { text: 'Login', href: '/login', icon: <LoginIcon /> },
-    { text: 'Register', href: '/register', icon: <RegisterIcon /> }
-  ];
-
-  const renderMobileMenu = () => (
-    <Drawer
-      anchor="right"
-      open={mobileMenuOpen}
-      onClose={handleMobileMenuToggle}
-      sx={{
-        '& .MuiDrawer-paper': {
-          width: 240,
-          boxSizing: 'border-box',
-        },
-      }}
-    >
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Image
-          src="/logo.svg"
-          alt="HRBD Logo"
-          width={40}
-          height={40}
-          priority
-        />
-        <Typography variant="h6" component="div">
-          HRBD
-        </Typography>
-      </Box>
-      <Divider />
-      <List>
-        {navigationItems.map((item) => (
-          <ListItem
-            button
-            key={item.text}
-            component={Link}
-            href={item.href}
-            onClick={handleMobileMenuToggle}
-            selected={router.pathname === item.href}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
-        <Divider />
-        {userMenuItems.map((item) => (
-          <ListItem
-            button
-            key={item.text}
-            component={Link}
-            href={item.href}
-            onClick={handleMobileMenuToggle}
-            selected={router.pathname === item.href}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
-        {user && (
-          <ListItem button onClick={handleLogout}>
-            <ListItemIcon><LogoutIcon /></ListItemIcon>
-            <ListItemText primary="Logout" />
-          </ListItem>
-        )}
-      </List>
-    </Drawer>
-  );
-
   return (
     <AppBar 
-      position="sticky" 
-      color="default" 
-      elevation={scrolled ? 4 : 1}
+      position="fixed" 
+      elevation={scrolled ? 4 : 0}
       sx={{
-        bgcolor: scrolled ? 'rgba(255, 255, 255, 0.95)' : 'background.default',
-        backdropFilter: scrolled ? 'blur(20px)' : 'none',
-        transition: theme.transitions.create(['background-color', 'box-shadow', 'backdrop-filter'], {
-          duration: theme.transitions.duration.standard,
-        }),
+        backgroundColor: scrolled ? 'background.paper' : 'transparent',
+        transition: 'all 0.3s',
+        backdropFilter: scrolled ? 'blur(10px)' : 'none',
+        borderBottom: scrolled ? 1 : 0,
+        borderColor: 'divider',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: scrolled 
+            ? 'rgba(255, 255, 255, 0.9)' 
+            : 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 100%)',
+          zIndex: -1,
+          transition: 'all 0.3s',
+        },
       }}
     >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           {/* Logo */}
-          <Zoom in={true} style={{ transitionDelay: '100ms' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-              <Image
-                src="/logo.svg"
-                alt="HRBD Logo"
-                width={40}
-                height={40}
-                priority
-              />
+          <Link href="/" passHref style={{ textDecoration: 'none' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                mr: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  bgcolor: 'primary.main',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Image
+                  src="/logo.svg"
+                  alt="HRBD Logo"
+                  width={30}
+                  height={30}
+                  priority
+                />
+              </Box>
               <Typography
                 variant="h6"
                 noWrap
-                component={Link}
-                href="/"
                 sx={{
                   ml: 1,
                   fontWeight: 700,
-                  color: 'primary.main',
+                  color: scrolled ? 'primary.main' : 'common.white',
                   textDecoration: 'none',
-                  letterSpacing: '.1rem',
+                  display: { xs: 'none', md: 'flex' },
+                  textShadow: scrolled ? 'none' : '0 2px 4px rgba(0,0,0,0.3)',
                 }}
               >
-                HRBD
+                Rent House BD
               </Typography>
             </Box>
-          </Zoom>
+          </Link>
 
-          {/* Desktop Navigation */}
+          {/* Navigation Items */}
           {!isMobile && (
-            <Box sx={{ flexGrow: 1, display: 'flex', ml: 4 }}>
-              {navigationItems.map((item, index) => (
-                <Fade in={true} style={{ transitionDelay: `${150 + index * 50}ms` }} key={item.text}>
-                  <Button
-                    component={Link}
-                    href={item.href}
-                    startIcon={item.icon}
-                    sx={{
-                      mx: 1,
-                      color: router.pathname === item.href ? 'primary.main' : 'text.primary',
-                      borderBottom: router.pathname === item.href ? 2 : 0,
-                      borderColor: 'primary.main',
-                      borderRadius: 0,
-                      '&:hover': {
-                        color: 'primary.main',
-                        backgroundColor: 'transparent',
-                        borderBottom: 2,
-                        borderColor: 'primary.main',
-                      },
-                    }}
-                  >
-                    {item.text}
-                  </Button>
-                </Fade>
-              ))}
+            <Box sx={{ flexGrow: 1, display: 'flex', gap: 2 }}>
+              <Link href="/" passHref>
+                <Button
+                  startIcon={<HomeIcon />}
+                  sx={{
+                    color: scrolled ? 'text.primary' : 'common.white',
+                    fontWeight: 500,
+                    '&:hover': {
+                      backgroundColor: scrolled ? 'action.hover' : 'rgba(255, 255, 255, 0.1)',
+                    },
+                    textShadow: scrolled ? 'none' : '0 1px 2px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  Home
+                </Button>
+              </Link>
+              <Link href="/search" passHref>
+                <Button
+                  startIcon={<SearchIcon />}
+                  sx={{
+                    color: scrolled ? 'text.primary' : 'common.white',
+                    fontWeight: 500,
+                    '&:hover': {
+                      backgroundColor: scrolled ? 'action.hover' : 'rgba(255, 255, 255, 0.1)',
+                    },
+                    textShadow: scrolled ? 'none' : '0 1px 2px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  Search
+                </Button>
+              </Link>
+              <Link href="/properties" passHref>
+                <Button
+                  startIcon={<ApartmentIcon />}
+                  sx={{
+                    color: scrolled ? 'text.primary' : 'common.white',
+                    fontWeight: 500,
+                    '&:hover': {
+                      backgroundColor: scrolled ? 'action.hover' : 'rgba(255, 255, 255, 0.1)',
+                    },
+                    textShadow: scrolled ? 'none' : '0 1px 2px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  Properties
+                </Button>
+              </Link>
             </Box>
           )}
 
-          {/* Mobile Menu Button */}
-          {isMobile && (
-            <Box sx={{ flexGrow: 1 }} />
-          )}
-
-          {/* User Menu (Desktop) */}
-          {!isMobile && (
-            <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
-              {user ? (
-                <>
-                  <Fade in={true} style={{ transitionDelay: '250ms' }}>
-                    <IconButton
-                      onClick={handleOpenNotifications}
-                      size="large"
-                      color="inherit"
-                    >
-                      <Badge badgeContent={3} color="error">
-                        <NotificationsIcon />
-                      </Badge>
-                    </IconButton>
-                  </Fade>
-                  <Menu
-                    anchorEl={anchorElNotifications}
-                    open={Boolean(anchorElNotifications)}
-                    onClose={handleCloseNotifications}
-                    sx={{ mt: 2 }}
-                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                  >
-                    <MenuItem>
-                      <Typography variant="body2">New message from John</Typography>
-                    </MenuItem>
-                    <MenuItem>
-                      <Typography variant="body2">Property request approved</Typography>
-                    </MenuItem>
-                    <MenuItem>
-                      <Typography variant="body2">System update completed</Typography>
-                    </MenuItem>
-                  </Menu>
-                  
-                  <Fade in={true} style={{ transitionDelay: '300ms' }}>
-                    <Box>
-                      <Tooltip title="Account settings">
-                        <IconButton
-                          onClick={handleOpenUserMenu}
-                          sx={{
-                            p: 0,
-                            border: '2px solid transparent',
-                            transition: 'all 0.2s',
-                            '&:hover': {
-                              border: '2px solid',
-                              borderColor: 'primary.main',
-                            },
-                          }}
-                        >
-                          <Avatar
-                            alt={user.name}
-                            src={user.avatar}
-                            sx={{
-                              bgcolor: 'primary.main',
-                              transition: 'all 0.2s',
-                              '&:hover': {
-                                transform: 'scale(1.1)',
-                              },
-                            }}
-                          >
-                            {user.name ? user.name[0].toUpperCase() : 'U'}
-                          </Avatar>
-                        </IconButton>
-                      </Tooltip>
-                      <Menu
-                        sx={{ mt: '45px' }}
-                        id="menu-appbar"
-                        anchorEl={anchorElUser}
-                        anchorOrigin={{
-                          vertical: 'top',
-                          horizontal: 'right',
+          {/* User Menu */}
+          <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
+            {user ? (
+              <>
+                <Fade in={true} style={{ transitionDelay: '200ms' }}>
+                  <Box>
+                    <Tooltip title="Notifications">
+                      <IconButton
+                        onClick={handleOpenNotifications}
+                        sx={{
+                          color: scrolled ? 'text.primary' : 'common.white',
+                          '&:hover': {
+                            backgroundColor: scrolled ? 'action.hover' : 'rgba(255, 255, 255, 0.1)',
+                          },
                         }}
-                        keepMounted
-                        transformOrigin={{
-                          vertical: 'top',
-                          horizontal: 'right',
-                        }}
-                        open={Boolean(anchorElUser)}
-                        onClose={handleCloseUserMenu}
                       >
-                        <Box sx={{ px: 2, py: 1 }}>
-                          <Typography variant="subtitle1" fontWeight="bold">
-                            {user.name}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {user.email}
-                          </Typography>
-                        </Box>
-                        <Divider />
-                        {userMenuItems.map((item) => (
-                          <MenuItem
-                            key={item.text}
-                            component={Link}
-                            href={item.href}
-                            onClick={handleCloseUserMenu}
-                            sx={{
-                              gap: 1,
-                              transition: 'all 0.2s',
-                              '&:hover': {
-                                color: 'primary.main',
-                                '& .MuiListItemIcon-root': {
-                                  color: 'primary.main',
-                                },
-                              },
-                            }}
-                          >
-                            <ListItemIcon 
-                              sx={{ 
-                                minWidth: 'auto',
-                                transition: 'all 0.2s',
-                              }}
-                            >
-                              {item.icon}
-                            </ListItemIcon>
-                            <Typography>{item.text}</Typography>
-                          </MenuItem>
-                        ))}
-                        <Divider />
-                        <MenuItem 
-                          onClick={handleLogout}
+                        <Badge badgeContent={3} color="error">
+                          <NotificationsIcon />
+                        </Badge>
+                      </IconButton>
+                    </Tooltip>
+                    <Menu
+                      anchorEl={anchorElNotifications}
+                      open={Boolean(anchorElNotifications)}
+                      onClose={handleCloseNotifications}
+                      onClick={handleCloseNotifications}
+                      PaperProps={{
+                        sx: {
+                          mt: 1.5,
+                          width: 320,
+                          maxHeight: 400,
+                          overflowY: 'auto',
+                        },
+                      }}
+                      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    >
+                      <MenuItem>
+                        <ListItemText
+                          primary="New Booking Request"
+                          secondary="John Doe wants to book your property"
+                        />
+                      </MenuItem>
+                      <Divider />
+                      <MenuItem>
+                        <ListItemText
+                          primary="Property Approved"
+                          secondary="Your listing has been approved"
+                        />
+                      </MenuItem>
+                      <Divider />
+                      <MenuItem>
+                        <ListItemText
+                          primary="Message Received"
+                          secondary="You have a new message from Jane Smith"
+                        />
+                      </MenuItem>
+                    </Menu>
+                  </Box>
+                </Fade>
+                <Fade in={true} style={{ transitionDelay: '250ms' }}>
+                  <Box>
+                    <Tooltip title="Open settings">
+                      <IconButton onClick={handleOpenUserMenu}>
+                        <Avatar
+                          alt={user.name}
+                          src={user.avatar}
                           sx={{
-                            gap: 1,
-                            color: 'error.main',
+                            bgcolor: 'primary.main',
                             transition: 'all 0.2s',
                             '&:hover': {
-                              backgroundColor: 'error.lighter',
-                              '& .MuiListItemIcon-root': {
-                                color: 'error.main',
-                              },
+                              transform: 'scale(1.1)',
                             },
                           }}
                         >
-                          <ListItemIcon 
-                            sx={{ 
-                              minWidth: 'auto',
-                              color: 'error.main',
-                            }}
-                          >
-                            <LogoutIcon />
+                          {user.name ? user.name[0].toUpperCase() : 'U'}
+                        </Avatar>
+                      </IconButton>
+                    </Tooltip>
+                    <Menu
+                      anchorEl={anchorElUser}
+                      open={Boolean(anchorElUser)}
+                      onClose={handleCloseUserMenu}
+                      onClick={handleCloseUserMenu}
+                      PaperProps={{
+                        sx: {
+                          mt: 1.5,
+                          minWidth: 200,
+                        },
+                      }}
+                      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    >
+                      <Link href="/dashboard" passHref style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <MenuItem>
+                          <ListItemIcon sx={{ minWidth: 'auto', mr: 2 }}>
+                            <DashboardIcon />
                           </ListItemIcon>
-                          <Typography>Logout</Typography>
+                          <ListItemText>Dashboard</ListItemText>
                         </MenuItem>
-                      </Menu>
-                    </Box>
-                  </Fade>
-                </>
-              ) : (
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Fade in={true} style={{ transitionDelay: '250ms' }}>
+                      </Link>
+                      <Link href="/profile" passHref style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <MenuItem>
+                          <ListItemIcon sx={{ minWidth: 'auto', mr: 2 }}>
+                            <PersonIcon />
+                          </ListItemIcon>
+                          <ListItemText>Profile</ListItemText>
+                        </MenuItem>
+                      </Link>
+                      <Link href="/settings" passHref style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <MenuItem>
+                          <ListItemIcon sx={{ minWidth: 'auto', mr: 2 }}>
+                            <SettingsIcon />
+                          </ListItemIcon>
+                          <ListItemText>Settings</ListItemText>
+                        </MenuItem>
+                      </Link>
+                      <Divider />
+                      <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+                        <ListItemIcon sx={{ minWidth: 'auto', mr: 2, color: 'error.main' }}>
+                          <LogoutIcon />
+                        </ListItemIcon>
+                        <ListItemText>Logout</ListItemText>
+                      </MenuItem>
+                    </Menu>
+                  </Box>
+                </Fade>
+              </>
+            ) : (
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Fade in={true} style={{ transitionDelay: '250ms' }}>
+                  <Link href="/login" passHref>
                     <Button
-                      component={Link}
-                      href="/login"
                       startIcon={<LoginIcon />}
                       variant="outlined"
                       sx={{
-                        borderRadius: '20px',
-                        px: 2,
-                        transition: 'all 0.2s',
+                        borderColor: scrolled ? 'primary.main' : 'common.white',
+                        color: scrolled ? 'primary.main' : 'common.white',
                         '&:hover': {
-                          transform: 'translateY(-2px)',
+                          borderColor: scrolled ? 'primary.dark' : 'common.white',
+                          backgroundColor: scrolled ? 'action.hover' : 'rgba(255, 255, 255, 0.1)',
                         },
                       }}
                     >
                       Login
                     </Button>
-                  </Fade>
-                  <Fade in={true} style={{ transitionDelay: '300ms' }}>
+                  </Link>
+                </Fade>
+                <Fade in={true} style={{ transitionDelay: '300ms' }}>
+                  <Link href="/register" passHref>
                     <Button
-                      component={Link}
-                      href="/register"
                       startIcon={<RegisterIcon />}
                       variant="contained"
                       sx={{
-                        borderRadius: '20px',
-                        px: 2,
-                        transition: 'all 0.2s',
+                        bgcolor: scrolled ? 'primary.main' : 'common.white',
+                        color: scrolled ? 'common.white' : 'primary.main',
                         '&:hover': {
-                          transform: 'translateY(-2px)',
+                          bgcolor: scrolled ? 'primary.dark' : 'common.white',
                         },
                       }}
                     >
                       Register
                     </Button>
-                  </Fade>
-                </Box>
-              )}
-            </Box>
-          )}
+                  </Link>
+                </Fade>
+              </Box>
+            )}
+          </Box>
 
-          {/* Mobile Menu Icon */}
+          {/* Mobile Menu */}
           {isMobile && (
             <IconButton
               size="large"
               aria-label="menu"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMobileMenuToggle}
-              color="inherit"
+              onClick={() => {/* Add mobile menu handler */}}
               sx={{
-                transition: 'all 0.2s',
-                '&:hover': {
-                  color: 'primary.main',
-                  transform: 'scale(1.1)',
-                },
+                color: scrolled ? 'text.primary' : 'common.white',
+                ml: 2,
               }}
             >
               <MenuIcon />
@@ -501,9 +401,6 @@ const Navbar = () => {
           )}
         </Toolbar>
       </Container>
-
-      {/* Mobile Menu Drawer */}
-      {renderMobileMenu()}
     </AppBar>
   );
 };
