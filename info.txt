@@ -1,0 +1,78 @@
+
+House Rental Platform - User Credentials
+======================================
+
+🔐 Login Information
+-------------------
+All users can log in through the same login page at /auth/login
+The system will automatically detect the user's role and redirect them accordingly.
+
+📝 Registration
+--------------
+- Only users and renters can register through the public registration page
+- Admin accounts can only be created by the Super Admin through the dashboard
+- Renter accounts need verification by an admin before they can access the platform
+
+🔑 Sample Account Credentials
+---------------------------
+
+Super Admin
+----------
+Email: superadmin@houserental.com
+Password: SuperAdmin@123
+Access: Full platform control, can create/manage admin accounts
+
+Admin
+-----
+Email: admin@houserental.com
+Password: Admin@123
+Access: Platform management, user verification, content moderation
+
+Renter
+------
+Email: renter@houserental.com
+Password: Renter@123
+Access: Property listing, booking management, messaging
+
+Regular Users
+------------
+1. Email: alice@example.com
+   Password: User@123
+
+2. Email: charlie@example.com
+   Password: User@123
+Access: Property browsing, booking, reviews, messaging
+
+⚠️ Security Notice
+----------------
+Please change these passwords after first login for security purposes.
+These are sample accounts for testing purposes only.
+
+🔒 Role-Based Access Control
+-------------------------
+1. Super Admin
+   - Create, manage, and delete admin accounts
+   - Full platform management
+   - Access all features
+
+2. Admin
+   - Verify renter accounts
+   - Moderate content and reviews
+   - Manage user reports
+   - Platform monitoring
+
+3. Renter
+   - List properties
+   - Manage bookings
+   - Respond to inquiries
+   - Update property details
+   - View booking analytics
+
+4. User
+   - Browse properties
+   - Make bookings
+   - Leave reviews
+   - Message renters
+   - Manage personal bookings
+
+Generated on: 11/22/2024, 11:05:43 PM
