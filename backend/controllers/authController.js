@@ -13,138 +13,92 @@ const generateToken = (id) => {
   });
 };
 
-// @desc    Register a new user or renter
+// @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, phone, nid, address, role } = req.body;
+    const { name, email, password, phone, nid, address, role } = req.body;
 
     // Check if user already exists
-    const userExists = await User.findOne({ $or: [{ email }, { nid }] });
+    const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({
-        success: false,
-        message: userExists.email === email ? 'Email already registered' : 'NID already registered',
-      });
-    }
-
-    // Only allow registration for 'user' and 'renter' roles
-    if (role && !['user', 'renter'].includes(role)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Invalid role specified. Only users and renters can register.',
+        message: 'User already exists with this email'
       });
     }
 
     // Create user
     const user = await User.create({
-      firstName,
-      lastName,
+      name,
       email,
       password,
       phone,
       nid,
       address,
-      role: role || 'user', // Default to 'user' if role not specified
-      isVerified: role === 'renter' ? false : true, // Renters need verification
+      role: role || 'user'
     });
 
-    if (user) {
-      // Generate token
-      const token = generateToken(user._id);
-
-      res.status(201).json({
-        success: true,
-        message: 'Registration successful',
-        data: {
-          _id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          phone: user.phone,
-          nid: user.nid,
-          address: user.address,
-          role: user.role,
-          isVerified: user.isVerified,
-          token
-        },
-      });
-    }
+    res.status(201).json({
+      message: 'Registration successful',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(400).json({
-      success: false,
-      message: error.message || 'Registration failed',
+    res.status(500).json({
+      message: 'Registration failed. Please try again.'
     });
   }
 };
 
-// @desc    Unified login for all roles
+// @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check for user email
+    // Check for user
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials',
+        message: 'Invalid email or password'
       });
     }
 
     // Check password
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials',
+        message: 'Invalid email or password'
       });
     }
 
-    // Check if user is active
-    if (user.status !== 'active') {
-      return res.status(403).json({
-        success: false,
-        message: 'Your account is not active. Please contact support.',
-      });
-    }
+    // Create token
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET || 'your-jwt-secret',
+      { expiresIn: '30d' }
+    );
 
-    // For renters, check verification
-    if (user.role === 'renter' && !user.isVerified) {
-      return res.status(403).json({
-        success: false,
-        message: 'Your account is pending verification. Please contact admin.',
-      });
-    }
-
-    // Generate token
-    const token = generateToken(user._id);
-
-    res.status(200).json({
-      success: true,
-      message: 'Login successful',
-      data: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
         email: user.email,
-        phone: user.phone,
-        nid: user.nid,
-        address: user.address,
-        role: user.role,
-        isVerified: user.isVerified,
-        token
-      },
+        role: user.role
+      }
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({
-      success: false,
-      message: 'Login failed. Please try again.',
+      message: 'Login failed. Please try again.'
     });
   }
 };

@@ -5,14 +5,7 @@ import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
 
-const ROLE_REDIRECTS = {
-  'super-admin': '/super-admin/dashboard',
-  admin: '/admin/dashboard',
-  renter: '/renter/dashboard',
-  user: '/dashboard'
-};
-
-const PUBLIC_ROUTES = ['/', '/login', '/register', '/forgot-password'];
+const PUBLIC_ROUTES = ['/', '/login', '/register', '/forgot-password', '/properties', '/posts'];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -25,103 +18,98 @@ export function AuthProvider({ children }) {
 
   const checkUser = async () => {
     try {
-      // Only run on client side
       if (typeof window === 'undefined') {
         setLoading(false);
         return;
       }
 
       const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
       
-      // If no token and not on a public route, redirect to login
-      if (!token && !PUBLIC_ROUTES.includes(router.pathname)) {
-        router.push('/login');
-        setLoading(false);
-        return;
-      }
-      
-      // If no token but on a public route, just continue
-      if (!token && PUBLIC_ROUTES.includes(router.pathname)) {
+      if (!token || !userData) {
+        if (!PUBLIC_ROUTES.includes(router.pathname)) {
+          router.push('/login');
+        }
         setLoading(false);
         return;
       }
 
-      // If there's a token, verify it
-      if (token) {
-        try {
-          const response = await axios.get('/api/auth/verify');
-          const userData = response.data.data;
-          setUser(userData);
-          
-          // If on login/register page with valid token, redirect to appropriate dashboard
-          if (['/login', '/register'].includes(router.pathname)) {
-            const redirectPath = ROLE_REDIRECTS[userData.role] || '/dashboard';
-            router.push(redirectPath);
-          }
-        } catch (error) {
-          console.error('Token verification failed:', error);
-          localStorage.removeItem('token');
-          if (!PUBLIC_ROUTES.includes(router.pathname)) {
-            router.push('/login');
-          }
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        
+        // Verify token with backend
+        const response = await axios.get('/auth/verify');
+        if (response.data.valid) {
+          setUser(response.data.user);
+        } else {
+          throw new Error('Invalid token');
         }
+      } catch (error) {
+        console.error('Session verification failed:', error);
+        handleLogout();
       }
     } catch (error) {
-      console.error('Session verification failed:', error);
+      console.error('Auth check failed:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (email, password) => {
+  const handleLogin = async (formData) => {
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
-      const { token, user: userData } = response.data.data;
+      const { data } = await axios.post('/auth/login', formData);
       
-      localStorage.setItem('token', token);
-      setUser(userData);
-      
-      const redirectPath = ROLE_REDIRECTS[userData.role] || '/dashboard';
-      router.push(redirectPath);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
       
       toast.success('Successfully logged in!');
+      router.push('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
-      toast.error(error.response?.data?.message || 'Failed to login');
+      toast.error(error?.response?.data?.message || 'Failed to login');
       throw error;
     }
   };
 
-  const logout = async (silent = false) => {
+  const handleLogout = async () => {
     try {
-      if (localStorage.getItem('token')) {
-        await axios.post('/api/auth/logout');
-      }
+      await axios.post('/auth/logout');
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error('Logout API call failed:', error);
     } finally {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setUser(null);
+      toast.success('Logged out successfully');
       router.push('/login');
-      if (!silent) {
-        toast.success('Successfully logged out');
-      }
     }
   };
 
-  const register = async (userData) => {
+  const handleRegister = async (formData) => {
     try {
-      const response = await axios.post('/api/auth/register', userData);
-      const { token, user: newUser } = response.data.data;
-      
-      localStorage.setItem('token', token);
-      setUser(newUser);
-      
-      router.push('/dashboard');
-      toast.success('Registration successful!');
+      const { data } = await axios.post('/auth/register', formData);
+      toast.success('Registration successful! Please login.');
+      router.push('/login');
+      return data;
     } catch (error) {
       console.error('Registration failed:', error);
-      toast.error(error.response?.data?.message || 'Failed to register');
+      toast.error(error?.response?.data?.message || 'Failed to register');
+      throw error;
+    }
+  };
+
+  const updateProfile = async (profileData) => {
+    try {
+      const { data } = await axios.put('/auth/profile', profileData);
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      toast.success('Profile updated successfully');
+      return data;
+    } catch (error) {
+      console.error('Profile update failed:', error);
+      toast.error(error?.response?.data?.message || 'Failed to update profile');
       throw error;
     }
   };
@@ -129,21 +117,27 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     loading,
-    login,
-    logout,
-    register,
+    login: handleLogin,
+    logout: handleLogout,
+    register: handleRegister,
+    updateProfile,
+    isAuthenticated: !!user,
     checkUser
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }
 
 export default AuthContext;

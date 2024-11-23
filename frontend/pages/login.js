@@ -41,27 +41,18 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('/auth/login', formData);
+      const { data } = await axios.post('/auth/login', formData);
       
-      if (response.data.success) {
-        const userData = response.data.data;
-        // Store token and user info
-        localStorage.setItem('token', userData.token);
-        localStorage.setItem('user', JSON.stringify({
-          id: userData._id,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          email: userData.email,
-          role: userData.role,
-          isVerified: userData.isVerified
-        }));
+      // Store token and user info
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
-        toast.success('Successfully logged in!');
-        router.push('/dashboard');
-      }
+      toast.success('Successfully logged in!');
+      router.push('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error?.message || 'Invalid email or password');
+      toast.error(error?.message || 'Failed to login. Please try again.');
+    } finally {
       setLoading(false);
     }
   };

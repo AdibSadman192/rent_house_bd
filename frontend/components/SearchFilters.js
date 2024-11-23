@@ -36,7 +36,7 @@ import { useRouter } from 'next/router';
 import { debounce } from 'lodash';
 
 const SearchFilters = ({ 
-  onFiltersChange,
+  onFilterChange,
   initialFilters = {},
   locations = [],
   propertyTypes = []
@@ -79,7 +79,7 @@ const SearchFilters = ({
   const handleFilterChange = (field, value) => {
     const newFilters = { ...filters, [field]: value };
     setFilters(newFilters);
-    onFiltersChange(newFilters);
+    onFilterChange(newFilters);
   };
 
   const handlePriceRangeChange = (event, newValue) => {
@@ -114,7 +114,7 @@ const SearchFilters = ({
     setFilters(clearedFilters);
     setPriceRange(clearedFilters.priceRange);
     setSelectedAmenities([]);
-    onFiltersChange(clearedFilters);
+    onFilterChange(clearedFilters);
   };
 
   return (
@@ -282,7 +282,7 @@ const SearchFilters = ({
               </Button>
               <Button
                 variant="contained"
-                onClick={() => onFiltersChange(filters)}
+                onClick={() => onFilterChange(filters)}
                 startIcon={<SearchIcon />}
               >
                 Apply Filters

@@ -33,8 +33,7 @@ import {
 const Register = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -51,72 +50,29 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const validateForm = () => {
-    // Required fields
-    const requiredFields = ['firstName', 'lastName', 'email', 'password', 'confirmPassword', 'phone', 'nid', 'address'];
-    for (const field of requiredFields) {
-      if (!formData[field]?.trim()) {
-        toast.error(`${field.charAt(0).toUpperCase() + field.slice(1)} is required`);
-        return false;
-      }
-    }
-
-    // Name length validation
-    if (formData.firstName.length < 2 || formData.firstName.length > 50) {
-      toast.error('First name must be between 2 and 50 characters');
-      return false;
-    }
-    if (formData.lastName.length < 2 || formData.lastName.length > 50) {
-      toast.error('Last name must be between 2 and 50 characters');
-      return false;
-    }
-
-    // Email validation
-    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address');
-      return false;
-    }
-
-    // Password validation
-    if (formData.password.length < 8) {
-      toast.error('Password must be at least 8 characters long');
-      return false;
-    }
-
-    // Password match
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match!');
-      return false;
-    }
-
-    // Phone validation (Bangladesh format)
-    const phoneRegex = /^(?:\+?88)?01[3-9]\d{8}$/;
-    if (!phoneRegex.test(formData.phone)) {
-      toast.error('Please enter a valid Bangladesh phone number');
-      return false;
-    }
-
-    return true;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    if (!validateForm()) {
+    // Basic validation
+    if (!formData.name || !formData.email || !formData.password || !formData.phone || !formData.nid || !formData.address) {
+      toast.error('All fields are required');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
       setLoading(false);
       return;
     }
 
     try {
       const { confirmPassword, ...registerData } = formData;
-      const response = await axios.post('/auth/register', registerData);
+      const { data } = await axios.post('/auth/register', registerData);
       
-      if (response.data.success) {
-        toast.success('Registration successful! Please login.');
-        router.push('/login');
-      }
+      toast.success('Registration successful! Please login.');
+      router.push('/login');
     } catch (error) {
       console.error('Registration error:', error);
       toast.error(error?.message || 'Failed to register. Please try again.');
@@ -147,13 +103,13 @@ const Register = () => {
 
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3, width: '100%' }}>
           <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <TextField
                 required
                 fullWidth
-                label="First Name"
-                name="firstName"
-                value={formData.firstName}
+                label="Name"
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
                 InputProps={{
                   startAdornment: (
@@ -164,42 +120,7 @@ const Register = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Last Name"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Phone Number"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+8801XXXXXXXXX"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <TextField
                 required
                 fullWidth
@@ -217,7 +138,25 @@ const Register = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                label="Phone Number"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="+8801XXXXXXXXX"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
               <TextField
                 required
                 fullWidth
@@ -245,7 +184,7 @@ const Register = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <TextField
                 required
                 fullWidth
@@ -273,7 +212,7 @@ const Register = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <TextField
                 required
                 fullWidth
@@ -290,7 +229,7 @@ const Register = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <FormControl fullWidth required>
                 <InputLabel>Role</InputLabel>
                 <Select
