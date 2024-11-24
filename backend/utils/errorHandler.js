@@ -50,6 +50,34 @@ class DuplicateError extends AppError {
   }
 }
 
+class RateLimitError extends AppError {
+  constructor(message = 'Too many requests, please try again later') {
+    super(message, 429);
+    this.name = 'RateLimitError';
+  }
+}
+
+class NetworkError extends AppError {
+  constructor(message = 'Network error occurred') {
+    super(message, 503);
+    this.name = 'NetworkError';
+  }
+}
+
+class FileOperationError extends AppError {
+  constructor(message = 'File operation failed') {
+    super(message, 500);
+    this.name = 'FileOperationError';
+  }
+}
+
+class ExternalAPIError extends AppError {
+  constructor(message = 'External service error') {
+    super(message, 502);
+    this.name = 'ExternalAPIError';
+  }
+}
+
 // Error handler for async functions
 const catchAsync = (fn) => {
   return (req, res, next) => {
@@ -106,6 +134,44 @@ const formatMongoError = (err) => {
   return err;
 };
 
+// Format network errors
+const formatNetworkError = (err) => {
+  if (err.code === 'ETIMEDOUT') {
+    return new NetworkError('Request timed out');
+  }
+  if (err.code === 'ECONNREFUSED') {
+    return new NetworkError('Connection refused');
+  }
+  return err;
+};
+
+// Format file operation errors
+const formatFileError = (err) => {
+  if (err.code === 'ENOENT') {
+    return new FileOperationError('File not found');
+  }
+  if (err.code === 'EACCES') {
+    return new FileOperationError('Permission denied');
+  }
+  if (err.code === 'ENOSPC') {
+    return new FileOperationError('No space left on device');
+  }
+  return err;
+};
+
+// Format external API errors
+const formatExternalAPIError = (err) => {
+  if (err.response) {
+    return new ExternalAPIError(
+      `External API error: ${err.response.status} - ${err.response.statusText}`
+    );
+  }
+  if (err.request) {
+    return new ExternalAPIError('No response from external API');
+  }
+  return err;
+};
+
 module.exports = {
   AppError,
   ValidationError,
@@ -113,9 +179,16 @@ module.exports = {
   AuthorizationError,
   NotFoundError,
   DuplicateError,
+  RateLimitError,
+  NetworkError,
+  FileOperationError,
+  ExternalAPIError,
   catchAsync,
   formatMongooseError,
   formatJWTError,
   formatMulterError,
   formatMongoError,
+  formatNetworkError,
+  formatFileError,
+  formatExternalAPIError,
 };

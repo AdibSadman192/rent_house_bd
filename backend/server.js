@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const xss = require('xss-clean');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
+const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const {
   errorHandler,
@@ -60,6 +61,7 @@ const bookingRoutes = require('./routes/bookings');
 const uploadRoutes = require('./routes/upload');
 const notificationRoutes = require('./routes/notificationRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 // Import services
 const notificationService = require('./services/notificationService');
@@ -75,6 +77,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/chats', chatRoutes);
 
 // Base route
 app.get('/api/', (req, res) => {
@@ -94,7 +97,11 @@ const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// Initialize WebSocket notification service
+// Initialize Socket.IO
+const initializeSocket = require('./socket');
+const io = initializeSocket(server);
+
+// Initialize WebSocket services
 notificationService.initialize(server);
 
 // Initialize security service

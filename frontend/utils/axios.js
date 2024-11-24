@@ -1,25 +1,19 @@
 import axios from 'axios';
 
-const baseURL = 'http://localhost:5000';
-
-// Create axios instance with config
 const instance = axios.create({
-  baseURL: `${baseURL}/api`, 
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
-// Add request interceptor
+// Request interceptor
 instance.interceptors.request.use(
   (config) => {
-    // Get token from localStorage only on client side
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -28,20 +22,34 @@ instance.interceptors.request.use(
   }
 );
 
-// Add response interceptor
+// Response interceptor
 instance.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // Handle network errors
-    if (!error.response) {
-      return Promise.reject({
-        message: 'Network error. Please check your connection.'
-      });
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If error is 401 and we haven't tried to refresh token yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await instance.post('/auth/refresh', { token });
+        const { token: newToken } = response.data;
+
+        localStorage.setItem('token', newToken);
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+        return instance(originalRequest);
+      } catch (refreshError) {
+        // If refresh token fails, redirect to login
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
     }
 
-    // Handle specific error responses
-    const errorMessage = error.response.data?.message || 'Something went wrong';
-    return Promise.reject({ message: errorMessage });
+    return Promise.reject(error);
   }
 );
 

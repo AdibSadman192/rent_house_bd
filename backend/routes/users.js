@@ -1,31 +1,33 @@
 const express = require('express');
 const router = express.Router();
+const { protect, authorize } = require('../middleware/auth');
 const {
   getUsers,
   getUser,
   updateUser,
   deleteUser,
-  updateUserRole
+  updateUserRole,
+  updateUserStatus,
+  getUserStats
 } = require('../controllers/userController');
-const { protect, authorize } = require('../middleware/auth');
 
-// All routes are protected and require admin access
+// Public routes
+router.get('/stats', protect, authorize('admin', 'super-admin'), getUserStats);
+
+// Protected routes
 router.use(protect);
-router.use(authorize('admin', 'super-admin'));
 
-router
-  .route('/')
+// Admin only routes
+router.use(authorize('admin', 'super-admin'));
+router.route('/')
   .get(getUsers);
 
-router
-  .route('/:id')
+router.route('/:id')
   .get(getUser)
   .put(updateUser)
   .delete(deleteUser);
 
-// Super-admin only route
-router
-  .route('/:id/role')
-  .patch(authorize('super-admin'), updateUserRole);
+router.put('/:id/role', authorize('super-admin'), updateUserRole);
+router.put('/:id/status', updateUserStatus);
 
 module.exports = router;

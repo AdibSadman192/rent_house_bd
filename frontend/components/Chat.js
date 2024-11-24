@@ -30,8 +30,8 @@ import {
   WarningIcon,
 } from '@chakra-ui/icons';
 import { format, isAfter } from 'date-fns';
-import io from 'socket.io-client';
 import { useAuth } from '../contexts/AuthContext';
+import useSocket from '../hooks/useSocket';
 
 const MESSAGE_EXPIRY_OPTIONS = [
   { value: 3600, label: '1 Hour' },
@@ -46,7 +46,6 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [socket, setSocket] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [typingUser, setTypingUser] = useState(null);
   const [expiryTime, setExpiryTime] = useState(86400); // Default 24 hours
@@ -54,41 +53,40 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
   const typingTimeoutRef = useRef(null);
   const { user } = useAuth();
   const toast = useToast();
+  const { isConnected, connect, emit, on, off } = useSocket();
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   useEffect(() => {
-    // Initialize Socket.IO connection
-    const newSocket = io(process.env.NEXT_PUBLIC_API_URL, {
-      query: {
-        userId: user._id,
-        propertyId,
-      },
-      auth: {
-        token: localStorage.getItem('token'),
-      },
-    });
+    if (!user?._id || !propertyId) return;
 
-    setSocket(newSocket);
+    // Initialize socket connection
+    const connected = connect();
+    if (!connected) return;
 
-    // Socket event listeners
-    newSocket.on('connect', () => {
-      console.log('Connected to chat server');
-    });
+    // Set up event listeners
+    on('new_message', handleNewMessage);
+    on('user_typing', handleUserTyping);
+    on('user_stopped_typing', handleUserStopTyping);
+    on('message_expired', handleMessageExpiry);
+    on('messages_read', handleMessagesRead);
 
-    newSocket.on('message', handleNewMessage);
-    newSocket.on('typing', handleUserTyping);
-    newSocket.on('stopTyping', handleUserStopTyping);
-    newSocket.on('messageExpired', handleMessageExpiry);
+    // Join the chat room
+    emit('join_chat', propertyId);
 
     // Fetch existing messages
     fetchMessages();
 
+    // Cleanup function
     return () => {
-      newSocket.disconnect();
+      off('new_message', handleNewMessage);
+      off('user_typing', handleUserTyping);
+      off('user_stopped_typing', handleUserStopTyping);
+      off('message_expired', handleMessageExpiry);
+      off('messages_read', handleMessagesRead);
     };
-  }, [propertyId, user._id]);
+  }, [propertyId, user?._id]);
 
   useEffect(() => {
     scrollToBottom();
@@ -133,11 +131,12 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
 
   const handleNewMessage = (message) => {
     setMessages((prev) => [...prev, message]);
+    scrollToBottom();
   };
 
-  const handleUserTyping = ({ userId, username }) => {
+  const handleUserTyping = ({ user: typingUser }) => {
     setIsTyping(true);
-    setTypingUser(username);
+    setTypingUser(typingUser);
   };
 
   const handleUserStopTyping = () => {
@@ -149,11 +148,35 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
     setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
     toast({
       title: 'Message Expired',
-      description: 'A message has been automatically deleted due to expiration',
+      description: 'A message has been automatically removed due to expiry',
       status: 'info',
-      duration: 3000,
+      duration: 5000,
       isClosable: true,
     });
+  };
+
+  const handleMessagesRead = ({ messageIds }) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        messageIds.includes(msg._id)
+          ? { ...msg, readBy: [...msg.readBy, user._id] }
+          : msg
+      )
+    );
+  };
+
+  const markMessagesAsRead = () => {
+    const unreadMessages = messages
+      .filter((msg) => !msg.readBy.includes(user._id))
+      .map((msg) => msg._id);
+
+    if (unreadMessages.length > 0) {
+      emit('mark_read', { chatId: propertyId, messageIds: unreadMessages });
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const checkExpiredMessages = () => {
@@ -180,7 +203,7 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
         expiresAt: expiryTime ? new Date(Date.now() + expiryTime * 1000) : null,
       };
 
-      socket.emit('message', message);
+      emit('new_message', message);
       setNewMessage('');
     } catch (err) {
       toast({
@@ -194,7 +217,7 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
   };
 
   const handleTyping = () => {
-    socket.emit('typing', { propertyId, recipientId });
+    emit('user_typing', { propertyId, recipientId });
 
     // Clear existing timeout
     if (typingTimeoutRef.current) {
@@ -203,7 +226,7 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
 
     // Set new timeout
     typingTimeoutRef.current = setTimeout(() => {
-      socket.emit('stopTyping', { propertyId, recipientId });
+      emit('user_stopped_typing', { propertyId, recipientId });
     }, 2000);
   };
 
@@ -218,7 +241,7 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
 
       if (response.ok) {
         setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
-        socket.emit('messageDeleted', { messageId, propertyId, recipientId });
+        emit('message_deleted', { messageId, propertyId, recipientId });
       } else {
         throw new Error('Failed to delete message');
       }
@@ -233,47 +256,14 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
     }
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const MessageBubble = ({ message }) => {
-    const isSender = message.sender === user._id;
-    const bubbleBg = isSender ? 'blue.500' : useColorModeValue('gray.100', 'gray.700');
-    const textColor = isSender ? 'white' : useColorModeValue('gray.800', 'white');
-
+  if (!isConnected) {
     return (
-      <Box
-        maxW="70%"
-        alignSelf={isSender ? 'flex-end' : 'flex-start'}
-        bg={bubbleBg}
-        color={textColor}
-        px={4}
-        py={2}
-        borderRadius="lg"
-        position="relative"
-      >
-        <Text>{message.content}</Text>
-        <HStack spacing={2} justify="flex-end" mt={1} fontSize="xs" opacity={0.8}>
-          <Text>{format(new Date(message.createdAt), 'HH:mm')}</Text>
-          {message.expiresAt && (
-            <Tooltip label={`Expires: ${format(new Date(message.expiresAt), 'PPp')}`}>
-              <TimeIcon />
-            </Tooltip>
-          )}
-          {isSender && (
-            <IconButton
-              icon={<DeleteIcon />}
-              size="xs"
-              variant="ghost"
-              onClick={() => deleteMessage(message._id)}
-              aria-label="Delete message"
-            />
-          )}
-        </HStack>
+      <Box p={4} textAlign="center">
+        <Spinner size="xl" mb={4} />
+        <Text>Connecting to chat server...</Text>
       </Box>
     );
-  };
+  }
 
   if (loading) {
     return (
@@ -295,12 +285,11 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
   return (
     <Box
       bg={bgColor}
+      borderRadius="lg"
       borderWidth="1px"
       borderColor={borderColor}
-      borderRadius="lg"
-      h="600px"
-      display="flex"
-      flexDirection="column"
+      h="full"
+      p={4}
     >
       {/* Chat Header */}
       <HStack p={4} borderBottomWidth="1px" borderColor={borderColor}>
@@ -387,6 +376,44 @@ const Chat = ({ propertyId, recipientId, isRenter }) => {
         >
           Send
         </Button>
+      </HStack>
+    </Box>
+  );
+};
+
+const MessageBubble = ({ message }) => {
+  const isSender = message.sender === user._id;
+  const bubbleBg = isSender ? 'blue.500' : useColorModeValue('gray.100', 'gray.700');
+  const textColor = isSender ? 'white' : useColorModeValue('gray.800', 'white');
+
+  return (
+    <Box
+      maxW="70%"
+      alignSelf={isSender ? 'flex-end' : 'flex-start'}
+      bg={bubbleBg}
+      color={textColor}
+      px={4}
+      py={2}
+      borderRadius="lg"
+      position="relative"
+    >
+      <Text>{message.content}</Text>
+      <HStack spacing={2} justify="flex-end" mt={1} fontSize="xs" opacity={0.8}>
+        <Text>{format(new Date(message.createdAt), 'HH:mm')}</Text>
+        {message.expiresAt && (
+          <Tooltip label={`Expires: ${format(new Date(message.expiresAt), 'PPp')}`}>
+            <TimeIcon />
+          </Tooltip>
+        )}
+        {isSender && (
+          <IconButton
+            icon={<DeleteIcon />}
+            size="xs"
+            variant="ghost"
+            onClick={() => deleteMessage(message._id)}
+            aria-label="Delete message"
+          />
+        )}
       </HStack>
     </Box>
   );

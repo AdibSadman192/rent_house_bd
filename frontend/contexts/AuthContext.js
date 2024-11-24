@@ -1,143 +1,215 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import axios from '@/utils/axios';
 import { useRouter } from 'next/router';
-import axios from '../utils/axios';
-import { toast } from 'react-toastify';
+import { useSession } from '@/hooks/useSession';
 
-const AuthContext = createContext();
+const AuthContext = createContext({});
 
-const PUBLIC_ROUTES = ['/', '/login', '/register', '/forgot-password', '/properties', '/posts'];
+// Routes that don't require authentication
+const PUBLIC_ROUTES = ['/login', '/register', '/', '/about', '/contact'];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const router = useRouter();
+  const session = useSession();
 
+  // Set up axios interceptor for token
   useEffect(() => {
-    checkUser();
-  }, []);
+    // Check for token on mount
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
 
-  const checkUser = async () => {
-    try {
-      if (typeof window === 'undefined') {
-        setLoading(false);
-        return;
-      }
-
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
-      
-      if (!token || !userData) {
-        if (!PUBLIC_ROUTES.includes(router.pathname)) {
-          router.push('/login');
+    // Add response interceptor for 401 errors
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response?.status === 401) {
+          // Try to refresh token
+          try {
+            const refreshed = await refreshToken();
+            if (refreshed) {
+              // Retry the original request
+              const config = error.config;
+              config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
+              return axios(config);
+            } else {
+              // If refresh failed, logout
+              await handleLogout(true);
+              return Promise.reject(error);
+            }
+          } catch (refreshError) {
+            await handleLogout(true);
+            return Promise.reject(refreshError);
+          }
         }
-        setLoading(false);
-        return;
+        return Promise.reject(error);
       }
+    );
 
+    return () => {
+      delete axios.defaults.headers.common['Authorization'];
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [router, session]);
+
+  // Check user authentication status
+  useEffect(() => {
+    const checkUser = async () => {
       try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        
-        // Verify token with backend
-        const response = await axios.get('/auth/verify');
-        if (response.data.valid) {
-          setUser(response.data.user);
-        } else {
-          throw new Error('Invalid token');
+        const token = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+
+        if (!token || !storedUser) {
+          if (!PUBLIC_ROUTES.includes(router.pathname)) {
+            await handleLogout(true);
+          }
+          setLoading(false);
+          setInitialized(true);
+          return;
+        }
+
+        try {
+          // Always verify token with backend
+          const { data } = await axios.get('/auth/verify-session', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (data.valid) {
+            setUser(data.user);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          } else {
+            throw new Error('Invalid session');
+          }
+        } catch (error) {
+          console.error('Session verification failed:', error);
+          await handleLogout(true);
         }
       } catch (error) {
-        console.error('Session verification failed:', error);
-        handleLogout();
+        console.error('Auth check error:', error);
+        await handleLogout(true);
+      } finally {
+        setLoading(false);
+        setInitialized(true);
       }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const handleLogin = async (formData) => {
+    checkUser();
+  }, [router.pathname]);
+
+  const refreshToken = async () => {
     try {
-      const { data } = await axios.post('/auth/login', formData);
+      const { data } = await axios.post('/auth/refresh-token', {}, {
+        headers: { 'x-refresh-token': localStorage.getItem('refreshToken') }
+      });
       
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setUser(data.user);
+      localStorage.setItem('refreshToken', data.refreshToken);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
       
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const login = async (credentials) => {
+    try {
+      const { data } = await axios.post('/auth/login', credentials);
+      
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('refreshToken', data.refreshToken);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+      setUser(data.user);
+
       toast.success('Successfully logged in!');
-      router.push('/dashboard');
-    } catch (error) {
-      console.error('Login failed:', error);
-      toast.error(error?.response?.data?.message || 'Failed to login');
-      throw error;
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await axios.post('/auth/logout');
-    } catch (error) {
-      console.error('Logout API call failed:', error);
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setUser(null);
-      toast.success('Logged out successfully');
-      router.push('/login');
-    }
-  };
-
-  const handleRegister = async (formData) => {
-    try {
-      const { data } = await axios.post('/auth/register', formData);
-      toast.success('Registration successful! Please login.');
-      router.push('/login');
+      
+      // Redirect based on role
+      if (data.user.role === 'admin' || data.user.role === 'super-admin') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/dashboard');
+      }
+      
       return data;
     } catch (error) {
-      console.error('Registration failed:', error);
-      toast.error(error?.response?.data?.message || 'Failed to register');
+      toast.error(error.response?.data?.message || 'Login failed');
       throw error;
     }
   };
 
-  const updateProfile = async (profileData) => {
+  const handleLogout = async (silent = false) => {
     try {
-      const { data } = await axios.put('/auth/profile', profileData);
-      setUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      // Call backend logout endpoint
+      await axios.post('/auth/logout').catch(() => {});
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      delete axios.defaults.headers.common['Authorization'];
+      setUser(null);
+      
+      if (!silent) {
+        toast.success('Logged out successfully');
+      }
+      
+      if (!PUBLIC_ROUTES.includes(router.pathname)) {
+        router.push('/login');
+      }
+    }
+  };
+
+  const updateUser = async (updatedData) => {
+    try {
+      const { data } = await axios.put('/auth/update', updatedData);
+      setUser(data);
+      localStorage.setItem('user', JSON.stringify(data));
       toast.success('Profile updated successfully');
       return data;
     } catch (error) {
-      console.error('Profile update failed:', error);
-      toast.error(error?.response?.data?.message || 'Failed to update profile');
+      toast.error(error.response?.data?.message || 'Failed to update profile');
       throw error;
     }
+  };
+
+  const checkPermission = (requiredRole) => {
+    if (!user) return false;
+    if (requiredRole === 'super-admin') return user.role === 'super-admin';
+    if (requiredRole === 'admin') return ['admin', 'super-admin'].includes(user.role);
+    return true;
   };
 
   const value = {
     user,
     loading,
-    login: handleLogin,
-    logout: handleLogout,
-    register: handleRegister,
-    updateProfile,
-    isAuthenticated: !!user,
-    checkUser
+    initialized,
+    login,
+    handleLogout,
+    updateUser,
+    checkPermission,
+    refreshToken
   };
+
+  if (!initialized) {
+    return null;
+  }
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }
-
-export default AuthContext;

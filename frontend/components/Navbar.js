@@ -1,349 +1,147 @@
 import { useState, useEffect } from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Menu,
-  AppBar,
-  IconButton,
-  MenuItem,
-  useTheme,
-  useMediaQuery,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Divider,
-  Fade,
-  Badge,
-  Zoom,
-  Avatar,
-  Button,
-  Tooltip,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Home as HomeIcon,
-  Search as SearchIcon,
-  Apartment as ApartmentIcon,
-  Person as PersonIcon,
-  Login as LoginIcon,
-  HowToReg as RegisterIcon,
-  Dashboard as DashboardIcon,
-  Chat as ChatIcon,
-  Logout as LogoutIcon,
-  Settings as SettingsIcon,
-  SupervisorAccount as AdminIcon,
-  Security as SecurityIcon,
-  Notifications as NotificationsIcon,
-  Article as ArticleIcon,
-} from '@mui/icons-material';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useAuth } from '../contexts/AuthContext';
-import Image from 'next/image';
+import { useAuth } from 'contexts/AuthContext';
+import { useSession } from 'hooks/useSession';
+import { FaUser, FaBell, FaSignOutAlt } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const Navbar = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [anchorElUser, setAnchorElUser] = useState(null);
-  const [anchorElNotifications, setAnchorElNotifications] = useState(null);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const { user, logout } = useAuth();
   const router = useRouter();
+  const { logout } = useAuth();
+  const { user, isAuthenticated, notifications, clearNotifications } = useSession();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
   };
 
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
-
-  const handleLogout = async () => {
-    try {
-      handleCloseUserMenu();
-      await logout();
-      router.push('/');
-    } catch (error) {
-      console.error('Logout error:', error);
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+    if (showNotifications) {
+      clearNotifications();
     }
   };
 
-  const handleOpenNotifications = (event) => {
-    setAnchorElNotifications(event.currentTarget);
+  const toggleUserMenu = () => {
+    setShowUserMenu(!showUserMenu);
   };
-
-  const handleCloseNotifications = () => {
-    setAnchorElNotifications(null);
-  };
-
-  const handleNavigation = (path) => {
-    handleCloseUserMenu();
-    router.push(path);
-  };
-
-  const menuItems = [
-    { text: 'Home', icon: <HomeIcon />, href: '/' },
-    { text: 'Search', icon: <SearchIcon />, href: '/search' },
-    { text: 'Properties', icon: <ApartmentIcon />, href: '/properties' },
-    { text: 'Posts', icon: <ArticleIcon />, href: '/posts' },
-  ];
-
-  const userMenuItems = user ? [
-    { text: 'Dashboard', icon: <DashboardIcon />, onClick: () => handleNavigation('/dashboard') },
-    { text: 'Profile', icon: <PersonIcon />, onClick: () => handleNavigation('/profile') },
-    { text: 'Settings', icon: <SettingsIcon />, onClick: () => handleNavigation('/settings') },
-    user.role === 'renter' && { 
-      text: 'Add Property', 
-      icon: <ApartmentIcon />, 
-      onClick: () => handleNavigation('/properties/add')
-    },
-    user.role === 'super_admin' && { 
-      text: 'Admin Panel', 
-      icon: <AdminIcon />, 
-      onClick: () => handleNavigation('/admin')
-    },
-    { text: 'Logout', icon: <LogoutIcon />, onClick: handleLogout }
-  ].filter(Boolean) : [
-    { text: 'Login', icon: <LoginIcon />, onClick: () => handleNavigation('/login') },
-    { text: 'Register', icon: <RegisterIcon />, onClick: () => handleNavigation('/register') }
-  ];
 
   return (
-    <AppBar 
-      position="fixed" 
-      sx={{
-        background: isScrolled ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
-        boxShadow: isScrolled ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
-        backdropFilter: isScrolled ? 'blur(8px)' : 'none',
-        transition: 'all 0.3s ease-in-out',
-        borderBottom: isScrolled ? '1px solid rgba(0,0,0,0.1)' : 'none',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: isScrolled 
-            ? 'none'
-            : 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 100%)',
-          zIndex: -1,
-          transition: 'all 0.3s ease-in-out',
-        }
-      }}
-    >
-      <Container maxWidth="lg">
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
-          <Link 
-            href="/" 
-            passHref
-            style={{
-              textDecoration: 'none'
-            }}
-          >
-            <Box 
-              component="a" 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                textDecoration: 'none !important',
-                '&:hover': {
-                  textDecoration: 'none !important'
-                },
-                '&:visited': {
-                  textDecoration: 'none !important'
-                },
-                '&:active': {
-                  textDecoration: 'none !important'
-                }
-              }}
-            >
-              <Box
-                sx={{
-                  position: 'relative',
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  bgcolor: 'primary.main',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: isScrolled ? '0 2px 4px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.3)',
-                  transition: 'all 0.3s ease-in-out'
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    color: 'white',
-                    fontWeight: 700,
-                    fontSize: '16px',
-                    letterSpacing: '0.5px'
-                  }}
-                >
-                  HRBD
-                </Typography>
-              </Box>
-              <Typography
-                variant="h6"
-                component="span"
-                sx={{
-                  ml: 1.5,
-                  color: isScrolled ? 'text.primary' : 'white',
-                  fontWeight: 600,
-                  textDecoration: 'none !important',
-                  textShadow: isScrolled ? 'none' : '0 2px 4px rgba(0,0,0,0.3)',
-                  transition: 'all 0.3s ease-in-out',
-                  letterSpacing: '0.5px',
-                  fontSize: '1.1rem',
-                  '&:hover': {
-                    color: isScrolled ? 'primary.main' : 'white',
-                    textDecoration: 'none !important'
-                  }
-                }}
-              >
-                House Rent Bangladesh
-              </Typography>
-            </Box>
-          </Link>
-
-          {isMobile ? (
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={handleOpenUserMenu}
-              sx={{
-                color: isScrolled ? 'text.primary' : 'white',
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-          ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {menuItems.filter(Boolean).map((item) => (
-                <Link key={item.text} href={item.href} passHref>
-                  <Button
-                    component="a"
-                    startIcon={item.icon}
-                    sx={{
-                      color: isScrolled ? 'text.primary' : 'white',
-                      fontWeight: 500,
-                      '&:hover': {
-                        backgroundColor: isScrolled ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.1)',
-                        color: isScrolled ? 'primary.main' : 'white',
-                      },
-                      textShadow: isScrolled ? 'none' : '0 1px 2px rgba(0,0,0,0.2)',
-                    }}
-                  >
-                    {item.text}
-                  </Button>
+    <nav className="bg-white shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <Link href="/" className="flex-shrink-0 flex items-center">
+              <img
+                className="h-8 w-auto"
+                src="/logo.png"
+                alt="Rent House BD"
+              />
+            </Link>
+            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <Link href="/properties" className="nav-link">
+                Properties
+              </Link>
+              <Link href="/posts" className="nav-link">
+                Posts
+              </Link>
+              {isAuthenticated && (
+                <Link href="/chat" className="nav-link">
+                  Chat
                 </Link>
-              ))}
-
-              {user ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Tooltip title="Notifications">
-                    <IconButton onClick={handleOpenNotifications} sx={{ color: isScrolled ? 'primary.main' : 'white' }}>
-                      <Badge badgeContent={3} color="error">
-                        <NotificationsIcon />
-                      </Badge>
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Account settings">
-                    <IconButton onClick={handleOpenUserMenu}>
-                      <Avatar 
-                        alt={user.name} 
-                        src={user.avatar || '/avatar.png'}
-                        sx={{ width: 32, height: 32 }}
-                      />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              ) : (
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    href="/login"
-                    component={Link}
-                    variant={isScrolled ? "outlined" : "text"}
-                    startIcon={<LoginIcon />}
-                    sx={{ color: isScrolled ? 'primary.main' : 'white' }}
-                  >
-                    Login
-                  </Button>
-                  <Button
-                    href="/register"
-                    component={Link}
-                    variant={isScrolled ? "contained" : "outlined"}
-                    startIcon={<RegisterIcon />}
-                    sx={{ 
-                      color: isScrolled ? 'white' : 'white',
-                      borderColor: isScrolled ? 'primary.main' : 'white',
-                    }}
-                  >
-                    Register
-                  </Button>
-                </Box>
               )}
-            </Box>
-          )}
+            </div>
+          </div>
 
-          <Menu
-            anchorEl={anchorElUser}
-            open={Boolean(anchorElUser)}
-            onClose={handleCloseUserMenu}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            {userMenuItems.map((item) => (
-              <MenuItem key={item.text} onClick={item.onClick}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText>{item.text}</ListItemText>
-              </MenuItem>
-            ))}
-          </Menu>
+          <div className="flex items-center">
+            {isAuthenticated ? (
+              <>
+                <div className="relative ml-3">
+                  <button
+                    onClick={toggleNotifications}
+                    className="p-1 rounded-full hover:bg-gray-100 relative"
+                  >
+                    <FaBell className="h-6 w-6" />
+                    {notifications.length > 0 && (
+                      <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white" />
+                    )}
+                  </button>
+                  {showNotifications && notifications.length > 0 && (
+                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5">
+                      {notifications.map((notification, index) => (
+                        <div
+                          key={index}
+                          className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          {notification.message}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-          <Menu
-            anchorEl={anchorElNotifications}
-            open={Boolean(anchorElNotifications)}
-            onClose={handleCloseNotifications}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            <MenuItem onClick={handleCloseNotifications}>
-              <ListItemText 
-                primary="New Property Listed" 
-                secondary="A new property was listed in your area"
-              />
-            </MenuItem>
-            <MenuItem onClick={handleCloseNotifications}>
-              <ListItemText 
-                primary="Booking Request" 
-                secondary="You have a new booking request"
-              />
-            </MenuItem>
-            <MenuItem onClick={handleCloseNotifications}>
-              <ListItemText 
-                primary="Message Received" 
-                secondary="You have a new message from a renter"
-              />
-            </MenuItem>
-          </Menu>
-        </Box>
-      </Container>
-    </AppBar>
+                <div className="relative ml-3">
+                  <button
+                    onClick={toggleUserMenu}
+                    className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100"
+                  >
+                    <img
+                      className="h-8 w-8 rounded-full"
+                      src={user?.avatar || '/default-avatar.png'}
+                      alt={user?.name}
+                    />
+                    <span className="hidden md:block">{user?.name}</span>
+                  </button>
+
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5">
+                      <Link
+                        href="/profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Profile
+                      </Link>
+                      {user?.role === 'admin' && (
+                        <Link
+                          href="/admin"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Admin Dashboard
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="flex space-x-4">
+                <Link
+                  href="/login"
+                  className="btn-primary"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="btn-secondary"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
   );
 };
 

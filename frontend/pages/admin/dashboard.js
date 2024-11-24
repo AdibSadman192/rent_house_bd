@@ -28,10 +28,14 @@ import {
   Tab,
   Tabs,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Container,
+  Divider
 } from '@mui/material';
-import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from 'next/router';
 import {
   Person as PersonIcon,
   Home as HomeIcon,
@@ -45,35 +49,44 @@ import {
   Close as CloseIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  Warning as WarningIcon,
+  Assessment as AssessmentIcon
 } from '@mui/icons-material';
 import dynamic from 'next/dynamic';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import { toast } from 'react-toastify';
 import { debounce } from 'lodash';
-import { adminAPI, analyticsAPI, propertyAPI } from '../../lib/api';
+import axios from '../../utils/axios';
+import ProtectedRoute from '../../components/auth/ProtectedRoute';
+import UserManagement from '../../components/admin/UserManagement';
+import UserStats from '../../components/admin/UserStats';
 
-// Dynamic imports for better performance
+// Dynamic imports
 const ChatbotAnalytics = dynamic(() => import('../../components/ChatbotAnalytics'), {
   ssr: false,
-  loading: () => (
-    <Box display="flex" justifyContent="center" p={4}>
-      <CircularProgress />
-    </Box>
-  ),
+  loading: () => <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>,
 });
 
 const PropertyMap = dynamic(() => import('../../components/PropertyMap'), {
   ssr: false,
-  loading: () => (
-    <Box display="flex" justifyContent="center" p={4}>
-      <CircularProgress />
-    </Box>
-  ),
+  loading: () => <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>,
 });
 
+const TabPanel = ({ children, value, index, ...other }) => (
+  <div
+    role="tabpanel"
+    hidden={value !== index}
+    id={`admin-tabpanel-${index}`}
+    aria-labelledby={`admin-tab-${index}`}
+    {...other}
+  >
+    {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+  </div>
+);
+
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user, checkPermission } = useAuth();
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -87,396 +100,328 @@ const AdminDashboard = () => {
   const [propertyAnalytics, setPropertyAnalytics] = useState(null);
   const [userStats, setUserStats] = useState(null);
   const [systemStats, setSystemStats] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [actionType, setActionType] = useState(null);
+  const [activeTab, setActiveTab] = useState(0);
 
-  // Fetch all dashboard data
-  const fetchAllData = useCallback(async () => {
+  // Fetch dashboard data
+  const fetchDashboardData = async () => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const [
-        dashboardResponse,
-        propertyAnalyticsResponse,
-        userStatsResponse,
-        systemStatsResponse
-      ] = await Promise.all([
-        adminAPI.getDashboard(),
-        adminAPI.getPropertyAnalytics(),
-        analyticsAPI.getUserStats(),
-        adminAPI.getSystemStats()
-      ]);
-
-      setDashboardData(dashboardResponse.data);
-      setPropertyAnalytics(propertyAnalyticsResponse.data);
-      setUserStats(userStatsResponse.data);
-      setSystemStats(systemStatsResponse.data);
+      const { data } = await axios.get('/api/admin/dashboard');
+      setDashboardData(data);
     } catch (error) {
-      console.error('Dashboard data fetch error:', error);
-      setError('Failed to fetch dashboard data. Please try again.');
+      console.error('Dashboard fetch error:', error);
+      toast.error('Failed to fetch dashboard data');
+    }
+  };
+
+  // Fetch property analytics
+  const fetchPropertyAnalytics = async () => {
+    try {
+      const { data } = await axios.get('/api/admin/analytics/properties');
+      setPropertyAnalytics(data);
+    } catch (error) {
+      console.error('Property analytics fetch error:', error);
+    }
+  };
+
+  // Fetch user stats
+  const fetchUserStats = async () => {
+    try {
+      const { data } = await axios.get('/api/admin/analytics/users');
+      setUserStats(data);
+    } catch (error) {
+      console.error('User stats fetch error:', error);
+    }
+  };
+
+  // Fetch all data
+  const fetchAllData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await Promise.all([
+        fetchDashboardData(),
+        fetchPropertyAnalytics(),
+        fetchUserStats()
+      ]);
+    } catch (error) {
+      setError('Failed to fetch dashboard data');
       toast.error('Error loading dashboard data');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Debounced refresh function
-  const debouncedRefresh = useMemo(
-    () => debounce(() => {
-      setRefreshKey(prev => prev + 1);
+  // Handle property approval
+  const handlePropertyApproval = async (propertyId, approved) => {
+    try {
+      await axios.put(`/api/admin/properties/${propertyId}/approve`, { approved });
+      toast.success(`Property ${approved ? 'approved' : 'rejected'} successfully`);
       fetchAllData();
-    }, 1000),
-    [fetchAllData]
-  );
+    } catch (error) {
+      toast.error('Failed to update property status');
+    }
+  };
 
-  // Initial data fetch and refresh setup
+  // Handle user actions
+  const handleUserAction = async (userId, action) => {
+    try {
+      await axios.put(`/api/admin/users/${userId}/${action}`);
+      toast.success('User status updated successfully');
+      fetchAllData();
+    } catch (error) {
+      toast.error('Failed to update user status');
+    }
+  };
+
+  // Initial data fetch
   useEffect(() => {
     fetchAllData();
-    
-    // Set up periodic refresh
-    const refreshInterval = setInterval(debouncedRefresh, 300000); // Refresh every 5 minutes
-    
-    return () => {
-      debouncedRefresh.cancel();
-      clearInterval(refreshInterval);
-    };
-  }, [fetchAllData, debouncedRefresh, refreshKey]);
+    const interval = setInterval(fetchAllData, 300000); // Refresh every 5 minutes
+    return () => clearInterval(interval);
+  }, [fetchAllData]);
 
-  // Admin role check
-  useEffect(() => {
-    if (typeof window !== 'undefined' && (!user || user.role !== 'admin')) {
-      router.push('/');
-    }
-  }, [user, router]);
-
-  if (!user || user.role !== 'admin') return null;
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
-
-  const handleRefresh = () => {
-    debouncedRefresh();
-  };
-
-  // Memoized stats data
-  const stats = useMemo(() => [
+  // Stats cards data
+  const statsCards = useMemo(() => [
     {
       title: 'Total Users',
-      value: dashboardData?.stats?.users || '0',
+      value: dashboardData?.stats?.totalUsers || 0,
       icon: <PersonIcon />,
-      change: dashboardData?.stats?.userGrowth || '+0%',
-      positive: (dashboardData?.stats?.userGrowth || '0').startsWith('+'),
+      color: theme.palette.primary.main
     },
     {
       title: 'Active Properties',
-      value: dashboardData?.stats?.properties || '0',
+      value: dashboardData?.stats?.activeProperties || 0,
       icon: <HomeIcon />,
-      change: dashboardData?.stats?.propertyGrowth || '+0%',
-      positive: (dashboardData?.stats?.propertyGrowth || '0').startsWith('+'),
+      color: theme.palette.success.main
     },
     {
-      title: 'Monthly Bookings',
-      value: dashboardData?.stats?.bookings || '0',
-      icon: <CalendarIcon />,
-      change: dashboardData?.stats?.bookingGrowth || '+0%',
-      positive: (dashboardData?.stats?.bookingGrowth || '0').startsWith('+'),
-    },
-  ], [dashboardData]);
+      title: 'Pending Approvals',
+      value: dashboardData?.stats?.pendingApprovals || 0,
+      icon: <WarningIcon />,
+      color: theme.palette.warning.main
+    }
+  ], [dashboardData, theme.palette]);
 
-  const recentUsers = useMemo(() => [
-    { id: 1, name: 'Rahul Ahmed', email: 'rahul@example.com', role: 'Renter', status: 'Active' },
-    { id: 2, name: 'Priya Das', email: 'priya@example.com', role: 'User', status: 'Pending' },
-    { id: 3, name: 'Kamal Khan', email: 'kamal@example.com', role: 'Renter', status: 'Active' },
-  ], []);
-
-  const recentProperties = useMemo(() => [
-    { id: 1, title: 'Luxury Apartment', location: 'Gulshan', owner: 'Ahmed Ali', status: 'Active' },
-    { id: 2, title: 'Family House', location: 'Dhanmondi', owner: 'Sara Khan', status: 'Pending' },
-    { id: 3, title: 'Studio Apartment', location: 'Banani', owner: 'Rahim Mia', status: 'Active' },
-  ], []);
-
-  const renderOverview = () => (
-    <Box>
-      <Grid container spacing={3}>
-        {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
-            <Zoom in={!loading} timeout={500}>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 2 }}>
-                      {stat.icon}
-                    </Avatar>
-                    <Typography variant="h6">{stat.title}</Typography>
-                  </Box>
-                  <Typography variant="h4" component="div">
+  // Render stats cards
+  const renderStatsCards = () => (
+    <Grid container spacing={3}>
+      {statsCards.map((stat, index) => (
+        <Grid item xs={12} sm={4} key={index}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="textSecondary" gutterBottom>
+                    {stat.title}
+                  </Typography>
+                  <Typography variant="h4">
                     {stat.value}
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    {stat.positive ? <ArrowUpwardIcon color="success" /> : <ArrowDownwardIcon color="error" />}
-                    <Typography
-                      variant="body2"
-                      color={stat.positive ? "success.main" : "error.main"}
-                      sx={{ ml: 1 }}
-                    >
-                      {stat.change}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Zoom>
-          </Grid>
-        ))}
-      </Grid>
-
-      <Grid container spacing={3} sx={{ mt: 3 }}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Recent Users</Typography>
-              <List>
-                {recentUsers.map((user) => (
-                  <ListItem
-                    key={user.id}
-                    secondaryAction={
-                      <Chip
-                        label={user.status}
-                        color={user.status === 'Active' ? 'success' : 'warning'}
-                        size="small"
-                      />
-                    }
-                  >
-                    <ListItemAvatar>
-                      <Avatar>{user.name[0]}</Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={user.name}
-                      secondary={`${user.email} • ${user.role}`}
-                    />
-                  </ListItem>
-                ))}
-              </List>
+                </Box>
+                <Avatar style={{ backgroundColor: stat.color }}>
+                  {stat.icon}
+                </Avatar>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Recent Properties</Typography>
-              <List>
-                {recentProperties.map((property) => (
-                  <ListItem
-                    key={property.id}
-                    secondaryAction={
-                      <Chip
-                        label={property.status}
-                        color={property.status === 'Active' ? 'success' : 'warning'}
-                        size="small"
-                      />
-                    }
-                  >
-                    <ListItemAvatar>
-                      <Avatar><HomeIcon /></Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={property.title}
-                      secondary={`${property.location} • ${property.owner}`}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+      ))}
+    </Grid>
   );
 
-  const renderUsersTable = () => (
-    <Box>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6">Users Management</Typography>
-        <Button variant="contained" startIcon={<PersonIcon />}>
-          Add User
-        </Button>
-      </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>User</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
+  // Render property approvals
+  const renderPropertyApprovals = () => (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Property</TableCell>
+            <TableCell>Owner</TableCell>
+            <TableCell>Location</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {dashboardData?.pendingProperties?.map((property) => (
+            <TableRow key={property._id}>
+              <TableCell>{property.title}</TableCell>
+              <TableCell>{property.owner.name}</TableCell>
+              <TableCell>{property.location}</TableCell>
+              <TableCell>
+                <Chip 
+                  label={property.status}
+                  color={property.status === 'pending' ? 'warning' : 'success'}
+                />
+              </TableCell>
+              <TableCell>
+                <IconButton
+                  color="success"
+                  onClick={() => handlePropertyApproval(property._id, true)}
+                >
+                  <CheckIcon />
+                </IconButton>
+                <IconButton
+                  color="error"
+                  onClick={() => handlePropertyApproval(property._id, false)}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody>
-            {recentUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar sx={{ mr: 2 }}>{user.name[0]}</Avatar>
-                    {user.name}
-                  </Box>
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={user.status}
-                    color={user.status === 'Active' ? 'success' : 'warning'}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  <IconButton size="small" color="primary">
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton size="small" color="error">
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 
-  const renderPropertiesTable = () => (
-    <Box>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6">Properties Management</Typography>
-        <Button variant="contained" startIcon={<HomeIcon />}>
-          Add Property
-        </Button>
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
       </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Property</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Owner</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {recentProperties.map((property) => (
-              <TableRow key={property.id}>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar sx={{ mr: 2 }}><HomeIcon /></Avatar>
-                    {property.title}
-                  </Box>
-                </TableCell>
-                <TableCell>{property.location}</TableCell>
-                <TableCell>{property.owner}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={property.status}
-                    color={property.status === 'Active' ? 'success' : 'warning'}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  <IconButton size="small" color="primary">
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton size="small" color="error">
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
-  );
+    );
+  }
+
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
 
   return (
-    <DashboardLayout>
-      <Fade in={true}>
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <ProtectedRoute requiredRole="admin">
+      <DashboardLayout>
+        <Box p={3}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
             <Typography variant="h4" component="h1" gutterBottom>
               Admin Dashboard
             </Typography>
-            <IconButton onClick={handleRefresh} disabled={loading}>
-              <RefreshIcon />
-            </IconButton>
+            <Typography color="text.secondary" gutterBottom>
+              Welcome back, {user?.name}!
+            </Typography>
+            <Button
+              startIcon={<RefreshIcon />}
+              onClick={fetchAllData}
+              variant="contained"
+            >
+              Refresh
+            </Button>
           </Box>
 
-          <Grow in={!loading} timeout={500}>
-            <Grid container spacing={3}>
-              {stats.map((stat, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Zoom in={!loading} timeout={500}>
-                    <Card>
-                      <CardContent>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 2 }}>
-                            {stat.icon}
-                          </Avatar>
-                          <Typography variant="h6">{stat.title}</Typography>
-                        </Box>
-                        <Typography variant="h4" component="div">
-                          {stat.value}
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                          {stat.positive ? <ArrowUpwardIcon color="success" /> : <ArrowDownwardIcon color="error" />}
-                          <Typography
-                            variant="body2"
-                            color={stat.positive ? "success.main" : "error.main"}
-                            sx={{ ml: 1 }}
-                          >
-                            {stat.change}
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Zoom>
-                </Grid>
-              ))}
-            </Grid>
-          </Grow>
+          <Container maxWidth="xl">
+            <Box sx={{ py: 4 }}>
+              <Typography variant="h4" component="h1" gutterBottom>
+                Admin Dashboard
+              </Typography>
+              <Typography color="text.secondary" gutterBottom>
+                Welcome back, {user?.name}!
+              </Typography>
+              <Divider sx={{ my: 3 }} />
 
-          <Zoom in={!loading} timeout={800}>
-            <Box width="100%" mt={3}>
-              <Tabs
-                value={tabValue}
-                onChange={handleTabChange}
-                variant={isMobile ? "scrollable" : "fullWidth"}
-                scrollButtons="auto"
-              >
-                <Tab label="Analytics" />
-                <Tab label="Properties" />
-                <Tab label="Users" />
-                <Tab label="Reports" />
-              </Tabs>
+              <Paper sx={{ width: '100%', mt: 3 }}>
+                <Tabs
+                  value={activeTab}
+                  onChange={handleTabChange}
+                  indicatorColor="primary"
+                  textColor="primary"
+                  variant="scrollable"
+                  scrollButtons="auto"
+                  aria-label="admin dashboard tabs"
+                >
+                  <Tab
+                    icon={<AssessmentIcon />}
+                    iconPosition="start"
+                    label="Overview"
+                  />
+                  <Tab
+                    icon={<PersonIcon />}
+                    iconPosition="start"
+                    label="User Management"
+                  />
+                  <Tab
+                    icon={<HomeIcon />}
+                    iconPosition="start"
+                    label="Property Management"
+                  />
+                </Tabs>
 
-              <Box sx={{ mt: 2 }}>
-                <Suspense fallback={
-                  <Box display="flex" justifyContent="center" p={4}>
-                    <CircularProgress />
-                  </Box>
-                }>
-                  {tabValue === 0 && <ChatbotAnalytics />}
-                  {tabValue === 1 && <PropertyMap />}
-                  {tabValue === 2 && renderUsersTable()}
-                  {tabValue === 3 && renderPropertiesTable()}
-                </Suspense>
-              </Box>
+                <TabPanel value={activeTab} index={0}>
+                  <UserStats />
+                </TabPanel>
+
+                <TabPanel value={activeTab} index={1}>
+                  <UserManagement />
+                </TabPanel>
+
+                <TabPanel value={activeTab} index={2}>
+                  <Typography variant="h6" color="text.secondary" align="center">
+                    Property Management Coming Soon
+                  </Typography>
+                </TabPanel>
+              </Paper>
             </Box>
-          </Zoom>
+          </Container>
+
+          {renderStatsCards()}
+
+          <Box mt={4}>
+            <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+              <Tab label="Property Approvals" />
+              <Tab label="User Management" />
+              <Tab label="Analytics" />
+            </Tabs>
+          </Box>
+
+          <Box mt={2}>
+            {tabValue === 0 && renderPropertyApprovals()}
+            {tabValue === 1 && (
+              <Typography variant="h6">User Management Coming Soon</Typography>
+            )}
+            {tabValue === 2 && (
+              <Suspense fallback={<CircularProgress />}>
+                <ChatbotAnalytics />
+              </Suspense>
+            )}
+          </Box>
         </Box>
-      </Fade>
-    </DashboardLayout>
+
+        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+          <DialogTitle>
+            {actionType === 'delete' ? 'Confirm Delete' : 'Confirm Action'}
+          </DialogTitle>
+          <DialogContent>
+            <Typography>
+              {actionType === 'delete' 
+                ? 'Are you sure you want to delete this item?' 
+                : 'Are you sure you want to perform this action?'}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button 
+              color={actionType === 'delete' ? 'error' : 'primary'}
+              variant="contained"
+              onClick={() => {
+                // Handle confirmation action
+                setDialogOpen(false);
+              }}
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </DashboardLayout>
+    </ProtectedRoute>
   );
 };
 

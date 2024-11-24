@@ -3,6 +3,9 @@ const {
   formatJWTError,
   formatMulterError,
   formatMongoError,
+  formatNetworkError,
+  formatFileError,
+  formatExternalAPIError,
 } = require('../utils/errorHandler');
 
 // Global error handling middleware
@@ -12,6 +15,7 @@ const errorHandler = (err, req, res, next) => {
     name: err.name,
     message: err.message,
     stack: err.stack,
+    code: err.code,
     path: req.path,
     method: req.method,
     body: req.body,
@@ -26,18 +30,27 @@ const errorHandler = (err, req, res, next) => {
   if (err.name === 'ValidationError') {
     error = formatMongooseError(err);
   }
-  if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+  else if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
     error = formatJWTError(err);
   }
-  if (err.name === 'MulterError') {
+  else if (err.name === 'MulterError') {
     error = formatMulterError(err);
   }
-  if (err.name === 'MongoError' || err.name === 'MongoServerError') {
+  else if (err.name === 'MongoError' || err.name === 'MongoServerError') {
     error = formatMongoError(err);
+  }
+  else if (err.code && ['ETIMEDOUT', 'ECONNREFUSED'].includes(err.code)) {
+    error = formatNetworkError(err);
+  }
+  else if (err.code && ['ENOENT', 'EACCES', 'ENOSPC'].includes(err.code)) {
+    error = formatFileError(err);
+  }
+  else if (err.response || err.request) {
+    error = formatExternalAPIError(err);
   }
 
   // Set status code
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  const statusCode = error.statusCode || (res.statusCode === 200 ? 500 : res.statusCode);
   res.status(statusCode);
 
   // Send error response
@@ -45,7 +58,9 @@ const errorHandler = (err, req, res, next) => {
     success: false,
     status: error.status || 'error',
     message: error.message || 'Internal server error',
+    code: error.code,
     ...(error.validationErrors && { errors: error.validationErrors }),
+    ...(error.response && { response: error.response.data }),
     stack: process.env.NODE_ENV === 'production' ? '🥞' : error.stack,
   });
 };

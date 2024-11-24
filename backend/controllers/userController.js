@@ -178,3 +178,109 @@ exports.updateUserRole = async (req, res) => {
     });
   }
 };
+
+// @desc    Update user status
+// @route   PUT /api/users/:id/status
+// @access  Private/Admin
+exports.updateUserStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    if (!status || !['active', 'inactive'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid status (active/inactive) is required'
+      });
+    }
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Prevent deactivating super-admin
+    if (user.role === 'super-admin' && status === 'inactive') {
+      return res.status(403).json({
+        success: false,
+        message: 'Super admin cannot be deactivated'
+      });
+    }
+
+    user.status = status;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      data: user.toPublicProfile()
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get user statistics
+// @route   GET /api/users/stats
+// @access  Private/Admin
+exports.getUserStats = async (req, res) => {
+  try {
+    const stats = await Promise.all([
+      // Total users count
+      User.countDocuments(),
+      // Active users count
+      User.countDocuments({ status: 'active' }),
+      // Users by role
+      User.aggregate([
+        {
+          $group: {
+            _id: '$role',
+            count: { $sum: 1 }
+          }
+        }
+      ]),
+      // Users registered in last 30 days
+      User.countDocuments({
+        createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+      }),
+      // Users by status
+      User.aggregate([
+        {
+          $group: {
+            _id: '$status',
+            count: { $sum: 1 }
+          }
+        }
+      ])
+    ]);
+
+    const [totalUsers, activeUsers, roleStats, newUsers, statusStats] = stats;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        activeUsers,
+        newUsers,
+        roleDistribution: roleStats.reduce((acc, curr) => {
+          acc[curr._id] = curr.count;
+          return acc;
+        }, {}),
+        statusDistribution: statusStats.reduce((acc, curr) => {
+          acc[curr._id] = curr.count;
+          return acc;
+        }, {})
+      }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
