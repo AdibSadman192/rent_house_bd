@@ -14,7 +14,7 @@ The platform serves as both a social network and rental service, making it easie
 - 🎓 Students
 - 👨‍💼 Administrators
 
-## ✨ Core Features
+## ✨ Features
 
 ### 🤝 Social & Community Features
 - 💬 Real-time chat between users
@@ -41,9 +41,21 @@ The platform serves as both a social network and rental service, making it easie
 - 👨‍👩‍👧‍👦 Family units
 - 👨‍🎓 Bachelor accommodations
 
-## 🛠️ Tech Stack
+### 🔒 Security Features
+- 🔐 JWT Authentication
+- 🔑 Password Hashing
+- 🛡️ CORS Protection
+- 🔒 HTTP Security Headers
+- 🚫 Rate Limiting
+- 🧹 XSS Prevention
+- 🔍 Input Validation
+- 📝 Activity Logging
 
-### Backend
+## 🛠️ Development
+
+### Tech Stack
+
+#### Backend
 - ⚙️ Runtime: Node.js (v18+)
 - 🚀 Framework: Express.js (v4.18.2)
 - 📦 Database: MongoDB (v7.5.0)
@@ -55,7 +67,7 @@ The platform serves as both a social network and rental service, making it easie
 - 📝 Logging: Morgan
 - 🛡️ Security: Helmet, XSS-Clean, Express-Rate-Limit
 
-### Frontend
+#### Frontend
 - ⚛️ Framework: Next.js 13 (React 18)
 - 🎨 UI Library: Material-UI (v5.15.10)
 - 📝 Forms: Formik (v2.4.5)
@@ -66,7 +78,7 @@ The platform serves as both a social network and rental service, making it easie
 - 📡 HTTP Client: Axios
 - 🎭 Form Validation: Yup
 
-### DevOps & Tools
+#### DevOps & Tools
 - 📦 Package Manager: npm/yarn
 - 🔄 Version Control: Git
 - 🐳 Containerization: Docker (optional)
@@ -75,15 +87,14 @@ The platform serves as both a social network and rental service, making it easie
 - 📊 Code Quality: ESLint, Prettier
 - 🔄 CI/CD: GitHub Actions
 
-## 🚀 Getting Started
-
 ### Prerequisites
 - Node.js 18 or higher
 - MongoDB 7.x
 - npm or yarn
 - Git
 
-### Environment Setup
+### Getting Started
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/rent_house_bd.git
@@ -101,175 +112,55 @@ cd ../frontend
 npm install
 ```
 
-3. Configure environment variables:
+3. Set up environment variables:
 ```bash
 # Backend (.env)
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/rent_house_bd
+MONGODB_URI=your_mongodb_uri
 JWT_SECRET=your_jwt_secret
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_BUCKET_NAME=your_bucket_name
+AWS_ACCESS_KEY=your_aws_access_key
+AWS_SECRET_KEY=your_aws_secret_key
+DIALOGFLOW_PROJECT_ID=your_dialogflow_project_id
 
 # Frontend (.env.local)
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
-NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
 ```
 
-### Running the Application
-1. Start MongoDB service
-2. Run the backend:
+4. Start development servers:
 ```bash
+# Start backend server
 cd backend
 npm run dev
-```
 
-3. Run the frontend:
-```bash
+# Start frontend server
 cd frontend
 npm run dev
 ```
 
-4. Access the application:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5000
-- API Documentation: http://localhost:5000/api-docs
+### API Documentation
+- Base URL: `http://localhost:5000/api`
+- Documentation: `http://localhost:5000/api-docs`
 
-## 🧪 Testing
-
-### Backend Testing
-```bash
-cd backend
-npm test
-```
-
-### Frontend Testing
-```bash
-cd frontend
-npm test
-```
-
-## 📝 API Documentation
-
-### Core Endpoints
-- Authentication:
-  - POST /api/auth/register
-  - POST /api/auth/login
-  - GET /api/auth/verify
-- Properties:
-  - GET /api/properties
-  - POST /api/properties
-  - GET /api/properties/:id
-  - PUT /api/properties/:id
-- Users:
-  - GET /api/users/profile
-  - PUT /api/users/profile
-- Bookings:
-  - POST /api/bookings
-  - GET /api/bookings/user
-  - PUT /api/bookings/:id
-
-Full API documentation available at `/api-docs` endpoint.
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create your feature branch:
-```bash
-git checkout -b feature/AmazingFeature
-```
-
-3. Follow coding standards:
-- Use ESLint and Prettier
-- Follow the existing code style
-- Write meaningful commit messages
-- Add appropriate comments and documentation
-
-4. Commit your changes:
-```bash
-git commit -m 'Add some AmazingFeature'
-```
-
-5. Push to the branch:
-```bash
-git push origin feature/AmazingFeature
-```
-
-6. Open a Pull Request
-
-### Coding Standards
-- Use TypeScript for new features
-- Follow SOLID principles
+### Development Guidelines
+- Follow ESLint and Prettier configurations
 - Write unit tests for new features
-- Update documentation as needed
-- Use meaningful variable and function names
-- Keep functions small and focused
+- Follow Git branching strategy
+- Document API changes in Swagger
+- Keep dependencies updated
 
-## 🔒 Security Features
-- 🔒 JWT Authentication
-- 🛡️ Rate Limiting
-- 🔐 XSS Protection
-- 🧹 MongoDB Sanitization
-- 📁 Secure File Uploads
-- ✅ Input Validation
-- 👮 Role-based Access Control
-- 🔑 Password Hashing
-- 🛡️ CORS Protection
-- 🔒 HTTP Security Headers
-
-## 🔍 Key Features
-- 📍 Location-based property search
-- 💰 BDT currency support
-- 🎯 Advanced filtering options
-- 📊 Property analytics
-- 📄 Document verification
-- 🔔 Real-time notifications
-- 🏠 Virtual property tours
-- 💹 Dynamic pricing
-- 📈 Performance monitoring
-- 🔍 SEO optimization
-
-## 💡 Unique Selling Points
-- Community-driven approach
-- Focus on Bangladesh rental market
-- Specialized filters for different user types
-- Real-time communication
-- Verified listings
-- Local area expertise
-- Sublet opportunities
-- Trust-based community features
-
-## 📈 Project Structure
-```
-rent_house_bd/
-├── backend/
-│   ├── config/         # Configuration files
-│   ├── controllers/    # Request handlers
-│   ├── middleware/     # Custom middleware
-│   ├── models/        # Database models
-│   ├── routes/        # API routes
-│   ├── services/      # Business logic
-│   ├── utils/         # Utility functions
-│   └── server.js      # Entry point
-├── frontend/
-│   ├── components/    # Reusable components
-│   ├── contexts/      # React contexts
-│   ├── pages/         # Next.js pages
-│   ├── public/        # Static files
-│   ├── styles/        # CSS styles
-│   └── utils/         # Utility functions
-└── docs/             # Documentation
-```
+### Deployment
+- Backend: Node.js server (PM2)
+- Frontend: Vercel/Netlify
+- Database: MongoDB Atlas
+- Storage: AWS S3
+- Monitoring: PM2/Sentry
+- SSL: Let's Encrypt
 
 ## 📄 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👥 Contributors
-- [Me](https://github.com/Adibsadman192) - Initial work
+## 👥 Contributing
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
-## 🙏 Acknowledgments
-- Hat tip to anyone whose code was used
-- Inspiration
-- etc
+## 📞 Support
+For support, email support@renthousebd.com or join our Slack channel.
