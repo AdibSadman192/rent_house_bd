@@ -41,16 +41,21 @@ const Login = () => {
     setLoading(true);
 
     try {
+      console.log('Attempting login with:', formData);
       const { data } = await axios.post('/auth/login', formData);
+      console.log('Login response:', data);
       
       // Store token and user info
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      console.log('Stored auth data in localStorage');
 
       toast.success('Successfully logged in!');
-      router.push('/dashboard');
+
+      console.log('Redirecting to dashboard...');
+      await router.push('/dashboard');
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login error details:', error);
       toast.error(error?.message || 'Failed to login. Please try again.');
     } finally {
       setLoading(false);

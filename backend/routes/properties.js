@@ -18,6 +18,7 @@ const {
 
 // Public routes
 router.get('/radius/:zipcode/:distance', getPropertiesInRadius);
+router.get('/search', getProperties); 
 router.get('/', getProperties);
 router.get('/:id', getProperty);
 

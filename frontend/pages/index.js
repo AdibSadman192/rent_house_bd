@@ -112,7 +112,6 @@ export default function Home() {
   return (
     <Box>
       <Navbar />
-      {/* Hero Section */}
       <Box
         sx={{
           position: 'relative',

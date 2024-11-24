@@ -70,9 +70,13 @@ const Navbar = () => {
   };
 
   const handleLogout = async () => {
-    handleCloseUserMenu();
-    await logout();
-    router.push('/');
+    try {
+      handleCloseUserMenu();
+      await logout();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const handleOpenNotifications = (event) => {
@@ -83,19 +87,37 @@ const Navbar = () => {
     setAnchorElNotifications(null);
   };
 
+  const handleNavigation = (path) => {
+    handleCloseUserMenu();
+    router.push(path);
+  };
+
   const menuItems = [
     { text: 'Home', icon: <HomeIcon />, href: '/' },
+    { text: 'Search', icon: <SearchIcon />, href: '/search' },
     { text: 'Properties', icon: <ApartmentIcon />, href: '/properties' },
     { text: 'Posts', icon: <ArticleIcon />, href: '/posts' },
   ];
 
-  if (user) {
-    menuItems.push(
-      { text: 'Dashboard', icon: <DashboardIcon />, href: '/dashboard' },
-      user.role === 'renter' && { text: 'Add Property', icon: <ApartmentIcon />, href: '/properties/add' },
-      user.role === 'super_admin' && { text: 'Admin Panel', icon: <AdminIcon />, href: '/admin' }
-    );
-  }
+  const userMenuItems = user ? [
+    { text: 'Dashboard', icon: <DashboardIcon />, onClick: () => handleNavigation('/dashboard') },
+    { text: 'Profile', icon: <PersonIcon />, onClick: () => handleNavigation('/profile') },
+    { text: 'Settings', icon: <SettingsIcon />, onClick: () => handleNavigation('/settings') },
+    user.role === 'renter' && { 
+      text: 'Add Property', 
+      icon: <ApartmentIcon />, 
+      onClick: () => handleNavigation('/properties/add')
+    },
+    user.role === 'super_admin' && { 
+      text: 'Admin Panel', 
+      icon: <AdminIcon />, 
+      onClick: () => handleNavigation('/admin')
+    },
+    { text: 'Logout', icon: <LogoutIcon />, onClick: handleLogout }
+  ].filter(Boolean) : [
+    { text: 'Login', icon: <LoginIcon />, onClick: () => handleNavigation('/login') },
+    { text: 'Register', icon: <RegisterIcon />, onClick: () => handleNavigation('/register') }
+  ];
 
   return (
     <AppBar 
@@ -285,55 +307,12 @@ const Navbar = () => {
             transformOrigin={{ horizontal: 'right', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           >
-            {user ? (
-              [
-                <MenuItem key="profile" onClick={() => {
-                  handleCloseUserMenu();
-                  router.push('/profile');
-                }}>
-                  <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>Profile</ListItemText>
-                </MenuItem>,
-                <MenuItem key="dashboard" onClick={() => {
-                  handleCloseUserMenu();
-                  router.push('/dashboard');
-                }}>
-                  <ListItemIcon><DashboardIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>Dashboard</ListItemText>
-                </MenuItem>,
-                user.role === 'super_admin' && (
-                  <MenuItem key="admin" onClick={() => {
-                    handleCloseUserMenu();
-                    router.push('/admin');
-                  }}>
-                    <ListItemIcon><AdminIcon fontSize="small" /></ListItemIcon>
-                    <ListItemText>Admin Panel</ListItemText>
-                  </MenuItem>
-                ),
-                <Divider key="divider" />,
-                <MenuItem key="logout" onClick={handleLogout}>
-                  <ListItemIcon><LogoutIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>Logout</ListItemText>
-                </MenuItem>
-              ]
-            ) : (
-              [
-                <MenuItem key="login" onClick={() => {
-                  handleCloseUserMenu();
-                  router.push('/login');
-                }}>
-                  <ListItemIcon><LoginIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>Login</ListItemText>
-                </MenuItem>,
-                <MenuItem key="register" onClick={() => {
-                  handleCloseUserMenu();
-                  router.push('/register');
-                }}>
-                  <ListItemIcon><RegisterIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>Register</ListItemText>
-                </MenuItem>
-              ]
-            )}
+            {userMenuItems.map((item) => (
+              <MenuItem key={item.text} onClick={item.onClick}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText>{item.text}</ListItemText>
+              </MenuItem>
+            ))}
           </Menu>
 
           <Menu

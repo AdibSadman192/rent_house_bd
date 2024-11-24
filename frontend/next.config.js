@@ -10,7 +10,6 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
   },
-  output: 'export',
   trailingSlash: true,
   // Disable file watching for certain directories
   webpack: (config, { isServer }) => {
@@ -19,6 +18,7 @@ const nextConfig = {
         '**/node_modules/**',
         '**/.git/**',
         '**/.next/**',
+        '**/public/**',
       ],
       aggregateTimeout: 300,
       poll: 1000,

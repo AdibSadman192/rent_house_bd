@@ -13,6 +13,35 @@ exports.getProperties = async (req, res) => {
     const removeFields = ['select', 'sort', 'page', 'limit'];
     removeFields.forEach(param => delete reqQuery[param]);
 
+    // Handle location search
+    if (reqQuery.location) {
+      reqQuery.location = { $regex: reqQuery.location, $options: 'i' };
+    }
+
+    // Handle property type
+    if (reqQuery.type) {
+      reqQuery.propertyType = reqQuery.type;
+      delete reqQuery.type;
+    }
+
+    // Handle price range
+    if (reqQuery.price) {
+      try {
+        reqQuery.price = JSON.parse(reqQuery.price);
+      } catch (e) {
+        delete reqQuery.price;
+      }
+    }
+
+    // Handle bedrooms
+    if (reqQuery.bedrooms) {
+      try {
+        reqQuery.bedrooms = JSON.parse(reqQuery.bedrooms);
+      } catch (e) {
+        delete reqQuery.bedrooms;
+      }
+    }
+
     // Create query string
     let queryStr = JSON.stringify(reqQuery);
 
@@ -30,8 +59,10 @@ exports.getProperties = async (req, res) => {
 
     // Sort
     if (req.query.sort) {
-      const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy);
+      const [field, order] = req.query.sort.split(':');
+      const sortObj = {};
+      sortObj[field] = order === 'desc' ? -1 : 1;
+      query = query.sort(sortObj);
     } else {
       query = query.sort('-createdAt');
     }
@@ -48,7 +79,7 @@ exports.getProperties = async (req, res) => {
     // Populate owner details
     query = query.populate({
       path: 'owner',
-      select: 'firstName lastName email phone'
+      select: 'firstName lastName email phone avatar'
     });
 
     // Execute query
@@ -76,21 +107,12 @@ exports.getProperties = async (req, res) => {
     }));
 
     // Pagination result
-    const pagination = {};
-
-    if (endIndex < total) {
-      pagination.next = {
-        page: page + 1,
-        limit
-      };
-    }
-
-    if (startIndex > 0) {
-      pagination.prev = {
-        page: page - 1,
-        limit
-      };
-    }
+    const pagination = {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit)
+    };
 
     res.status(200).json({
       success: true,
@@ -99,9 +121,10 @@ exports.getProperties = async (req, res) => {
       data: processedProperties
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error in getProperties:', error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      error: 'Server Error'
     });
   }
 };

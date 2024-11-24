@@ -14,7 +14,6 @@ import { toast } from 'react-toastify';
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check for authentication on component mount
@@ -37,7 +36,6 @@ export default function Dashboard() {
         localStorage.removeItem('user');
         router.push('/login');
       }
-      setLoading(false);
     };
 
     checkAuth();
@@ -50,12 +48,8 @@ export default function Dashboard() {
     router.push('/login');
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <Typography>Loading...</Typography>
-      </Box>
-    );
+  if (!user) {
+    return null;
   }
 
   return (
@@ -123,7 +117,7 @@ export default function Dashboard() {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => router.push('/properties/search')}
+                  onClick={() => router.push('/search')}
                   sx={{ mr: 2 }}
                 >
                   Search Properties
