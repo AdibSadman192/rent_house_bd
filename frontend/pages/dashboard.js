@@ -10,8 +10,9 @@ import {
   Button,
 } from '@mui/material';
 import { toast } from 'react-toastify';
+import withAuth from '@/components/auth/withAuth';
 
-export default function Dashboard() {
+export default withAuth(function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState(null);
 
@@ -136,4 +137,4 @@ export default function Dashboard() {
       </Grid>
     </Container>
   );
-}
+});

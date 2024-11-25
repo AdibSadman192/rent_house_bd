@@ -175,174 +175,200 @@ function Layout({ children }) {
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="sticky">
-        <Container maxWidth="xl">
-          <Toolbar disableGutters>
-            {isMobile && (
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="start"
-                onClick={handleDrawerToggle}
-                sx={{ mr: 2 }}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)',
+        backgroundSize: '400% 400%',
+        animation: 'gradient 15s ease infinite',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backdropFilter: 'blur(100px)',
+          WebkitBackdropFilter: 'blur(100px)',
+          zIndex: 0,
+        }
+      }}
+    >
+      <Box
+        component="main"
+        sx={{
+          position: 'relative',
+          zIndex: 1,
+          pt: { xs: 8, md: 9 },
+          minHeight: '100vh',
+        }}
+      >
+        <AppBar position="sticky">
+          <Container maxWidth="xl">
+            <Toolbar disableGutters>
+              {isMobile && (
+                <IconButton
+                  color="inherit"
+                  aria-label="open drawer"
+                  edge="start"
+                  onClick={handleDrawerToggle}
+                  sx={{ mr: 2 }}
+                >
+                  <MenuIcon />
+                </IconButton>
+              )}
+
+              <Typography
+                variant="h6"
+                noWrap
+                component={Link}
+                href="/"
+                passHref
+                sx={{
+                  mr: 2,
+                  fontFamily: 'monospace',
+                  fontWeight: 700,
+                  letterSpacing: '.1rem',
+                  color: 'inherit',
+                  textDecoration: 'none',
+                  flexGrow: { xs: 1, md: 0 },
+                }}
               >
-                <MenuIcon />
-              </IconButton>
-            )}
+                RENT HOUSE BD
+              </Typography>
 
-            <Typography
-              variant="h6"
-              noWrap
-              component={Link}
-              href="/"
-              passHref
-              sx={{
-                mr: 2,
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: '.1rem',
-                color: 'inherit',
-                textDecoration: 'none',
-                flexGrow: { xs: 1, md: 0 },
-              }}
-            >
-              RENT HOUSE BD
-            </Typography>
-
-            {!isMobile && (
-              <Box sx={{ flexGrow: 1, display: 'flex', ml: 4 }}>
-                {navItems.map((item) => (
-                  (!item.auth || (item.auth && user)) && (
-                    <Button
-                      key={item.name}
-                      component={Link}
-                      href={item.path}
-                      passHref
-                      sx={{
-                        my: 2,
-                        color: 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        ...(router.pathname === item.path && {
-                          backgroundColor: 'primary.dark',
-                        }),
-                      }}
-                    >
-                      {item.icon}
-                      {item.name}
-                    </Button>
-                  )
-                ))}
-              </Box>
-            )}
-
-            <Box sx={{ flexGrow: 0 }}>
-              {user ? (
-                <>
-                  <Tooltip title={`${user.name} (${user.role})`}>
-                    <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                      {user.avatar ? (
-                        <Avatar 
-                          alt={user.name} 
-                          src={user.avatar}
-                          sx={{ width: 40, height: 40 }}
-                        />
-                      ) : (
-                        <Avatar 
-                          sx={{ 
-                            bgcolor: getAvatarColor(user.role),
-                            color: 'white',
-                            width: 40,
-                            height: 40
-                          }}
-                        >
-                          {user.name.charAt(0).toUpperCase()}
-                        </Avatar>
-                      )}
-                    </IconButton>
-                  </Tooltip>
-                  <Menu
-                    sx={{ mt: '45px' }}
-                    id="menu-appbar"
-                    anchorEl={anchorElUser}
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
-                    keepMounted
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
-                    open={Boolean(anchorElUser)}
-                    onClose={handleCloseUserMenu}
-                  >
-                    {menuItems.map((item) => (
-                      <MenuItem
+              {!isMobile && (
+                <Box sx={{ flexGrow: 1, display: 'flex', ml: 4 }}>
+                  {navItems.map((item) => (
+                    (!item.auth || (item.auth && user)) && (
+                      <Button
                         key={item.name}
                         component={Link}
                         href={item.path}
                         passHref
-                        onClick={handleCloseUserMenu}
+                        sx={{
+                          my: 2,
+                          color: 'white',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          ...(router.pathname === item.path && {
+                            backgroundColor: 'primary.dark',
+                          }),
+                        }}
                       >
-                        <ListItemIcon>
-                          {item.icon}
-                        </ListItemIcon>
-                        <ListItemText>{item.name}</ListItemText>
-                      </MenuItem>
-                    ))}
-                    <Divider />
-                    <MenuItem onClick={() => {
-                      handleCloseUserMenu();
-                      handleLogout();
-                    }}>
-                      <ListItemIcon>
-                        <Logout fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText>Logout</ListItemText>
-                    </MenuItem>
-                  </Menu>
-                </>
-              ) : (
-                <Button
-                  component={Link}
-                  href="/login"
-                  passHref
-                  color="inherit"
-                  startIcon={<Login />}
-                >
-                  Login
-                </Button>
+                        {item.icon}
+                        {item.name}
+                      </Button>
+                    )
+                  ))}
+                </Box>
               )}
-            </Box>
-          </Toolbar>
-        </Container>
-      </AppBar>
 
-      <Drawer
-        variant="temporary"
-        anchor="left"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
-        }}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
-        }}
-      >
-        {drawer}
-      </Drawer>
+              <Box sx={{ flexGrow: 0 }}>
+                {user ? (
+                  <>
+                    <Tooltip title={`${user.name} (${user.role})`}>
+                      <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                        {user.avatar ? (
+                          <Avatar 
+                            alt={user.name} 
+                            src={user.avatar}
+                            sx={{ width: 40, height: 40 }}
+                          />
+                        ) : (
+                          <Avatar 
+                            sx={{ 
+                              bgcolor: getAvatarColor(user.role),
+                              color: 'white',
+                              width: 40,
+                              height: 40
+                            }}
+                          >
+                            {user.name.charAt(0).toUpperCase()}
+                          </Avatar>
+                        )}
+                      </IconButton>
+                    </Tooltip>
+                    <Menu
+                      sx={{ mt: '45px' }}
+                      id="menu-appbar"
+                      anchorEl={anchorElUser}
+                      anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      keepMounted
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      open={Boolean(anchorElUser)}
+                      onClose={handleCloseUserMenu}
+                    >
+                      {menuItems.map((item) => (
+                        <MenuItem
+                          key={item.name}
+                          component={Link}
+                          href={item.path}
+                          passHref
+                          onClick={handleCloseUserMenu}
+                        >
+                          <ListItemIcon>
+                            {item.icon}
+                          </ListItemIcon>
+                          <ListItemText>{item.name}</ListItemText>
+                        </MenuItem>
+                      ))}
+                      <Divider />
+                      <MenuItem onClick={() => {
+                        handleCloseUserMenu();
+                        handleLogout();
+                      }}>
+                        <ListItemIcon>
+                          <Logout fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>Logout</ListItemText>
+                      </MenuItem>
+                    </Menu>
+                  </>
+                ) : (
+                  <Button
+                    component={Link}
+                    href="/login"
+                    passHref
+                    color="inherit"
+                    startIcon={<Login />}
+                  >
+                    Login
+                  </Button>
+                )}
+              </Box>
+            </Toolbar>
+          </Container>
+        </AppBar>
 
-      <Box component="main" sx={{ flexGrow: 1, py: 3 }}>
+        <Drawer
+          variant="temporary"
+          anchor="left"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
+          }}
+        >
+          {drawer}
+        </Drawer>
+
         <Container maxWidth="lg">
           {children}
         </Container>
       </Box>
-
       <Box
         component="footer"
         sx={{

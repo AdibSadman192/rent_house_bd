@@ -1,94 +1,20 @@
-import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  CircularProgress,
-  Grid,
-  Card,
-  CardContent,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  Avatar,
-  Button,
-  IconButton,
-  Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  LinearProgress,
-  Fade,
-  Grow,
-  Zoom,
-  Tab,
-  Tabs,
-  useTheme,
-  useMediaQuery,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Container,
-  Divider
-} from '@mui/material';
-import {
-  Person as PersonIcon,
-  Home as HomeIcon,
-  CalendarToday as CalendarIcon,
-  Message as MessageIcon,
-  Settings as SettingsIcon,
-  TrendingUp as TrendingUpIcon,
-  ArrowUpward as ArrowUpwardIcon,
-  ArrowDownward as ArrowDownwardIcon,
-  Check as CheckIcon,
-  Close as CloseIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Refresh as RefreshIcon,
-  Warning as WarningIcon,
-  Assessment as AssessmentIcon
-} from '@mui/icons-material';
-import dynamic from 'next/dynamic';
-import DashboardLayout from '../../components/dashboard/DashboardLayout';
-import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { Box, Container, Grid, Typography, useMediaQuery } from '@mui/material';
+import { useAuth } from '@/hooks/useAuth';
+import { theme } from '@/theme';
+import AdminLayout from '@/components/admin/layout/AdminLayout';
+import PropertyMap from '@/components/PropertyMap';
 import { debounce } from 'lodash';
-import axios from '../../utils/axios';
-import ProtectedRoute from '../../components/auth/ProtectedRoute';
-import UserManagement from '../../components/admin/UserManagement';
-import UserStats from '../../components/admin/UserStats';
-
-// Dynamic imports
-const ChatbotAnalytics = dynamic(() => import('../../components/ChatbotAnalytics'), {
-  ssr: false,
-  loading: () => <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>,
-});
-
-const PropertyMap = dynamic(() => import('../../components/PropertyMap'), {
-  ssr: false,
-  loading: () => <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>,
-});
-
-const TabPanel = ({ children, value, index, ...other }) => (
-  <div
-    role="tabpanel"
-    hidden={value !== index}
-    id={`admin-tabpanel-${index}`}
-    aria-labelledby={`admin-tab-${index}`}
-    {...other}
-  >
-    {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-  </div>
-);
+import axios from '@/utils/axios';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import UserManagement from '@/components/admin/UserManagement';
+import UserStats from '@/components/admin/UserStats';
+import withAuth from '@/components/auth/withAuth';
 
 const AdminDashboard = () => {
   const { user, checkPermission } = useAuth();
   const router = useRouter();
-  const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   // State management
@@ -112,7 +38,7 @@ const AdminDashboard = () => {
       setDashboardData(data);
     } catch (error) {
       console.error('Dashboard fetch error:', error);
-      toast.error('Failed to fetch dashboard data');
+      // toast.error('Failed to fetch dashboard data');
     }
   };
 
@@ -137,7 +63,7 @@ const AdminDashboard = () => {
   };
 
   // Fetch all data
-  const fetchAllData = useCallback(async () => {
+  const fetchAllData = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -148,20 +74,20 @@ const AdminDashboard = () => {
       ]);
     } catch (error) {
       setError('Failed to fetch dashboard data');
-      toast.error('Error loading dashboard data');
+      // toast.error('Error loading dashboard data');
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   // Handle property approval
   const handlePropertyApproval = async (propertyId, approved) => {
     try {
       await axios.put(`/api/admin/properties/${propertyId}/approve`, { approved });
-      toast.success(`Property ${approved ? 'approved' : 'rejected'} successfully`);
+      // toast.success(`Property ${approved ? 'approved' : 'rejected'} successfully`);
       fetchAllData();
     } catch (error) {
-      toast.error('Failed to update property status');
+      // toast.error('Failed to update property status');
     }
   };
 
@@ -169,10 +95,10 @@ const AdminDashboard = () => {
   const handleUserAction = async (userId, action) => {
     try {
       await axios.put(`/api/admin/users/${userId}/${action}`);
-      toast.success('User status updated successfully');
+      // toast.success('User status updated successfully');
       fetchAllData();
     } catch (error) {
-      toast.error('Failed to update user status');
+      // toast.error('Failed to update user status');
     }
   };
 
@@ -181,10 +107,10 @@ const AdminDashboard = () => {
     fetchAllData();
     const interval = setInterval(fetchAllData, 300000); // Refresh every 5 minutes
     return () => clearInterval(interval);
-  }, [fetchAllData]);
+  }, []);
 
   // Stats cards data
-  const statsCards = useMemo(() => [
+  const statsCards = [
     {
       title: 'Total Users',
       value: dashboardData?.stats?.totalUsers || 0,
@@ -203,7 +129,7 @@ const AdminDashboard = () => {
       icon: <WarningIcon />,
       color: theme.palette.warning.main
     }
-  ], [dashboardData, theme.palette]);
+  ];
 
   // Render stats cards
   const renderStatsCards = () => (
@@ -299,130 +225,128 @@ const AdminDashboard = () => {
   }
 
   return (
-    <ProtectedRoute requiredRole="admin">
-      <DashboardLayout>
-        <Box p={3}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+    <AdminLayout>
+      <Box p={3}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Admin Dashboard
+          </Typography>
+          <Typography color="text.secondary" gutterBottom>
+            Welcome back, {user?.name}!
+          </Typography>
+          <Button
+            startIcon={<RefreshIcon />}
+            onClick={fetchAllData}
+            variant="contained"
+          >
+            Refresh
+          </Button>
+        </Box>
+
+        <Container maxWidth="xl">
+          <Box sx={{ py: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom>
               Admin Dashboard
             </Typography>
             <Typography color="text.secondary" gutterBottom>
               Welcome back, {user?.name}!
             </Typography>
-            <Button
-              startIcon={<RefreshIcon />}
-              onClick={fetchAllData}
-              variant="contained"
-            >
-              Refresh
-            </Button>
+            <Divider sx={{ my: 3 }} />
+
+            <Paper sx={{ width: '100%', mt: 3 }}>
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                indicatorColor="primary"
+                textColor="primary"
+                variant="scrollable"
+                scrollButtons="auto"
+                aria-label="admin dashboard tabs"
+              >
+                <Tab
+                  icon={<AssessmentIcon />}
+                  iconPosition="start"
+                  label="Overview"
+                />
+                <Tab
+                  icon={<PersonIcon />}
+                  iconPosition="start"
+                  label="User Management"
+                />
+                <Tab
+                  icon={<HomeIcon />}
+                  iconPosition="start"
+                  label="Property Management"
+                />
+              </Tabs>
+
+              <TabPanel value={activeTab} index={0}>
+                <UserStats />
+              </TabPanel>
+
+              <TabPanel value={activeTab} index={1}>
+                <UserManagement />
+              </TabPanel>
+
+              <TabPanel value={activeTab} index={2}>
+                <Typography variant="h6" color="text.secondary" align="center">
+                  Property Management Coming Soon
+                </Typography>
+              </TabPanel>
+            </Paper>
           </Box>
+        </Container>
 
-          <Container maxWidth="xl">
-            <Box sx={{ py: 4 }}>
-              <Typography variant="h4" component="h1" gutterBottom>
-                Admin Dashboard
-              </Typography>
-              <Typography color="text.secondary" gutterBottom>
-                Welcome back, {user?.name}!
-              </Typography>
-              <Divider sx={{ my: 3 }} />
+        {renderStatsCards()}
 
-              <Paper sx={{ width: '100%', mt: 3 }}>
-                <Tabs
-                  value={activeTab}
-                  onChange={handleTabChange}
-                  indicatorColor="primary"
-                  textColor="primary"
-                  variant="scrollable"
-                  scrollButtons="auto"
-                  aria-label="admin dashboard tabs"
-                >
-                  <Tab
-                    icon={<AssessmentIcon />}
-                    iconPosition="start"
-                    label="Overview"
-                  />
-                  <Tab
-                    icon={<PersonIcon />}
-                    iconPosition="start"
-                    label="User Management"
-                  />
-                  <Tab
-                    icon={<HomeIcon />}
-                    iconPosition="start"
-                    label="Property Management"
-                  />
-                </Tabs>
-
-                <TabPanel value={activeTab} index={0}>
-                  <UserStats />
-                </TabPanel>
-
-                <TabPanel value={activeTab} index={1}>
-                  <UserManagement />
-                </TabPanel>
-
-                <TabPanel value={activeTab} index={2}>
-                  <Typography variant="h6" color="text.secondary" align="center">
-                    Property Management Coming Soon
-                  </Typography>
-                </TabPanel>
-              </Paper>
-            </Box>
-          </Container>
-
-          {renderStatsCards()}
-
-          <Box mt={4}>
-            <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
-              <Tab label="Property Approvals" />
-              <Tab label="User Management" />
-              <Tab label="Analytics" />
-            </Tabs>
-          </Box>
-
-          <Box mt={2}>
-            {tabValue === 0 && renderPropertyApprovals()}
-            {tabValue === 1 && (
-              <Typography variant="h6">User Management Coming Soon</Typography>
-            )}
-            {tabValue === 2 && (
-              <Suspense fallback={<CircularProgress />}>
-                <ChatbotAnalytics />
-              </Suspense>
-            )}
-          </Box>
+        <Box mt={4}>
+          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+            <Tab label="Property Approvals" />
+            <Tab label="User Management" />
+            <Tab label="Analytics" />
+          </Tabs>
         </Box>
 
-        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-          <DialogTitle>
-            {actionType === 'delete' ? 'Confirm Delete' : 'Confirm Action'}
-          </DialogTitle>
-          <DialogContent>
-            <Typography>
-              {actionType === 'delete' 
-                ? 'Are you sure you want to delete this item?' 
-                : 'Are you sure you want to perform this action?'}
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button 
-              color={actionType === 'delete' ? 'error' : 'primary'}
-              variant="contained"
-              onClick={() => {
-                // Handle confirmation action
-                setDialogOpen(false);
-              }}
-            >
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </DashboardLayout>
-    </ProtectedRoute>
+        <Box mt={2}>
+          {tabValue === 0 && renderPropertyApprovals()}
+          {tabValue === 1 && (
+            <Typography variant="h6">User Management Coming Soon</Typography>
+          )}
+          {tabValue === 2 && (
+            <Suspense fallback={<CircularProgress />}>
+              <ChatbotAnalytics />
+            </Suspense>
+          )}
+        </Box>
+      </Box>
+
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>
+          {actionType === 'delete' ? 'Confirm Delete' : 'Confirm Action'}
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            {actionType === 'delete' 
+              ? 'Are you sure you want to delete this item?' 
+              : 'Are you sure you want to perform this action?'}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+          <Button 
+            color={actionType === 'delete' ? 'error' : 'primary'}
+            variant="contained"
+            onClick={() => {
+              // Handle confirmation action
+              setDialogOpen(false);
+            }}
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </AdminLayout>
   );
 };
 
-export default AdminDashboard;
+export default withAuth(AdminDashboard, { requiredRole: 'admin' });

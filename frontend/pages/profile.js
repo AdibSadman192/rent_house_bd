@@ -25,6 +25,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
+import withAuth from '@/components/auth/withAuth';
 
 const Profile = () => {
   const { user, updateProfile, isAuthenticated } = useAuth();
@@ -294,4 +295,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default withAuth(Profile);

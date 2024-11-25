@@ -1,109 +1,86 @@
-class WebSocketService {
+import { io } from 'socket.io-client';
+
+class WebSocketManager {
   constructor() {
-    this.ws = null;
-    this.subscribers = new Map();
-    this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
-    this.reconnectTimeout = 1000; // Start with 1 second
+    this.socket = null;
+    this.listeners = new Map();
+    this.connected = false;
+    this.pendingMessages = new Set();
   }
 
-  connect() {
-    if (this.ws?.readyState === WebSocket.OPEN) return;
-
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:5000/ws';
-    this.ws = new WebSocket(wsUrl);
-
-    this.ws.onopen = () => {
-      console.log('WebSocket connected');
-      this.reconnectAttempts = 0;
-      this.reconnectTimeout = 1000;
-      
-      // Authenticate the connection
-      const token = localStorage.getItem('token');
-      if (token) {
-        this.send('authenticate', { token });
-      }
-    };
-
-    this.ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        this.handleMessage(data);
-      } catch (error) {
-        console.error('WebSocket message parse error:', error);
-      }
-    };
-
-    this.ws.onclose = () => {
-      console.log('WebSocket disconnected');
-      this.handleReconnect();
-    };
-
-    this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-  }
-
-  handleReconnect() {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log('Max reconnection attempts reached');
+  connect(token) {
+    if (this.socket) {
       return;
     }
 
-    setTimeout(() => {
-      console.log(`Attempting to reconnect... (${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
-      this.reconnectAttempts++;
-      this.reconnectTimeout *= 2; // Exponential backoff
-      this.connect();
-    }, this.reconnectTimeout);
-  }
-
-  subscribe(event, callback) {
-    if (!this.subscribers.has(event)) {
-      this.subscribers.set(event, new Set());
-    }
-    this.subscribers.get(event).add(callback);
-
-    // Return unsubscribe function
-    return () => {
-      const callbacks = this.subscribers.get(event);
-      if (callbacks) {
-        callbacks.delete(callback);
-        if (callbacks.size === 0) {
-          this.subscribers.delete(event);
-        }
+    this.socket = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:5000', {
+      auth: {
+        token
       }
-    };
-  }
+    });
 
-  handleMessage(data) {
-    const { type, payload } = data;
-    const callbacks = this.subscribers.get(type);
-    if (callbacks) {
-      callbacks.forEach(callback => callback(payload));
-    }
-  }
+    this.socket.on('connect', () => {
+      this.connected = true;
+      this.processPendingMessages();
+    });
 
-  send(type, payload) {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type, payload }));
-    } else {
-      console.warn('WebSocket is not connected');
-    }
+    this.socket.on('disconnect', () => {
+      this.connected = false;
+    });
+
+    this.socket.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
   }
 
   disconnect() {
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+      this.connected = false;
     }
+  }
+
+  on(event, callback) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, new Set());
+    }
+    this.listeners.get(event).add(callback);
+
+    if (this.socket) {
+      this.socket.on(event, callback);
+    }
+  }
+
+  off(event, callback) {
+    if (this.listeners.has(event)) {
+      this.listeners.get(event).delete(callback);
+    }
+
+    if (this.socket) {
+      this.socket.off(event, callback);
+    }
+  }
+
+  emit(event, data) {
+    if (!this.connected) {
+      this.pendingMessages.add({ event, data });
+      return;
+    }
+
+    this.socket.emit(event, data);
+  }
+
+  processPendingMessages() {
+    for (const message of this.pendingMessages) {
+      this.socket.emit(message.event, message.data);
+    }
+    this.pendingMessages.clear();
   }
 }
 
-// Create a singleton instance
-const wsService = new WebSocketService();
+const wsManager = new WebSocketManager();
 
-// Event types
 export const WS_EVENTS = {
   PROPERTY_UPDATED: 'property_updated',
   BOOKING_CREATED: 'booking_created',
@@ -114,4 +91,4 @@ export const WS_EVENTS = {
   SYSTEM_ALERT: 'system_alert'
 };
 
-export default wsService;
+export default wsManager;

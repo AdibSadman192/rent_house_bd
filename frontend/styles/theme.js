@@ -1,42 +1,34 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, alpha } from '@mui/material/styles';
+
+// Custom mixins for glass-morphism effects
+const glassEffect = {
+  background: 'rgba(255, 255, 255, 0.7)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  borderRadius: '16px',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+};
 
 const theme = createTheme({
   palette: {
+    mode: 'light',
     primary: {
-      main: '#2196F3', // Blue
+      main: '#2196F3',
       light: '#64B5F6',
       dark: '#1976D2',
       contrastText: '#fff',
     },
     secondary: {
-      main: '#FF4081', // Pink
+      main: '#FF4081',
       light: '#FF80AB',
       dark: '#F50057',
       contrastText: '#fff',
     },
-    success: {
-      main: '#4CAF50',
-      light: '#81C784',
-      dark: '#388E3C',
-    },
-    error: {
-      main: '#F44336',
-      light: '#E57373',
-      dark: '#D32F2F',
-    },
-    warning: {
-      main: '#FFC107',
-      light: '#FFD54F',
-      dark: '#FFA000',
-    },
-    info: {
-      main: '#2196F3',
-      light: '#64B5F6',
-      dark: '#1976D2',
-    },
     background: {
-      default: '#F5F5F5',
-      paper: '#FFFFFF',
+      default: 'rgba(245, 247, 251, 0.85)',
+      paper: 'rgba(255, 255, 255, 0.85)',
+      glass: 'rgba(255, 255, 255, 0.65)',
     },
     text: {
       primary: '#212121',
@@ -57,71 +49,106 @@ const theme = createTheme({
       fontSize: '2.5rem',
       fontWeight: 700,
       marginBottom: '1rem',
+      letterSpacing: '-0.01562em',
     },
     h2: {
       fontSize: '2rem',
       fontWeight: 600,
       marginBottom: '0.875rem',
+      letterSpacing: '-0.00833em',
     },
     h3: {
       fontSize: '1.75rem',
       fontWeight: 600,
       marginBottom: '0.75rem',
+      letterSpacing: '0em',
     },
     h4: {
       fontSize: '1.5rem',
       fontWeight: 600,
       marginBottom: '0.625rem',
+      letterSpacing: '0.00735em',
     },
     h5: {
       fontSize: '1.25rem',
       fontWeight: 600,
       marginBottom: '0.5rem',
+      letterSpacing: '0em',
     },
     h6: {
       fontSize: '1rem',
       fontWeight: 600,
       marginBottom: '0.375rem',
+      letterSpacing: '0.0075em',
     },
-    subtitle1: {
-      fontSize: '1rem',
-      fontWeight: 400,
-      lineHeight: 1.75,
-    },
-    subtitle2: {
-      fontSize: '0.875rem',
-      fontWeight: 500,
-      lineHeight: 1.57,
-    },
-    body1: {
-      fontSize: '1rem',
-      lineHeight: 1.5,
-    },
-    body2: {
-      fontSize: '0.875rem',
-      lineHeight: 1.43,
-    },
-    button: {
-      textTransform: 'none',
-      fontWeight: 500,
-    },
-  },
-  shape: {
-    borderRadius: 8,
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundImage: 'linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%)',
+          minHeight: '100vh',
+        },
+      },
+    },
+    MuiPaper: {
+      defaultProps: {
+        elevation: 0,
+      },
+      styleOverrides: {
+        root: {
+          ...glassEffect,
+          backgroundImage: 'none',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          ...glassEffect,
+          transition: 'transform 0.3s ease-in-out',
+          '&:hover': {
+            transform: 'translateY(-5px)',
+          },
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          background: 'rgba(255, 255, 255, 0.7)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: '8px',
           textTransform: 'none',
           fontWeight: 500,
-          padding: '8px 16px',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-1px)',
+          },
         },
         contained: {
-          boxShadow: 'none',
+          ...glassEffect,
+          background: alpha('#2196F3', 0.8),
           '&:hover': {
-            boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
+            background: alpha('#2196F3', 0.9),
+            transform: 'translateY(-1px)',
+          },
+        },
+        outlined: {
+          ...glassEffect,
+          background: 'rgba(255, 255, 255, 0.1)',
+          '&:hover': {
+            background: 'rgba(255, 255, 255, 0.2)',
+            transform: 'translateY(-1px)',
           },
         },
       },
@@ -130,25 +157,48 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 8,
+            ...glassEffect,
+            background: 'rgba(255, 255, 255, 0.1)',
+            '& fieldset': {
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+            },
+            '&:hover fieldset': {
+              borderColor: 'rgba(255, 255, 255, 0.5)',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#2196F3',
+            },
           },
         },
       },
     },
-    MuiCard: {
+    MuiMenu: {
       styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: '0px 4px 12px rgba(0,0,0,0.05)',
+        paper: {
+          ...glassEffect,
         },
       },
     },
-    MuiAppBar: {
+    MuiDrawer: {
       styleOverrides: {
-        root: {
-          backgroundColor: '#fff',
-          color: '#212121',
-          boxShadow: '0px 1px 4px rgba(0,0,0,0.05)',
+        paper: {
+          ...glassEffect,
+          borderRight: '1px solid rgba(255, 255, 255, 0.3)',
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          ...glassEffect,
+        },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          ...glassEffect,
+          background: 'rgba(0, 0, 0, 0.7)',
         },
       },
     },

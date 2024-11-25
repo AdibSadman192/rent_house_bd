@@ -29,6 +29,7 @@ import {
   Home as HomeIcon,
   Badge as BadgeIcon,
 } from '@mui/icons-material';
+import withAuth from '@/components/auth/withAuth';
 
 const Register = () => {
   const router = useRouter();
@@ -299,4 +300,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default withAuth(Register, { requireAuth: false });

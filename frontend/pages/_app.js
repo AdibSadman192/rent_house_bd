@@ -7,17 +7,13 @@ import { AuthProvider } from '../contexts/AuthContext';
 import Layout from '../components/Layout';
 
 function MyApp({ Component, pageProps }) {
-  // Check if the Component needs a layout
-  const getLayout = Component.getLayout || ((page) => {
-    // If the component has auth=false, don't wrap it in Layout
-    return Component.auth === false ? page : <Layout>{page}</Layout>;
-  });
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
-        {getLayout(<Component {...pageProps} />)}
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
         <ToastContainer
           position="top-right"
           autoClose={5000}

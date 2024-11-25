@@ -1,24 +1,19 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import axios from '@/lib/axios';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import axios from '../lib/axios';
 
 const AuthContext = createContext({});
-
-// Routes that don't require authentication
-const PUBLIC_ROUTES = ['/login', '/register', '/', '/about', '/contact'];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
   const router = useRouter();
 
-  // Check authentication status on mount
   useEffect(() => {
-    checkAuth();
+    checkUser();
   }, []);
 
-  const checkAuth = async () => {
+  const checkUser = async () => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
@@ -30,7 +25,6 @@ export function AuthProvider({ children }) {
       setUser(null);
     } finally {
       setLoading(false);
-      setInitialized(true);
     }
   };
 
@@ -79,26 +73,20 @@ export function AuthProvider({ children }) {
     return roles[user.role] >= roles[requiredRole];
   };
 
-  // Protect routes
-  useEffect(() => {
-    if (!initialized) return;
-
-    const path = router.pathname;
-    if (!user && !PUBLIC_ROUTES.includes(path)) {
-      router.push(`/login?redirect=${path}`);
-    }
-  }, [initialized, user, router.pathname]);
-
-  const value = {
-    user,
-    loading,
-    login,
-    register,
-    logout,
-    checkPermission
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        checkPermission
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export const useAuth = () => {

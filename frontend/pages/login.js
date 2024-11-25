@@ -1,185 +1,197 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import axios from '../utils/axios';
-import { toast } from 'react-toastify';
 import {
   Box,
-  Button,
-  Container,
-  TextField,
   Typography,
-  Paper,
-  Grid,
-  IconButton,
   InputAdornment,
+  IconButton,
+  Alert,
   CircularProgress,
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
-  Email as EmailIcon,
-  Lock as LockIcon,
+  Login as LoginIcon,
+  Email,
+  Lock,
 } from '@mui/icons-material';
-import Image from 'next/image';
+import { useAuth } from '../contexts/AuthContext';
+import PageContainer from '../components/PageContainer';
+import GlassButton from '../components/GlassButton';
+import GlassInput from '../components/GlassInput';
 
-const Login = () => {
+export default function Login() {
   const router = useRouter();
+  const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
     try {
-      console.log('Attempting login with:', formData);
-      const { data } = await axios.post('/auth/login', formData);
-      console.log('Login response:', data);
-      
-      // Store token and user info
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      console.log('Stored auth data in localStorage');
-
-      toast.success('Successfully logged in!');
-
-      console.log('Redirecting to dashboard...');
-      await router.push('/dashboard');
-    } catch (error) {
-      console.error('Login error details:', error);
-      toast.error(error?.message || 'Failed to login. Please try again.');
+      setError('');
+      setLoading(true);
+      await login(formData.email, formData.password);
+      router.push('/');
+    } catch (err) {
+      setError('Failed to login. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container component="main" maxWidth="lg">
+    <PageContainer maxWidth="sm">
       <Box
+        component="form"
+        onSubmit={handleSubmit}
         sx={{
-          marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          gap: 3,
+          p: { xs: 2, sm: 3 },
         }}
       >
-        <Grid container spacing={4} alignItems="center">
-          {/* Left side - Login Form */}
-          <Grid item xs={12} md={6}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 4,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
+        <Box sx={{ textAlign: 'center', mb: 2 }}>
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 1,
+            }}
+          >
+            Welcome Back
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Sign in to continue to Rent House BD
+          </Typography>
+        </Box>
+
+        {error && (
+          <Alert
+            severity="error"
+            sx={{
+              background: 'rgba(211, 47, 47, 0.1)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(211, 47, 47, 0.3)',
+            }}
+          >
+            {error}
+          </Alert>
+        )}
+
+        <GlassInput
+          required
+          fullWidth
+          label="Email Address"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Email />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        <GlassInput
+          required
+          fullWidth
+          label="Password"
+          name="password"
+          type={showPassword ? 'text' : 'password'}
+          value={formData.password}
+          onChange={handleChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Lock />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                  sx={{
+                    color: 'text.secondary',
+                    '&:hover': {
+                      color: 'primary.main',
+                    },
+                  }}
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        <GlassButton
+          type="submit"
+          fullWidth
+          variant="contained"
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : <LoginIcon />}
+          sx={{ mt: 2 }}
+        >
+          {loading ? 'Signing in...' : 'Sign In'}
+        </GlassButton>
+
+        <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Don't have an account?{' '}
+            <Link
+              href="/register"
+              style={{
+                color: '#2196F3',
+                textDecoration: 'none',
+                fontWeight: 500,
+                position: 'relative',
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: -2,
+                  left: 0,
+                  width: '100%',
+                  height: '2px',
+                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  transform: 'scaleX(0)',
+                  transformOrigin: 'right',
+                  transition: 'transform 0.3s ease-in-out',
+                },
+                '&:hover::after': {
+                  transform: 'scaleX(1)',
+                  transformOrigin: 'left',
+                },
               }}
             >
-              <Typography component="h1" variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
-                Welcome Back!
-              </Typography>
-              
-              <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
-                  autoFocus
-                  value={formData.email}
-                  onChange={handleChange}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EmailIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  autoComplete="current-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LockIcon />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2, py: 1.5 }}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    'Sign In'
-                  )}
-                </Button>
-                <Grid container justifyContent="flex-end">
-                  <Grid item>
-                    <Link href="/register" passHref>
-                      <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }}>
-                        {"Don't have an account? Sign Up"}
-                      </Typography>
-                    </Link>
-                  </Grid>
-                </Grid>
-              </Box>
-            </Paper>
-          </Grid>
-
-          {/* Right side - Illustration */}
-          <Grid item xs={12} md={6} sx={{ display: { xs: 'none', md: 'block' } }}>
-            <Box sx={{ position: 'relative', width: '100%', height: '500px' }}>
-              <Image
-                src="https://cdni.iconscout.com/illustration/premium/thumb/login-page-4468581-3783954.png"
-                alt="Login illustration"
-                layout="fill"
-                objectFit="contain"
-                priority
-              />
-            </Box>
-          </Grid>
-        </Grid>
+              Sign up here
+            </Link>
+          </Typography>
+        </Box>
       </Box>
-    </Container>
+    </PageContainer>
   );
-};
-
-export default Login;
+}

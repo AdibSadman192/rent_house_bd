@@ -51,6 +51,68 @@ The platform serves as both a social network and rental service, making it easie
 - 🔍 Input Validation
 - 📝 Activity Logging
 
+## 🗺️ Project Roadmap
+
+### Phase 1: Foundation (Current)
+- [x] Project setup and architecture
+- [x] Basic UI components with glass-morphism design
+- [x] Authentication system
+- [ ] Property listing core features
+- [ ] Search and filter functionality
+
+### Phase 2: Enhanced Features (Q1 2025)
+- [ ] Advanced property search with map integration
+- [ ] Real-time chat between users and property owners
+- [ ] Virtual tour integration
+- [ ] Review and rating system
+- [ ] Payment integration
+
+### Phase 3: Advanced Features (Q2 2025)
+- [ ] AI-powered property recommendations
+- [ ] Automated rental agreement generation
+- [ ] Mobile app development
+- [ ] Analytics dashboard for property owners
+- [ ] Multi-language support
+
+### Phase 4: Scaling & Optimization (Q3 2025)
+- [ ] Performance optimization
+- [ ] SEO enhancement
+- [ ] Advanced analytics
+- [ ] Market analysis tools
+- [ ] API marketplace for third-party integrations
+
+## 📊 Current Project Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Authentication | ✅ Working | Email and social login implemented |
+| User Profiles | ✅ Working | Basic profile management available |
+| Property Listing | ⚠️ Partial | Basic listing without advanced features |
+| Search System | ⚠️ Partial | Basic search implemented, advanced filters pending |
+| Glass-morphism UI | ✅ Working | Complete component library with modern design |
+| Responsive Design | ✅ Working | Fully responsive across all devices |
+| Chat System | ❌ Pending | Planned for Phase 2 |
+| Payment System | ❌ Pending | Planned for Phase 2 |
+| Admin Dashboard | ⚠️ Partial | Basic management features available |
+| Email Notifications | ✅ Working | Transactional emails implemented |
+| Map Integration | ❌ Pending | Planned for Phase 2 |
+| Image Upload | ✅ Working | With optimization and CDN delivery |
+| Property Analytics | ❌ Pending | Planned for Phase 3 |
+
+## 🎯 Current Sprint Focus
+- Enhancing property search functionality
+- Implementing advanced filters
+- Optimizing image loading and caching
+- Improving user experience with smoother transitions
+- Adding more interactive elements to property listings
+
+## 🔄 Recent Updates
+- Implemented glass-morphism design system
+- Added responsive navigation
+- Enhanced user authentication flow
+- Optimized property listing performance
+- Added basic search functionality
+
 ## 🛠️ Development
 
 ### Tech Stack
