@@ -1,0 +1,24 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on tag creation
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Create ZIP Archive
+        run: zip -r "${GITHUB_REPOSITORY##*/}-${GITHUB_REF_NAME}.zip" .
+
+      - name: Upload Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./${{ github.repository##*/}-${GITHUB_REF_NAME }}.zip
+          asset_name: ${{ github.repository##*/ }}-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
