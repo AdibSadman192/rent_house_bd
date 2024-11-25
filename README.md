@@ -1,3 +1,4 @@
+[![Create Release](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml/badge.svg)](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml)
 # 🏠 rent_house_bd
 
 ## 🌟 Overview
