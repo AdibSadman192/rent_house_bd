@@ -18,7 +18,10 @@ import {
   DialogActions,
   Button,
   TextField,
-  CircularProgress
+  CircularProgress,
+  Paper,
+  useTheme,
+  alpha
 } from '@mui/material';
 import {
   Bookmark,
@@ -26,13 +29,20 @@ import {
   Delete,
   Edit,
   FolderSpecial,
-  Assessment
+  Assessment,
+  Collections
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import PropertyCard from '../components/PropertyCard';
 import SavedPostStats from '../components/SavedPostStats';
+import { motion } from 'framer-motion';
+import { Fade, Grow, Zoom } from '@mui/material';
+
+const MotionContainer = motion(Container);
+const MotionGrid = motion(Grid);
 
 function SavedPosts() {
+  const theme = useTheme();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
@@ -142,130 +152,276 @@ function SavedPosts() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+      <Box 
+        display="flex" 
+        justifyContent="center" 
+        alignItems="center" 
+        minHeight="80vh"
+        sx={{
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.background.default, 0.95)})`,
+        }}
+      >
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1">
-          Saved Posts
-        </Typography>
-        <IconButton onClick={() => setShowStats(true)} color="primary">
-          <Assessment />
-        </IconButton>
-      </Box>
+    <MotionContainer
+      maxWidth="lg"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      sx={{ 
+        py: 4,
+        minHeight: '100vh',
+        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.background.default, 0.95)})`,
+      }}
+    >
+      <Fade in timeout={500}>
+        <Box>
+          <Box 
+            display="flex" 
+            justifyContent="space-between" 
+            alignItems="center" 
+            mb={4}
+            sx={{
+              backdropFilter: 'blur(10px)',
+              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+              borderRadius: 2,
+              p: 3,
+              boxShadow: theme.shadows[4]
+            }}
+          >
+            <Box display="flex" alignItems="center">
+              <Zoom in style={{ transitionDelay: '100ms' }}>
+                <Collections sx={{ fontSize: 40, mr: 2, color: theme.palette.primary.main }} />
+              </Zoom>
+              <Typography 
+                variant="h4" 
+                component="h1"
+                sx={{ 
+                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  color: 'transparent',
+                  fontWeight: 'bold'
+                }}
+              >
+                Saved Posts
+              </Typography>
+            </Box>
+            <IconButton 
+              onClick={() => setShowStats(true)} 
+              sx={{ 
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                '&:hover': {
+                  bgcolor: alpha(theme.palette.primary.main, 0.2),
+                }
+              }}
+            >
+              <Assessment />
+            </IconButton>
+          </Box>
 
-      <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 3 }}>
-        <Tab label="All Saved" />
-        <Tab label="Collections" />
-      </Tabs>
+          <Paper
+            elevation={0}
+            sx={{
+              backdropFilter: 'blur(10px)',
+              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+              borderRadius: 2,
+              mb: 4,
+              overflow: 'hidden'
+            }}
+          >
+            <Tabs 
+              value={tabValue} 
+              onChange={handleTabChange}
+              sx={{
+                '& .MuiTabs-indicator': {
+                  height: 3,
+                  borderRadius: '3px 3px 0 0',
+                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                },
+                '& .MuiTab-root': {
+                  color: theme.palette.text.secondary,
+                  '&.Mui-selected': {
+                    color: theme.palette.primary.main,
+                  },
+                }
+              }}
+            >
+              <Tab label="All Saved" />
+              <Tab label="Collections" />
+            </Tabs>
+          </Paper>
 
-      {error && (
-        <Typography color="error" sx={{ mb: 2 }}>
-          {error}
-        </Typography>
-      )}
+          {error && (
+            <Fade in timeout={300}>
+              <Typography 
+                color="error" 
+                sx={{ 
+                  mb: 2,
+                  p: 2,
+                  borderRadius: 1,
+                  bgcolor: alpha(theme.palette.error.main, 0.1)
+                }}
+              >
+                {error}
+              </Typography>
+            </Fade>
+          )}
 
-      {tabValue === 0 && (
-        <Grid container spacing={3}>
-          {savedPosts.map(saved => (
-            <Grid item xs={12} sm={6} md={4} key={saved._id}>
-              <Card>
-                <PropertyCard post={saved.postId} />
-                <CardContent>
-                  {saved.collections.map(collection => (
-                    <Chip
-                      key={collection}
-                      label={collection}
-                      size="small"
-                      icon={<FolderSpecial />}
-                      sx={{ mr: 1, mb: 1 }}
-                    />
-                  ))}
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    {saved.notes && (
-                      <Typography variant="body2" color="text.secondary">
-                        {saved.notes}
+          {tabValue === 0 && (
+            <MotionGrid 
+              container 
+              spacing={3}
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.1
+                  }
+                }
+              }}
+              initial="hidden"
+              animate="show"
+            >
+              {savedPosts.map((saved, index) => (
+                <Grid item xs={12} sm={6} md={4} key={saved._id}>
+                  <Grow in timeout={300 + index * 100}>
+                    <Card
+                      sx={{
+                        height: '100%',
+                        backdropFilter: 'blur(10px)',
+                        backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                        borderRadius: 2,
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: theme.shadows[8]
+                        }
+                      }}
+                    >
+                      <PropertyCard post={saved.postId} />
+                      <CardContent>
+                        <Box mb={2}>
+                          {saved.collections.map(collection => (
+                            <Chip
+                              key={collection}
+                              label={collection}
+                              size="small"
+                              icon={<FolderSpecial />}
+                              sx={{ 
+                                mr: 1, 
+                                mb: 1,
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                color: theme.palette.primary.main,
+                                '& .MuiChip-icon': {
+                                  color: theme.palette.primary.main
+                                }
+                              }}
+                            />
+                          ))}
+                        </Box>
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          {saved.notes && (
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary"
+                              sx={{
+                                fontStyle: 'italic',
+                                opacity: 0.8
+                              }}
+                            >
+                              {saved.notes}
+                            </Typography>
+                          )}
+                          <IconButton 
+                            onClick={(e) => handleMenuClick(e, saved)}
+                            sx={{
+                              '&:hover': {
+                                bgcolor: alpha(theme.palette.primary.main, 0.1)
+                              }
+                            }}
+                          >
+                            <MoreVert />
+                          </IconButton>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grow>
+                </Grid>
+              ))}
+            </MotionGrid>
+          )}
+
+          {tabValue === 1 && (
+            <Grid container spacing={3}>
+              {collections.map(collection => (
+                <Grid item xs={12} sm={6} md={4} key={collection.name}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6">{collection.name}</Typography>
+                      <Typography color="text.secondary">
+                        {collection.count} posts
                       </Typography>
-                    )}
-                    <IconButton onClick={(e) => handleMenuClick(e, saved)}>
-                      <MoreVert />
-                    </IconButton>
-                  </Box>
-                </CardContent>
-              </Card>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
-      )}
+          )}
 
-      {tabValue === 1 && (
-        <Grid container spacing={3}>
-          {collections.map(collection => (
-            <Grid item xs={12} sm={6} md={4} key={collection.name}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">{collection.name}</Typography>
-                  <Typography color="text.secondary">
-                    {collection.count} posts
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+          >
+            <MenuItem onClick={() => setShowCollectionDialog(true)}>
+              <FolderSpecial sx={{ mr: 1 }} /> Add to Collection
+            </MenuItem>
+            <MenuItem onClick={handleDeletePost}>
+              <Delete sx={{ mr: 1 }} /> Remove from Saved
+            </MenuItem>
+          </Menu>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={() => setShowCollectionDialog(true)}>
-          <FolderSpecial sx={{ mr: 1 }} /> Add to Collection
-        </MenuItem>
-        <MenuItem onClick={handleDeletePost}>
-          <Delete sx={{ mr: 1 }} /> Remove from Saved
-        </MenuItem>
-      </Menu>
+          <Dialog open={showCollectionDialog} onClose={() => setShowCollectionDialog(false)}>
+            <DialogTitle>Add to Collection</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Collection Name"
+                fullWidth
+                value={newCollection}
+                onChange={(e) => setNewCollection(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setShowCollectionDialog(false)}>Cancel</Button>
+              <Button onClick={handleAddToCollection} variant="contained">Add</Button>
+            </DialogActions>
+          </Dialog>
 
-      <Dialog open={showCollectionDialog} onClose={() => setShowCollectionDialog(false)}>
-        <DialogTitle>Add to Collection</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Collection Name"
+          <Dialog
+            open={showStats}
+            onClose={() => setShowStats(false)}
+            maxWidth="md"
             fullWidth
-            value={newCollection}
-            onChange={(e) => setNewCollection(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowCollectionDialog(false)}>Cancel</Button>
-          <Button onClick={handleAddToCollection} variant="contained">Add</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={showStats}
-        onClose={() => setShowStats(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Your Saved Posts Statistics</DialogTitle>
-        <DialogContent>
-          <SavedPostStats />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowStats(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+          >
+            <DialogTitle>Your Saved Posts Statistics</DialogTitle>
+            <DialogContent>
+              <SavedPostStats />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setShowStats(false)}>Close</Button>
+            </DialogActions>
+          </Dialog>
+        </Box>
+      </Fade>
+    </MotionContainer>
   );
 }
 

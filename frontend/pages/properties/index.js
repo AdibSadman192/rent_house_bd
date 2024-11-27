@@ -21,7 +21,9 @@ import {
   Tooltip,
   Fade,
   Grow,
-  Zoom
+  Zoom,
+  Paper,
+  alpha
 } from '@mui/material';
 import {
   ViewModule as GridViewIcon,
@@ -32,17 +34,22 @@ import {
   AttachMoney as PriceIcon,
   Map as MapIcon,
   ErrorOutline as ErrorIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  Search as SearchIcon
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import axios from '../../utils/axios';
 import dynamic from 'next/dynamic';
 import debounce from 'lodash/debounce';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import { motion } from 'framer-motion';
 
 import PropertyCard from '../../components/PropertyCard';
 import SearchFilters from '../../components/SearchFilters';
 import { useAuth } from '../../contexts/AuthContext';
+
+const MotionContainer = motion(Container);
+const MotionGrid = motion(Grid);
 
 // Dynamically import the map component
 const MapView = dynamic(() => import('../../components/Map'), {
@@ -53,46 +60,73 @@ const MapView = dynamic(() => import('../../components/Map'), {
 const ITEMS_PER_PAGE = 12;
 
 // Map loading fallback component
-const MapLoadingFallback = () => (
-  <Box
-    sx={{
-      height: '100%',
-      minHeight: 400,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      bgcolor: 'grey.100',
-      borderRadius: 1,
-    }}
-  >
-    <CircularProgress />
-  </Box>
-);
+const MapLoadingFallback = () => {
+  const theme = useTheme();
+  return (
+    <Box
+      sx={{
+        height: '100%',
+        minHeight: 400,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.background.default, 0.95)})`,
+        borderRadius: 2,
+        backdropFilter: 'blur(10px)',
+      }}
+    >
+      <CircularProgress />
+    </Box>
+  );
+};
 
 // Error fallback component
-const ErrorFallback = ({ error, resetError }) => (
-  <Box
-    sx={{
-      p: 3,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 2,
-    }}
-  >
-    <ErrorIcon color="error" sx={{ fontSize: 48 }} />
-    <Typography variant="h6" color="error" gutterBottom>
-      {error}
-    </Typography>
-    <Button
-      startIcon={<RefreshIcon />}
-      variant="contained"
-      onClick={resetError}
+const ErrorFallback = ({ error, resetError }) => {
+  const theme = useTheme();
+  return (
+    <Box
+      sx={{
+        p: 4,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 3,
+        background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)}, ${alpha(theme.palette.background.default, 0.95)})`,
+        borderRadius: 2,
+        backdropFilter: 'blur(10px)',
+      }}
     >
-      Try Again
-    </Button>
-  </Box>
-);
+      <Zoom in timeout={500}>
+        <ErrorIcon color="error" sx={{ fontSize: 64 }} />
+      </Zoom>
+      <Typography 
+        variant="h5" 
+        color="error" 
+        gutterBottom
+        sx={{
+          textAlign: 'center',
+          textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}
+      >
+        {error}
+      </Typography>
+      <Button
+        startIcon={<RefreshIcon />}
+        variant="contained"
+        onClick={resetError}
+        sx={{
+          backdropFilter: 'blur(10px)',
+          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+          '&:hover': {
+            backgroundColor: alpha(theme.palette.primary.main, 0.2),
+          }
+        }}
+      >
+        Try Again
+      </Button>
+    </Box>
+  );
+};
 
 const Properties = () => {
   const theme = useTheme();
@@ -278,17 +312,20 @@ const Properties = () => {
 
   // Render loading skeletons
   const renderSkeletons = () => (
-    <Grid container spacing={3}>
+    <MotionGrid container spacing={3}>
       {[...Array(ITEMS_PER_PAGE)].map((_, index) => (
-        <Grid item xs={12} sm={6} md={4} lg={3} key={`skeleton-${index}`}>
-          <Skeleton
-            variant="rectangular"
-            height={isMobile ? 200 : 300}
-            sx={{ borderRadius: 1 }}
+        <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+          <Skeleton 
+            variant="rectangular" 
+            height={300} 
+            sx={{ 
+              borderRadius: 2,
+              bgcolor: alpha(theme.palette.primary.main, 0.1)
+            }} 
           />
         </Grid>
       ))}
-    </Grid>
+    </MotionGrid>
   );
 
   const renderPropertyGrid = () => {
@@ -330,32 +367,54 @@ const Properties = () => {
     }
 
     return (
-      <Grid container spacing={3}>
-        {properties.map((property) => (
-          <Grid item key={property._id} xs={12} sm={6} md={4}>
-            <Grow in={true} timeout={300}>
+      <MotionGrid 
+        container 
+        spacing={3}
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.1
+            }
+          }
+        }}
+        initial="hidden"
+        animate="show"
+      >
+        {properties.map((property, index) => (
+          <Grid 
+            item 
+            xs={12} 
+            sm={viewMode === 'list' ? 12 : 6} 
+            md={viewMode === 'list' ? 12 : 4} 
+            lg={viewMode === 'list' ? 12 : 3} 
+            key={property._id}
+          >
+            <Grow in timeout={300 + index * 100}>
               <Card
                 sx={{
                   height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                  backdropFilter: 'blur(10px)',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                  borderRadius: 2,
+                  transition: 'transform 0.2s, box-shadow 0.2s',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[4]
+                    boxShadow: theme.shadows[8]
                   }
                 }}
               >
-                <PropertyCard
+                <PropertyCard 
                   property={property}
+                  viewMode={viewMode}
                   isFavorite={favorites.includes(property._id)}
-                  onToggleFavorite={() => handleToggleFavorite(property._id)}
                 />
               </Card>
             </Grow>
           </Grid>
         ))}
-      </Grid>
+      </MotionGrid>
     );
   };
 
@@ -398,100 +457,192 @@ const Properties = () => {
     }
 
     return (
-      <Box sx={{ height: 'calc(100vh - 200px)', width: '100%', minHeight: 400 }}>
+      <Paper
+        elevation={0}
+        sx={{
+          height: 600,
+          borderRadius: 2,
+          overflow: 'hidden',
+          backdropFilter: 'blur(10px)',
+          backgroundColor: alpha(theme.palette.background.paper, 0.8),
+        }}
+      >
         <MapView properties={properties} />
-      </Box>
+      </Paper>
     );
   };
 
-  if (error) {
-    return <ErrorFallback error={error} resetError={resetError} />;
-  }
-
   return (
-    <Fade in={true} timeout={500}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+    <MotionContainer
+      maxWidth="xl"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      sx={{ 
+        py: 4,
+        minHeight: '100vh',
+        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.background.default, 0.95)})`,
+      }}
+    >
+      <Box 
+        mb={4}
+        sx={{
+          backdropFilter: 'blur(10px)',
+          backgroundColor: alpha(theme.palette.background.paper, 0.8),
+          borderRadius: 2,
+          p: 3,
+          boxShadow: theme.shadows[4]
+        }}
+      >
+        <Box display="flex" alignItems="center" mb={3}>
+          <SearchIcon sx={{ fontSize: 40, mr: 2, color: theme.palette.primary.main }} />
+          <Typography 
+            variant="h4" 
+            component="h1"
+            sx={{ 
+              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              color: 'transparent',
+              fontWeight: 'bold'
+            }}
+          >
+            Find Your Perfect Home
+          </Typography>
+        </Box>
+
         <SearchFilters
           filters={filters}
-          onFilterChange={handleFilterChange}
+          setFilters={setFilters}
           locations={locations}
           propertyTypes={propertyTypes}
         />
+      </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-          <Box>
-            <Button
-              startIcon={viewMode === 'grid' ? <MapIcon /> : <GridViewIcon />}
-              onClick={toggleViewMode}
-              variant="outlined"
-              sx={{ mr: 2 }}
+      <Paper
+        elevation={0}
+        sx={{
+          mb: 3,
+          p: 2,
+          backdropFilter: 'blur(10px)',
+          backgroundColor: alpha(theme.palette.background.paper, 0.8),
+          borderRadius: 2,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2
+        }}
+      >
+        <Box display="flex" alignItems="center" gap={1}>
+          <Tooltip title="Grid View">
+            <IconButton 
+              onClick={() => setViewMode('grid')}
+              color={viewMode === 'grid' ? 'primary' : 'default'}
+              sx={{
+                bgcolor: viewMode === 'grid' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                '&:hover': {
+                  bgcolor: alpha(theme.palette.primary.main, 0.2),
+                }
+              }}
             >
-              {viewMode === 'grid' ? 'Map View' : 'Grid View'}
-            </Button>
-          </Box>
-
+              <GridViewIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="List View">
+            <IconButton 
+              onClick={() => setViewMode('list')}
+              color={viewMode === 'list' ? 'primary' : 'default'}
+              sx={{
+                bgcolor: viewMode === 'list' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                '&:hover': {
+                  bgcolor: alpha(theme.palette.primary.main, 0.2),
+                }
+              }}
+            >
+              <ListViewIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Map View">
+            <IconButton 
+              onClick={() => setViewMode('map')}
+              color={viewMode === 'map' ? 'primary' : 'default'}
+              sx={{
+                bgcolor: viewMode === 'map' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                '&:hover': {
+                  bgcolor: alpha(theme.palette.primary.main, 0.2),
+                }
+              }}
+            >
+              <MapIcon />
+            </IconButton>
+          </Tooltip>
+          <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
           <Button
             startIcon={<SortIcon />}
-            onClick={handleSortClick}
-            variant="outlined"
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+            sx={{
+              backdropFilter: 'blur(10px)',
+              backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.2),
+              }
+            }}
           >
             Sort By
           </Button>
         </Box>
 
-        {error ? (
-          <Alert 
-            severity="error" 
-            action={
-              <Button
-                color="inherit"
-                size="small"
-                onClick={() => {
-                  setError(null);
-                  debouncedFetch();
-                }}
-              >
-                Retry
-              </Button>
+        <Typography variant="body2" color="text.secondary">
+          {properties.length} properties found
+        </Typography>
+      </Paper>
+
+      {error ? (
+        <ErrorFallback error={error} resetError={() => setError(null)} />
+      ) : loading ? (
+        renderSkeletons()
+      ) : viewMode === 'map' ? (
+        renderMapView()
+      ) : (
+        renderPropertyGrid()
+      )}
+
+      <Box 
+        mt={4} 
+        display="flex" 
+        justifyContent="center"
+        sx={{
+          '& .MuiPagination-ul': {
+            gap: 1
+          }
+        }}
+      >
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(_, value) => setPage(value)}
+          color="primary"
+          size={isMobile ? 'small' : 'large'}
+          sx={{
+            '& .MuiPaginationItem-root': {
+              backdropFilter: 'blur(10px)',
+              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              },
+              '&.Mui-selected': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                color: theme.palette.primary.main,
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.3),
+                }
+              }
             }
-            sx={{ mb: 3 }}
-          >
-            {error}
-          </Alert>
-        ) : null}
-
-        {loading ? renderSkeletons() : (
-          viewMode === 'grid' ? renderPropertyGrid() : renderMapView()
-        )}
-
-        {!isMobile && viewMode === 'grid' && (
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={handlePageChange}
-              color="primary"
-              size={isMobile ? 'small' : 'medium'}
-            />
-          </Box>
-        )}
-
-        {isMobile && viewMode === 'grid' && (
-          <Box
-            id="scroll-sentinel"
-            sx={{
-              width: '100%',
-              height: '20px',
-              mt: 2,
-              display: 'flex',
-              justifyContent: 'center',
-            }}
-          >
-            {loading && <CircularProgress size={24} />}
-          </Box>
-        )}
-      </Container>
-    </Fade>
+          }}
+        />
+      </Box>
+    </MotionContainer>
   );
 };
 

@@ -2,32 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles for fluent design */
+/* Custom Properties for MI Calibiri Theme */
 :root {
+  --primary-color: #1a1a1a;
+  --secondary-color: #333333;
+  --accent-color: #ff385c;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  --glass-bg: rgba(255, 255, 255, 0.01);
-  --glass-blur: blur(10px);
-  --transition-base: all 0.3s ease;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-/* Enable smooth scrolling */
+/* Base Styles */
 html {
   scroll-behavior: smooth;
+  background-color: var(--primary-color);
+  color: var(--text-primary);
 }
 
-/* Simplified background color */
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background: #f5f5f5;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--primary-color);
 }
 
+/* Layout */
 #__next {
   min-height: 100vh;
   display: flex;
@@ -39,21 +44,112 @@ main {
   width: 100%;
 }
 
-/* Glass morphism base classes */
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Modern Card Styles */
+.property-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  transition: var(--transition-smooth);
+  overflow: hidden;
+}
+
+.property-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Button Styles */
+.btn-primary {
+  background: var(--accent-color);
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  transition: var(--transition-smooth);
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.3);
+}
+
+/* Navigation */
+.nav-link {
+  color: var(--text-secondary);
+  transition: var(--transition-smooth);
+  position: relative;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent-color);
+  transition: var(--transition-smooth);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Hero Section Animation */
+.hero-text {
+  animation: fadeInUp 1s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Grid Layout */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 24px;
+}
+
+/* Glass Morphism */
 .glass {
-  background: rgba(255, 255, 255, 0.01);
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
 }
 
-.glass-hover {
-  transition: var(--transition-base);
-}
-
-.glass-hover:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+/* Loading Animation */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Custom scrollbar */
@@ -63,7 +159,7 @@ main {
 
 ::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: var(--glass-blur);
+  backdrop-filter: blur(10px);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -82,7 +178,7 @@ main {
 /* Text selection */
 ::selection {
   background: rgba(33, 150, 243, 0.3);
-  backdrop-filter: var(--glass-blur);
+  backdrop-filter: blur(10px);
 }
 
 /* Tailwind components */
@@ -90,8 +186,8 @@ main {
   .nav-link {
     @apply inline-flex items-center px-3 py-2 text-sm font-medium transition-all duration-300 rounded-lg;
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: var(--glass-border);
   }
   
@@ -108,8 +204,8 @@ main {
   .btn-primary {
     @apply inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-lg transition-all duration-300;
     background: rgba(33, 150, 243, 0.8);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: var(--glass-border);
   }
   
@@ -122,8 +218,8 @@ main {
   .btn-secondary {
     @apply inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300;
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: var(--glass-border);
   }
   
@@ -136,8 +232,8 @@ main {
   .card {
     @apply rounded-xl p-6 transition-all duration-300;
     background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: var(--glass-border);
     box-shadow: var(--glass-shadow);
   }
@@ -150,8 +246,8 @@ main {
   .input {
     @apply px-4 py-2 rounded-lg w-full transition-all duration-300;
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: var(--glass-border);
   }
 
@@ -218,13 +314,4 @@ main {
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
 }

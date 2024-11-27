@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import axios from '@/lib/axios';
 import { useRouter } from 'next/router';
+import api from '../services/api';
 
 const AuthContext = createContext({});
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ['/login', '/register', '/', '/about', '/contact'];
+const PUBLIC_ROUTES = ['/login', '/register', '/', '/about', '/contact', '/properties'];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -22,11 +22,13 @@ export function AuthProvider({ children }) {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        const { data } = await axios.get('/api/auth/me');
+        const { data } = await api.get('/auth/me');
         setUser(data);
       }
     } catch (error) {
       console.error('Auth check failed:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       setUser(null);
     } finally {
       setLoading(false);
@@ -34,79 +36,88 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const login = async (credentials) => {
+  const login = async (email, password) => {
     try {
-      const { data } = await axios.post('/api/auth/login', credentials);
-      localStorage.setItem('token', data.token);
-      setUser(data.user);
+      const { data } = await api.post('/auth/login', { email, password });
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        if (data.refreshToken) {
+          localStorage.setItem('refreshToken', data.refreshToken);
+        }
+        setUser(data.user);
+      }
       return data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Login failed');
+      console.error('Login error:', error);
+      const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      throw new Error(message);
     }
   };
 
   const register = async (userData) => {
     try {
-      const { data } = await axios.post('/api/auth/register', userData);
-      localStorage.setItem('token', data.token);
-      setUser(data.user);
+      const { data } = await api.post('/auth/register', userData);
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        if (data.refreshToken) {
+          localStorage.setItem('refreshToken', data.refreshToken);
+        }
+        setUser(data.user);
+      }
       return data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Registration failed');
+      console.error('Registration error:', error);
+      const message = error.response?.data?.message || 'Registration failed. Please try again.';
+      throw new Error(message);
     }
   };
 
   const logout = async () => {
     try {
-      await axios.post('/api/auth/logout');
+      await api.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       setUser(null);
       router.push('/login');
     }
-  };
-
-  const checkPermission = (requiredRole) => {
-    if (!user) return false;
-    const roles = {
-      user: 0,
-      renter: 1,
-      admin: 2,
-      super_admin: 3
-    };
-    return roles[user.role] >= roles[requiredRole];
   };
 
   // Protect routes
   useEffect(() => {
     if (!initialized) return;
 
-    const path = router.pathname;
-    if (!user && !PUBLIC_ROUTES.includes(path)) {
-      router.push(`/login?redirect=${path}`);
+    const isPublicRoute = PUBLIC_ROUTES.includes(router.pathname);
+    if (!loading && !user && !isPublicRoute) {
+      router.push('/login');
     }
-  }, [initialized, user, router.pathname]);
+  }, [initialized, loading, user, router.pathname]);
 
   const value = {
     user,
     loading,
     login,
-    register,
     logout,
-    checkPermission
+    register,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!initialized ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          Loading...
+        </div>
+      ) : (
+        children
+      )}
+    </AuthContext.Provider>
+  );
 }
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export function useAuth() {
+  return useContext(AuthContext);
+}
 
 export default useAuth;

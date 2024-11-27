@@ -4,6 +4,67 @@ import { useSession } from '@/hooks/useSession';
 import { ROLES } from '@/config/roles';
 import axios from '@/utils/axios';
 import { toast } from 'react-toastify';
+import { motion, AnimatePresence } from 'framer-motion';
+import { styled, alpha } from '@mui/material/styles';
+import {
+  Box,
+  Paper,
+  Typography,
+  Switch,
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  FormControl,
+  InputLabel,
+  Slider,
+  Divider,
+  Grid,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import { 
+  Settings as SettingsIcon,
+  Language as LanguageIcon,
+  Email as EmailIcon,
+  Chat as ChatIcon,
+  Home as HomeIcon,
+  Refresh as RefreshIcon,
+  Save as SaveIcon,
+} from '@mui/icons-material';
+
+// Styled Components
+const GlassCard = styled(Paper)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.7)',
+  backdropFilter: 'blur(10px)',
+  borderRadius: theme.shape.borderRadius * 2,
+  border: '1px solid rgba(255, 255, 255, 0.18)',
+  padding: theme.spacing(3),
+  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+  transition: 'transform 0.2s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-5px)',
+  },
+}));
+
+const GradientTypography = styled(Typography)(({ theme }) => ({
+  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  fontWeight: 'bold',
+}));
+
+const GradientButton = styled(Button)(({ theme }) => ({
+  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+  border: 0,
+  borderRadius: 20,
+  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+  color: 'white',
+  padding: '8px 24px',
+  '&:hover': {
+    background: 'linear-gradient(45deg, #1976D2 30%, #00BCD4 90%)',
+  },
+}));
 
 const Settings = () => {
   const { user } = useSession();
@@ -14,7 +75,7 @@ const Settings = () => {
     autoApproveListings: false,
     emailNotifications: true,
     chatEnabled: true,
-    maxFileSize: 5, // in MB
+    maxFileSize: 5,
     allowedFileTypes: ['image/jpeg', 'image/png', 'image/webp'],
     currency: 'USD',
     language: 'en',
@@ -28,6 +89,13 @@ const Settings = () => {
     setSettings(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSliderChange = (name) => (event, value) => {
+    setSettings(prev => ({
+      ...prev,
+      [name]: value
     }));
   };
 
@@ -46,216 +114,235 @@ const Settings = () => {
     }
   };
 
+  const settingsGroups = [
+    {
+      title: 'General Settings',
+      icon: <SettingsIcon />,
+      content: (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold">Maintenance Mode</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Enable maintenance mode to prevent user access
+              </Typography>
+            </Box>
+            <Switch
+              name="maintenance"
+              checked={settings.maintenance}
+              onChange={(e) => handleChange({ target: { name: 'maintenance', type: 'checkbox', checked: e.target.checked } })}
+            />
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold">Allow Registration</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Allow new users to register
+              </Typography>
+            </Box>
+            <Switch
+              name="allowRegistration"
+              checked={settings.allowRegistration}
+              onChange={(e) => handleChange({ target: { name: 'allowRegistration', type: 'checkbox', checked: e.target.checked } })}
+            />
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Max Properties Per User
+            </Typography>
+            <Slider
+              value={settings.maxPropertiesPerUser}
+              onChange={handleSliderChange('maxPropertiesPerUser')}
+              min={1}
+              max={50}
+              marks={[
+                { value: 1, label: '1' },
+                { value: 25, label: '25' },
+                { value: 50, label: '50' },
+              ]}
+              valueLabelDisplay="auto"
+            />
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      title: 'Feature Settings',
+      icon: <HomeIcon />,
+      content: (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold">Auto-approve Listings</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Automatically approve new property listings
+              </Typography>
+            </Box>
+            <Switch
+              name="autoApproveListings"
+              checked={settings.autoApproveListings}
+              onChange={(e) => handleChange({ target: { name: 'autoApproveListings', type: 'checkbox', checked: e.target.checked } })}
+            />
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold">Email Notifications</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Enable system-wide email notifications
+              </Typography>
+            </Box>
+            <Switch
+              name="emailNotifications"
+              checked={settings.emailNotifications}
+              onChange={(e) => handleChange({ target: { name: 'emailNotifications', type: 'checkbox', checked: e.target.checked } })}
+            />
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold">Chat System</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Enable the chat system for users
+              </Typography>
+            </Box>
+            <Switch
+              name="chatEnabled"
+              checked={settings.chatEnabled}
+              onChange={(e) => handleChange({ target: { name: 'chatEnabled', type: 'checkbox', checked: e.target.checked } })}
+            />
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      title: 'Localization',
+      icon: <LanguageIcon />,
+      content: (
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Currency</InputLabel>
+              <Select
+                name="currency"
+                value={settings.currency}
+                onChange={handleChange}
+                label="Currency"
+              >
+                <MenuItem value="USD">USD</MenuItem>
+                <MenuItem value="EUR">EUR</MenuItem>
+                <MenuItem value="GBP">GBP</MenuItem>
+                <MenuItem value="BDT">BDT</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Language</InputLabel>
+              <Select
+                name="language"
+                value={settings.language}
+                onChange={handleChange}
+                label="Language"
+              >
+                <MenuItem value="en">English</MenuItem>
+                <MenuItem value="bn">Bengali</MenuItem>
+                <MenuItem value="es">Spanish</MenuItem>
+                <MenuItem value="fr">French</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Timezone</InputLabel>
+              <Select
+                name="timezone"
+                value={settings.timezone}
+                onChange={handleChange}
+                label="Timezone"
+              >
+                <MenuItem value="UTC">UTC</MenuItem>
+                <MenuItem value="Asia/Dhaka">Asia/Dhaka</MenuItem>
+                <MenuItem value="America/New_York">America/New_York</MenuItem>
+                <MenuItem value="Europe/London">Europe/London</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      ),
+    },
+  ];
+
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">System Settings</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage system-wide configurations and preferences
-          </p>
-        </div>
+      <Box sx={{ p: 3 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          {/* Header */}
+          <Box sx={{ mb: 4 }}>
+            <GradientTypography variant="h4" gutterBottom>
+              System Settings
+            </GradientTypography>
+            <Typography variant="body1" color="text.secondary">
+              Manage system-wide configurations and preferences
+            </Typography>
+          </Box>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* General Settings */}
-          <div className="bg-white shadow-sm rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">General Settings</h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Maintenance Mode
-                  </label>
-                  <p className="text-sm text-gray-500">
-                    Enable maintenance mode to prevent user access
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="maintenance"
-                    className="sr-only peer"
-                    checked={settings.maintenance}
-                    onChange={handleChange}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <AnimatePresence>
+                {settingsGroups.map((group, index) => (
+                  <motion.div
+                    key={group.title}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <GlassCard>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                        <Box sx={{ 
+                          mr: 2,
+                          background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                          borderRadius: '50%',
+                          p: 1,
+                          color: 'white'
+                        }}>
+                          {group.icon}
+                        </Box>
+                        <GradientTypography variant="h6">
+                          {group.title}
+                        </GradientTypography>
+                      </Box>
+                      <Divider sx={{ mb: 3 }} />
+                      {group.content}
+                    </GlassCard>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Allow Registration
-                  </label>
-                  <p className="text-sm text-gray-500">
-                    Allow new users to register
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="allowRegistration"
-                    className="sr-only peer"
-                    checked={settings.allowRegistration}
-                    onChange={handleChange}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Max Properties Per User
-                </label>
-                <input
-                  type="number"
-                  name="maxPropertiesPerUser"
-                  value={settings.maxPropertiesPerUser}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Feature Settings */}
-          <div className="bg-white shadow-sm rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Feature Settings</h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Auto-approve Listings
-                  </label>
-                  <p className="text-sm text-gray-500">
-                    Automatically approve new property listings
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="autoApproveListings"
-                    className="sr-only peer"
-                    checked={settings.autoApproveListings}
-                    onChange={handleChange}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Email Notifications
-                  </label>
-                  <p className="text-sm text-gray-500">
-                    Enable system-wide email notifications
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="emailNotifications"
-                    className="sr-only peer"
-                    checked={settings.emailNotifications}
-                    onChange={handleChange}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Chat System
-                  </label>
-                  <p className="text-sm text-gray-500">
-                    Enable the chat system for users
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="chatEnabled"
-                    className="sr-only peer"
-                    checked={settings.chatEnabled}
-                    onChange={handleChange}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Localization Settings */}
-          <div className="bg-white shadow-sm rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Localization</h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Currency
-                </label>
-                <select
-                  name="currency"
-                  value={settings.currency}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              {/* Submit Button */}
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                <GradientButton
+                  type="button"
+                  startIcon={<RefreshIcon />}
+                  onClick={() => window.location.reload()}
+                  disabled={loading}
                 >
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                  <option value="BDT">BDT</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Language
-                </label>
-                <select
-                  name="language"
-                  value={settings.language}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  Reset
+                </GradientButton>
+                <GradientButton
+                  type="submit"
+                  startIcon={<SaveIcon />}
+                  disabled={loading}
                 >
-                  <option value="en">English</option>
-                  <option value="bn">Bengali</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Timezone
-                </label>
-                <select
-                  name="timezone"
-                  value={settings.timezone}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                >
-                  <option value="UTC">UTC</option>
-                  <option value="Asia/Dhaka">Asia/Dhaka</option>
-                  <option value="America/New_York">America/New_York</option>
-                  <option value="Europe/London">Europe/London</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Save Settings'}
-            </button>
-          </div>
-        </form>
-      </div>
+                  {loading ? 'Saving...' : 'Save Settings'}
+                </GradientButton>
+              </Box>
+            </Box>
+          </form>
+        </motion.div>
+      </Box>
     </AdminLayout>
   );
 };

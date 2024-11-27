@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Container, Typography, Tabs, Tab } from '@mui/material';
 import { useRouter } from 'next/router';
 import BookingForm from '../../components/BookingForm';
-import BookingList from '../../components/BookingList';
+import BookingList from '../../components/bookings/BookingsList';
 import { useAuth } from '../../contexts/AuthContext';
 
 const BookingsPage = () => {

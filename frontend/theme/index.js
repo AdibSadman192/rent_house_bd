@@ -1,57 +1,71 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, alpha } from '@mui/material/styles';
 
-export const theme = createTheme({
+const theme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
-      main: '#2196f3',
-      light: '#64b5f6',
-      dark: '#1976d2',
-      contrastText: '#fff',
+      main: '#ff385c',
+      light: '#ff6b89',
+      dark: '#cc2d4a',
+      contrastText: '#ffffff',
     },
     secondary: {
-      main: '#f50057',
-      light: '#ff4081',
-      dark: '#c51162',
-      contrastText: '#fff',
+      main: '#333333',
+      light: '#4d4d4d',
+      dark: '#1a1a1a',
+      contrastText: '#ffffff',
     },
     background: {
-      default: '#f5f5f5',
-      paper: '#fff',
+      default: '#1a1a1a',
+      paper: 'rgba(255, 255, 255, 0.05)',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: '#a0a0a0',
     },
   },
   typography: {
-    fontFamily: [
-      'Inter',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-    ].join(','),
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
-      fontSize: '2.5rem',
-      fontWeight: 600,
+      fontWeight: 700,
+      fontSize: '4rem',
+      lineHeight: 1.2,
     },
     h2: {
-      fontSize: '2rem',
       fontWeight: 600,
+      fontSize: '3rem',
+      lineHeight: 1.3,
     },
     h3: {
-      fontSize: '1.75rem',
       fontWeight: 600,
+      fontSize: '2.5rem',
+      lineHeight: 1.3,
     },
     h4: {
-      fontSize: '1.5rem',
-      fontWeight: 500,
+      fontWeight: 600,
+      fontSize: '2rem',
+      lineHeight: 1.3,
     },
     h5: {
-      fontSize: '1.25rem',
-      fontWeight: 500,
+      fontWeight: 600,
+      fontSize: '1.5rem',
+      lineHeight: 1.4,
     },
     h6: {
+      fontWeight: 600,
+      fontSize: '1.25rem',
+      lineHeight: 1.4,
+    },
+    body1: {
       fontSize: '1rem',
+      lineHeight: 1.5,
+    },
+    body2: {
+      fontSize: '0.875rem',
+      lineHeight: 1.5,
+    },
+    button: {
+      textTransform: 'none',
       fontWeight: 500,
     },
   },
@@ -59,20 +73,67 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: 'none',
           borderRadius: 8,
+          padding: '12px 24px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+          },
+        },
+        contained: {
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: '0 4px 12px rgba(255, 56, 92, 0.3)',
+          },
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          borderRadius: 16,
+          background: 'rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 8,
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            },
+            '&.Mui-focused': {
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            },
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
         },
       },
     },
   },
+  shape: {
+    borderRadius: 8,
+  },
+  shadows: [
+    'none',
+    '0 2px 4px rgba(0,0,0,0.1)',
+    '0 4px 8px rgba(0,0,0,0.1)',
+    '0 8px 16px rgba(0,0,0,0.1)',
+    '0 12px 24px rgba(0,0,0,0.1)',
+    '0 16px 32px rgba(0,0,0,0.1)',
+    ...Array(19).fill('none'),
+  ],
 });
 
 export default theme;

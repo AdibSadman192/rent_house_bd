@@ -5,6 +5,43 @@ import { useSession } from '@/hooks/useSession';
 import { ROLES } from '@/config/roles';
 import axios from '@/utils/axios';
 import { toast } from 'react-toastify';
+import { motion, AnimatePresence } from 'framer-motion';
+import { styled, alpha } from '@mui/material/styles';
+import {
+  Box,
+  Paper,
+  Typography,
+  Avatar,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from '@mui/material';
+
+// Styled Components
+const GlassCard = styled(Paper)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.7)',
+  backdropFilter: 'blur(10px)',
+  borderRadius: theme.shape.borderRadius * 2,
+  border: '1px solid rgba(255, 255, 255, 0.18)',
+  padding: theme.spacing(3),
+  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+}));
+
+const GradientTypography = styled(Typography)(({ theme }) => ({
+  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  fontWeight: 'bold',
+}));
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -12,6 +49,12 @@ const UserManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const { user: currentUser } = useSession();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    role: '',
+    password: '',
+  });
 
   const fetchUsers = async () => {
     try {
@@ -31,6 +74,12 @@ const UserManagement = () => {
 
   const handleEditUser = (user) => {
     setSelectedUser(user);
+    setFormData({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      password: '',
+    });
     setShowModal(true);
   };
 
@@ -47,142 +96,274 @@ const UserManagement = () => {
     }
   };
 
-  const handleUpdateUser = async (userData) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      await axios.put(`/admin/users/${selectedUser._id}`, userData);
-      toast.success('User updated successfully');
+      if (selectedUser) {
+        await axios.put(`/admin/users/${selectedUser._id}`, formData);
+        toast.success('User updated successfully');
+      } else {
+        await axios.post('/admin/users', formData);
+        toast.success('User created successfully');
+      }
       setShowModal(false);
       fetchUsers();
     } catch (error) {
-      toast.error('Failed to update user');
-      console.error('Failed to update user:', error);
+      toast.error(error.response?.data?.message || 'Operation failed');
     }
+  };
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </div>
+        <Box sx={{ p: 3 }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {[1, 2, 3].map((i) => (
+              <Box
+                key={i}
+                sx={{
+                  height: 80,
+                  mb: 2,
+                  borderRadius: 2,
+                  background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                  '@keyframes pulse': {
+                    '0%': { backgroundPosition: '200% 0' },
+                    '100%': { backgroundPosition: '-200% 0' },
+                  },
+                }}
+              />
+            ))}
+          </motion.div>
+        </Box>
       </AdminLayout>
     );
   }
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">User Management</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Manage user accounts and permissions
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              setSelectedUser(null);
-              setShowModal(true);
-            }}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-          >
-            <FaUserPlus className="mr-2" />
-            Add User
-          </button>
-        </div>
+      <Box sx={{ p: 3 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <GlassCard>
+            {/* Header */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+              <Box>
+                <GradientTypography variant="h4" gutterBottom>
+                  User Management
+                </GradientTypography>
+                <Typography variant="body2" color="text.secondary">
+                  Manage user accounts and permissions
+                </Typography>
+              </Box>
+              <Button
+                variant="contained"
+                startIcon={<FaUserPlus />}
+                onClick={() => {
+                  setSelectedUser(null);
+                  setFormData({ name: '', email: '', role: '', password: '' });
+                  setShowModal(true);
+                }}
+                sx={{
+                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  color: 'white',
+                  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                }}
+              >
+                Add User
+              </Button>
+            </Box>
 
-        {/* Users Table */}
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0">
-                        <img
-                          className="h-10 w-10 rounded-full"
+            {/* Users Grid */}
+            <Box
+              sx={{
+                display: 'grid',
+                gap: 3,
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(2, 1fr)',
+                  md: 'repeat(3, 1fr)',
+                },
+              }}
+            >
+              <AnimatePresence>
+                {users.map((user, index) => (
+                  <motion.div
+                    key={user._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <GlassCard
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-5px)',
+                        },
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Avatar
                           src={user.avatar || '/default-avatar.png'}
                           alt={user.name}
+                          sx={{ width: 56, height: 56, mr: 2 }}
                         />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.name}
-                        </div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      Active
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button
-                      onClick={() => handleEditUser(user)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      <FaEdit className="h-5 w-5" />
-                    </button>
-                    {currentUser.role === ROLES.SUPER_ADMIN && (
-                      <button
-                        onClick={() => handleDeleteUser(user._id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <FaTrash className="h-5 w-5" />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                        <Box>
+                          <Typography variant="h6" gutterBottom>
+                            {user.name}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {user.email}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box sx={{ mt: 'auto' }}>
+                        <Chip
+                          label={user.role}
+                          sx={{
+                            background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                            color: 'white',
+                            mb: 2,
+                          }}
+                        />
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <IconButton
+                            onClick={() => handleEditUser(user)}
+                            sx={{
+                              color: '#2196F3',
+                              '&:hover': {
+                                background: 'rgba(33, 150, 243, 0.1)',
+                              },
+                            }}
+                          >
+                            <FaEdit />
+                          </IconButton>
+                          {currentUser.role === ROLES.SUPER_ADMIN && (
+                            <IconButton
+                              onClick={() => handleDeleteUser(user._id)}
+                              sx={{
+                                color: '#f44336',
+                                '&:hover': {
+                                  background: 'rgba(244, 67, 54, 0.1)',
+                                },
+                              }}
+                            >
+                              <FaTrash />
+                            </IconButton>
+                          )}
+                        </Box>
+                      </Box>
+                    </GlassCard>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </Box>
+          </GlassCard>
+        </motion.div>
 
-      {/* Edit/Create User Modal */}
-      {showModal && (
-        <div className="fixed z-50 inset-0 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              {/* Modal content */}
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  {selectedUser ? 'Edit User' : 'Create User'}
-                </h3>
-                {/* Add form fields here */}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* User Form Dialog */}
+        <Dialog
+          open={showModal}
+          onClose={() => setShowModal(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 2,
+            },
+          }}
+        >
+          <form onSubmit={handleSubmit}>
+            <DialogTitle>
+              <GradientTypography variant="h5">
+                {selectedUser ? 'Edit User' : 'Create User'}
+              </GradientTypography>
+            </DialogTitle>
+            <DialogContent>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+                <TextField
+                  name="name"
+                  label="Name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  fullWidth
+                  required
+                />
+                <TextField
+                  name="email"
+                  label="Email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  fullWidth
+                  required
+                />
+                <FormControl fullWidth required>
+                  <InputLabel>Role</InputLabel>
+                  <Select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    label="Role"
+                  >
+                    <MenuItem value={ROLES.USER}>User</MenuItem>
+                    <MenuItem value={ROLES.ADMIN}>Admin</MenuItem>
+                    {currentUser.role === ROLES.SUPER_ADMIN && (
+                      <MenuItem value={ROLES.SUPER_ADMIN}>Super Admin</MenuItem>
+                    )}
+                  </Select>
+                </FormControl>
+                <TextField
+                  name="password"
+                  label="Password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  fullWidth
+                  required={!selectedUser}
+                  helperText={selectedUser ? 'Leave blank to keep current password' : ''}
+                />
+              </Box>
+            </DialogContent>
+            <DialogActions sx={{ p: 3 }}>
+              <Button
+                onClick={() => setShowModal(false)}
+                sx={{ color: 'text.secondary' }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  color: 'white',
+                }}
+              >
+                {selectedUser ? 'Update' : 'Create'}
+              </Button>
+            </DialogActions>
+          </form>
+        </Dialog>
+      </Box>
     </AdminLayout>
   );
 };

@@ -1,112 +1,42 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { styled } from '@mui/material/styles';
 import {
   AppBar,
   Box,
   Toolbar,
   IconButton,
   Typography,
-  Avatar,
-  useMediaQuery,
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  useTheme,
+  Menu,
+  Container,
+  Button,
+  MenuItem,
+  useScrollTrigger,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   Home,
-  Search,
-  Add as AddIcon,
-  Favorite,
-  Person,
-  Settings,
-  Logout,
-  ChevronRight,
-} from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
-import { useAuth } from '../contexts/AuthContext';
-import GlassButton from './GlassButton';
-import { GlassMenu, GlassMenuItem } from './GlassMenu';
+  Building2,
+  PlusSquare,
+  UserPlus,
+  LogIn,
+  LayoutDashboard,
+} from 'lucide-react';
+import { useRouter } from 'next/router';
 
-const GlassAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.01)',
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)',
-  boxShadow: 'none',
-  position: 'fixed',
-  width: '100%',
-  top: 0,
-  left: 0,
-  right: 0,
-  margin: 0,
-  padding: 0,
-  zIndex: 1200,
-  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '1px',
-    background: 'rgba(255, 255, 255, 0.1)',
+const GlassAppBar = styled(AppBar)(({ theme, elevated }) => ({
+  background: elevated 
+    ? 'rgba(255, 255, 255, 0.85)'
+    : 'rgba(255, 255, 255, 0.75)',
+  backdropFilter: 'blur(20px) saturate(180%)',
+  borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+  boxShadow: elevated 
+    ? '0 8px 32px -4px rgba(0, 0, 0, 0.05)'
+    : 'none',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    background: 'rgba(255, 255, 255, 0.9)',
   },
-
-  '& .MuiToolbar-root': {
-    height: '64px',
-    minHeight: '64px !important',
-    padding: '0 24px',
-  },
-}));
-
-const StyledDrawer = styled(Drawer)(({ theme }) => ({
-  '& .MuiDrawer-paper': {
-    background: 'transparent',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    borderRight: 'none',
-    width: 280,
-    padding: theme.spacing(2),
-    position: 'relative',
-
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-      zIndex: -1,
-    },
-
-    '&::after': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      right: 0,
-      bottom: 0,
-      width: '1px',
-      background: 'linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%)',
-    },
-  },
-}));
-
-const NavLink = styled(Link)(({ theme }) => ({
-  color: theme.palette.text.primary,
-  textDecoration: 'none',
-  padding: theme.spacing(1, 2),
-  borderRadius: '8px',
-  transition: 'all 0.3s ease-in-out',
-  position: 'relative',
-  overflow: 'hidden',
-  
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -114,229 +44,306 @@ const NavLink = styled(Link)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-    opacity: 0,
-    transition: 'opacity 0.3s ease-in-out',
-    zIndex: -1,
+    background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%)',
+    pointerEvents: 'none',
   },
+}));
 
-  '&::after': {
+const NavButton = styled(Button)(({ theme, active }) => ({
+  color: active ? theme.palette.primary.main : theme.palette.text.primary,
+  fontWeight: active ? 600 : 500,
+  fontSize: '0.95rem',
+  padding: '10px 20px',
+  borderRadius: '12px',
+  textTransform: 'none',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  overflow: 'hidden',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  '&::before': {
     content: '""',
     position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     bottom: 0,
-    left: '50%',
-    width: 0,
-    height: '2px',
-    background: 'linear-gradient(90deg, #2196F3, #21CBF3)',
-    transition: 'all 0.3s ease-in-out',
-    transform: 'translateX(-50%)',
+    background: 'linear-gradient(120deg, rgba(59, 15, 107, 0.12) 0%, rgba(79, 28, 137, 0.12) 100%)',
+    opacity: 0,
+    transition: 'opacity 0.3s ease',
   },
-
   '&:hover': {
-    color: theme.palette.primary.main,
-
+    transform: 'translateY(-2px)',
     '&::before': {
       opacity: 1,
     },
+  },
+  '&:active': {
+    transform: 'translateY(1px)',
+  },
+  '& svg': {
+    width: 20,
+    height: 20,
+    transition: 'transform 0.2s ease',
+  },
+  '&:hover svg': {
+    transform: 'scale(1.1)',
+  },
+  ...(active && {
+    backgroundColor: 'rgba(59, 15, 107, 0.08)',
+    '&::before': {
+      opacity: 1,
+    },
+  }),
+}));
 
-    '&::after': {
-      width: '80%',
+const GradientButton = styled(Button)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #3b0f6b 0%, #4f1c89 100%)',
+  color: 'white',
+  fontWeight: 600,
+  padding: '10px 24px',
+  borderRadius: '12px',
+  textTransform: 'none',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  overflow: 'hidden',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)',
+    opacity: 0,
+    transition: 'opacity 0.3s ease',
+  },
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 24px rgba(59, 15, 107, 0.25)',
+    '&::before': {
+      opacity: 1,
+    },
+  },
+  '&:active': {
+    transform: 'translateY(1px)',
+    boxShadow: '0 4px 12px rgba(59, 15, 107, 0.2)',
+  },
+  '& svg': {
+    width: 20,
+    height: 20,
+    transition: 'transform 0.2s ease',
+  },
+  '&:hover svg': {
+    transform: 'scale(1.1)',
+  },
+}));
+
+const Logo = styled(Typography)(({ theme }) => ({
+  fontWeight: 800,
+  fontSize: '1.5rem',
+  background: 'linear-gradient(135deg, #3b0f6b 0%, #4f1c89 100%)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  marginRight: theme.spacing(2),
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  transition: 'all 0.3s ease',
+  '& svg': {
+    width: 28,
+    height: 28,
+    transition: 'transform 0.3s ease',
+  },
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    '& svg': {
+      transform: 'scale(1.1) rotate(-5deg)',
     },
   },
 }));
 
-export default function Navbar() {
+const pages = [
+  { name: 'Home', href: '/', icon: <Home /> },
+  { name: 'Properties', href: '/properties', icon: <Building2 /> },
+  { name: 'Post Property', href: '/post-property', icon: <PlusSquare /> },
+];
+
+const authPages = [
+  { name: 'Sign Up', href: '/signup', icon: <UserPlus />, gradient: true },
+  { name: 'Login', href: '/login', icon: <LogIn /> },
+  { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard /> },
+];
+
+function Navbar() {
+  const [anchorElNav, setAnchorElNav] = useState(null);
+  const trigger = useScrollTrigger({
+    disableHysteresis: true,
+    threshold: 100,
+  });
   const router = useRouter();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { user, logout } = useAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+  const handleOpenNavMenu = (event) => {
+    setAnchorElNav(event.currentTarget);
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleCloseNavMenu = () => {
+    setAnchorElNav(null);
   };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/login');
-    } catch (error) {
-      console.error('Failed to logout', error);
-    }
-  };
-
-  const menuItems = [
-    { text: 'Home', icon: <Home />, href: '/' },
-    { text: 'Search', icon: <Search />, href: '/search' },
-    { text: 'Add Property', icon: <AddIcon />, href: '/add-property' },
-    { text: 'Favorites', icon: <Favorite />, href: '/favorites' },
-  ];
-
-  const drawer = (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Rent House BD
-        </Typography>
-        <IconButton onClick={handleDrawerToggle}>
-          <ChevronRight />
-        </IconButton>
-      </Box>
-      <Divider sx={{ mb: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-      <List>
-        {menuItems.map((item) => (
-          <ListItem
-            key={item.text}
-            component={Link}
-            href={item.href}
-            sx={{
-              borderRadius: 1,
-              mb: 1,
-              '&:hover': {
-                background: 'rgba(255, 255, 255, 0.1)',
-              },
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
 
   return (
-    <>
-      <GlassAppBar elevation={0}>
-        <Toolbar disableGutters>
-          {isMobile ? (
+    <GlassAppBar 
+      position="sticky" 
+      elevation={0}
+      elevated={trigger}
+      sx={{
+        py: 1.5,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Toolbar disableGutters sx={{ gap: { xs: 1, md: 2 } }}>
+          {/* Logo */}
+          <Link href="/" passHref style={{ textDecoration: 'none' }}>
+            <Logo>
+              <Building2 />
+              Rent House BD
+            </Logo>
+          </Link>
+
+          {/* Mobile Menu */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
-              color="inherit"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2 }}
+              size="large"
+              onClick={handleOpenNavMenu}
+              sx={{
+                color: 'text.primary',
+                borderRadius: '12px',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  backgroundColor: 'rgba(59, 15, 107, 0.08)',
+                  transform: 'translateY(-1px)',
+                },
+                '&:active': {
+                  transform: 'translateY(1px)',
+                },
+              }}
             >
               <MenuIcon />
             </IconButton>
-          ) : null}
-          
-          <Typography
-            variant="h6"
-            component={Link}
-            href="/"
-            sx={{
-              flexGrow: 1,
-              textDecoration: 'none',
-              color: 'inherit',
-              fontWeight: 700,
-            }}
-          >
-            Rent House BD
-          </Typography>
-
-          {!isMobile && (
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mr: 2 }}>
-              {menuItems.map((item) => (
-                <NavLink key={item.text} href={item.href}>
-                  {item.text}
-                </NavLink>
-              ))}
-            </Box>
-          )}
-
-          {user ? (
-            <>
-              <IconButton onClick={handleMenuOpen}>
-                <Avatar
-                  src={user.photoURL}
-                  alt={user.displayName}
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    border: '2px solid rgba(255, 255, 255, 0.2)',
-                    transition: 'all 0.3s ease-in-out',
+            <Menu
+              anchorEl={anchorElNav}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{ display: { xs: 'block', md: 'none' } }}
+              PaperProps={{
+                elevation: 0,
+                sx: {
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(20px) saturate(180%)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: '16px',
+                  mt: 1.5,
+                  overflow: 'hidden',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    background: 'linear-gradient(90deg, #3b0f6b, #4f1c89)',
+                  },
+                  '& .MuiMenuItem-root': {
+                    borderRadius: '8px',
+                    mx: 1,
+                    my: 0.5,
+                    gap: 1.5,
+                    transition: 'all 0.2s ease',
                     '&:hover': {
-                      borderColor: 'primary.main',
+                      backgroundColor: 'rgba(59, 15, 107, 0.08)',
+                      transform: 'translateX(4px)',
                     },
-                  }}
-                />
-              </IconButton>
-              <GlassMenu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                <Box sx={{ px: 2, py: 1, textAlign: 'center' }}>
-                  <Avatar
-                    src={user.photoURL}
-                    alt={user.displayName}
-                    sx={{ width: 60, height: 60, mx: 'auto', mb: 1 }}
-                  />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    {user.displayName}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {user.email}
-                  </Typography>
-                </Box>
-                <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-                <GlassMenuItem component={Link} href="/profile">
-                  <Person /> Profile
-                </GlassMenuItem>
-                <GlassMenuItem component={Link} href="/settings">
-                  <Settings /> Settings
-                </GlassMenuItem>
-                <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-                <GlassMenuItem onClick={handleLogout} className="danger">
-                  <Logout /> Logout
-                </GlassMenuItem>
-              </GlassMenu>
-            </>
-          ) : (
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <GlassButton
-                component={Link}
-                href="/login"
-                variant="outlined"
-                size="small"
-              >
-                Login
-              </GlassButton>
-              <GlassButton
-                component={Link}
-                href="/register"
-                variant="contained"
-                size="small"
-              >
-                Register
-              </GlassButton>
-            </Box>
-          )}
-        </Toolbar>
-      </GlassAppBar>
+                  },
+                },
+              }}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            >
+              {[...pages, ...authPages].map((page) => (
+                <Link
+                  key={page.name}
+                  href={page.href}
+                  passHref
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <MenuItem 
+                    onClick={handleCloseNavMenu}
+                    selected={router.pathname === page.href}
+                  >
+                    {page.icon}
+                    <Typography 
+                      sx={{ 
+                        fontWeight: router.pathname === page.href ? 600 : 400,
+                        color: router.pathname === page.href ? 'primary.main' : 'inherit',
+                      }}
+                    >
+                      {page.name}
+                    </Typography>
+                  </MenuItem>
+                </Link>
+              ))}
+            </Menu>
+          </Box>
 
-      {isMobile && (
-        <StyledDrawer
-          variant="temporary"
-          anchor="left"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile
-          }}
-        >
-          {drawer}
-        </StyledDrawer>
-      )}
-    </>
+          {/* Desktop Menu */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 1, ml: 4 }}>
+            {pages.map((page) => (
+              <Link
+                key={page.name}
+                href={page.href}
+                passHref
+                style={{ textDecoration: 'none' }}
+              >
+                <NavButton active={router.pathname === page.href}>
+                  {page.icon}
+                  {page.name}
+                </NavButton>
+              </Link>
+            ))}
+          </Box>
+
+          {/* Auth Buttons - Desktop */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
+            {authPages.map((page) => (
+              <Link
+                key={page.name}
+                href={page.href}
+                passHref
+                style={{ textDecoration: 'none' }}
+              >
+                {page.gradient ? (
+                  <GradientButton>
+                    {page.icon}
+                    {page.name}
+                  </GradientButton>
+                ) : (
+                  <NavButton active={router.pathname === page.href}>
+                    {page.icon}
+                    {page.name}
+                  </NavButton>
+                )}
+              </Link>
+            ))}
+          </Box>
+        </Toolbar>
+      </Container>
+    </GlassAppBar>
   );
 }
+
+export default Navbar;
