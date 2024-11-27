@@ -110,6 +110,14 @@ bookingSchema.virtual('durationMonths').get(function() {
   return Math.ceil((this.endDate - this.startDate) / (1000 * 60 * 60 * 24 * 30));
 });
 
+// Add validation for booking dates
+bookingSchema.pre('validate', function(next) {
+  if (this.startDate >= this.endDate) {
+    throw new Error('End date must be after start date');
+  }
+  next();
+});
+
 // Ensure end date is after start date
 bookingSchema.pre('save', function(next) {
   if (this.endDate <= this.startDate) {

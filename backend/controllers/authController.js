@@ -49,9 +49,10 @@ exports.register = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Error during registration:', error);
     res.status(500).json({
-      message: 'Registration failed. Please try again.'
+      message: 'An error occurred during registration. Please try again later.',
+      error: error.message
     });
   }
 };
@@ -98,7 +99,8 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({
-      message: 'Login failed. Please try again.'
+      message: 'An error occurred during login. Please try again later.',
+      error: error.message
     });
   }
 };
@@ -114,9 +116,11 @@ exports.getMe = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error getting current user:', error);
+    res.status(500).json({
       success: false,
-      message: error.message,
+      message: 'An error occurred while getting current user.',
+      error: error.message
     });
   }
 };
@@ -172,9 +176,11 @@ exports.createAdmin = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error creating admin user:', error);
+    res.status(500).json({
       success: false,
-      message: error.message,
+      message: 'An error occurred while creating admin user.',
+      error: error.message
     });
   }
 };
@@ -222,9 +228,11 @@ exports.updateUserRole = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error updating user role:', error);
+    res.status(500).json({
       success: false,
-      message: error.message,
+      message: 'An error occurred while updating user role.',
+      error: error.message
     });
   }
 };
@@ -262,11 +270,11 @@ exports.changePassword = async (req, res) => {
       message: 'Password updated successfully',
     });
   } catch (error) {
-    console.error('Change password error:', error);
+    console.error('Error changing password:', error);
     res.status(500).json({
       success: false,
-      message: 'Error changing password',
-      error: error.message,
+      message: 'An error occurred while changing password.',
+      error: error.message
     });
   }
 };
@@ -322,11 +330,11 @@ exports.deleteAccount = async (req, res) => {
       message: 'Account deleted successfully',
     });
   } catch (error) {
-    console.error('Account deletion error:', error);
+    console.error('Error deleting account:', error);
     res.status(500).json({
       success: false,
-      message: 'Error deleting account',
-      error: error.message,
+      message: 'An error occurred while deleting account.',
+      error: error.message
     });
   }
 };

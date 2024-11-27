@@ -6,44 +6,55 @@ const { catchAsync, NotFoundError, ValidationError } = require('../utils/errorHa
 // @route   POST /api/bookings
 // @access  Private
 exports.createBooking = catchAsync(async (req, res) => {
-  // Get property and check if it exists
-  const property = await Property.findById(req.body.property);
-  if (!property) {
-    throw new NotFoundError('Property not found');
+  try {
+    const { property, startDate, endDate, totalAmount } = req.body;
+    const tenantId = req.user.id;
+
+    // Get property and check if it exists
+    const propertyDoc = await Property.findById(property);
+    if (!propertyDoc) {
+      throw new NotFoundError('Property not found');
+    }
+
+    // Check if property is available for the requested dates
+    const isAvailable = await Booking.checkAvailability(
+      propertyDoc._id,
+      new Date(startDate),
+      new Date(endDate)
+    );
+
+    if (!isAvailable) {
+      throw new ValidationError('Property is not available for these dates');
+    }
+
+    // Create booking
+    const booking = await Booking.create({
+      property: propertyDoc._id,
+      tenant: tenantId,
+      owner: propertyDoc.owner,
+      startDate,
+      endDate,
+      totalAmount: totalAmount || 0,
+      status: 'pending'
+    });
+
+    // Calculate total amount if not provided
+    if (!totalAmount) {
+      await booking.calculateTotalAmount();
+    }
+
+    res.status(201).json({
+      success: true,
+      data: booking
+    });
+  } catch (error) {
+    console.error('Error creating booking:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while creating the booking. Please try again later.',
+      error: error.message
+    });
   }
-
-  // Check if property is available for the requested dates
-  const isAvailable = await Booking.checkAvailability(
-    property._id,
-    new Date(req.body.startDate),
-    new Date(req.body.endDate)
-  );
-
-  if (!isAvailable) {
-    throw new ValidationError('Property is not available for these dates');
-  }
-
-  // Create booking
-  const booking = new Booking({
-    property: property._id,
-    tenant: req.user.id,
-    owner: property.owner,
-    startDate: req.body.startDate,
-    endDate: req.body.endDate,
-    totalAmount: req.body.totalAmount || 0
-  });
-
-  // Calculate total amount if not provided
-  if (!req.body.totalAmount) {
-    await booking.calculateTotalAmount();
-  }
-
-  await booking.save();
-
-  res.status(201).json({
-    success: true,
-    data: booking
-  });
 });
 
 // @desc    Get all bookings

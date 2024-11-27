@@ -127,56 +127,63 @@ exports.getChatMessages = asyncHandler(async (req, res, next) => {
 // @route   POST /api/chats/:chatId/messages
 // @access  Private
 exports.sendMessage = asyncHandler(async (req, res, next) => {
-  const { chatId } = req.params;
-  const { content, type = 'text', attachments = [] } = req.body;
+  try {
+    const { chatId } = req.params;
+    const { content, type = 'text', attachments = [] } = req.body;
+    const senderId = req.user._id;
 
-  const chat = await Chat.findById(chatId);
-  if (!chat) {
-    return next(new ErrorResponse(`Chat not found with id of ${chatId}`, 404));
-  }
-
-  // Make sure user is part of the chat
-  if (!chat.participants.includes(req.user._id)) {
-    return next(new ErrorResponse(`Not authorized to send message in this chat`, 401));
-  }
-
-  // Create message
-  const message = await Message.create({
-    chat: chatId,
-    sender: req.user._id,
-    content,
-    type,
-    attachments
-  });
-
-  // Update chat's last message
-  chat.lastMessage = message._id;
-  chat.updatedAt = Date.now();
-  await chat.save();
-
-  // Populate sender info
-  await message.populate('sender', 'name avatar');
-
-  // Create notification for other participants
-  const otherParticipants = chat.participants.filter(
-    p => p.toString() !== req.user._id.toString()
-  );
-
-  await Notification.create({
-    recipients: otherParticipants,
-    type: 'message',
-    title: `New message from ${req.user.name}`,
-    message: content.substring(0, 100),
-    data: {
-      chatId,
-      messageId: message._id
+    // Validate chat existence
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      return next(new ErrorResponse(`Chat not found with id of ${chatId}`, 404));
     }
-  });
 
-  res.status(201).json({
-    success: true,
-    data: message
-  });
+    // Make sure user is part of the chat
+    if (!chat.participants.includes(senderId)) {
+      return next(new ErrorResponse(`Not authorized to send message in this chat`, 401));
+    }
+
+    // Create message
+    const message = await Message.create({
+      chat: chatId,
+      sender: senderId,
+      content,
+      type,
+      attachments
+    });
+
+    // Update chat's last message
+    chat.lastMessage = message._id;
+    chat.updatedAt = Date.now();
+    await chat.save();
+
+    // Populate sender info
+    await message.populate('sender', 'name avatar');
+
+    // Create notification for other participants
+    const otherParticipants = chat.participants.filter(
+      p => p.toString() !== senderId.toString()
+    );
+
+    await Notification.create({
+      recipients: otherParticipants,
+      type: 'message',
+      title: `New message from ${req.user.name}`,
+      message: content.substring(0, 100),
+      data: {
+        chatId,
+        messageId: message._id
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      data: message
+    });
+  } catch (error) {
+    console.error('Error sending message:', error);
+    return next(new ErrorResponse(`An error occurred while sending the message. Please try again later.`, 500));
+  }
 });
 
 // @desc    Delete message
@@ -271,7 +278,7 @@ exports.markChatAsRead = asyncHandler(async (req, res, next) => {
       read: false
     },
     {
-      $set: { read: true, readAt: Date.now() }
+      $set: { read: true, readAt: new Date() }
     }
   );
 

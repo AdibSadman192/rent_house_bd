@@ -139,3 +139,39 @@ exports.deleteNotification = asyncHandler(async (req, res) => {
         data: {}
     });
 });
+
+// @desc    Create a notification
+// @route   POST /api/notifications
+// @access  Private
+exports.createNotification = async (req, res) => {
+    try {
+        const { recipients, type, title, message, data } = req.body;
+
+        // Validate recipients
+        if (!recipients || recipients.length === 0) {
+            return res.status(400).json({
+                message: 'Recipients are required'
+            });
+        }
+
+        // Create notification
+        const notification = await Notification.create({
+            recipients,
+            type,
+            title,
+            message,
+            data
+        });
+
+        res.status(201).json({
+            message: 'Notification created successfully',
+            notification
+        });
+    } catch (error) {
+        console.error('Error creating notification:', error);
+        res.status(500).json({
+            message: 'An error occurred while creating the notification. Please try again later.',
+            error: error.message
+        });
+    }
+};

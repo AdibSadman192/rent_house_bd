@@ -1,460 +1,187 @@
-import React, { useState, useEffect } from 'react';
-import {
-  AppBar,
-  Box,
-  Toolbar,
-  IconButton,
-  Typography,
-  Menu,
-  Container,
-  Avatar,
-  Button,
-  Tooltip,
-  MenuItem,
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  Badge,
-  styled,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Notifications as NotificationsIcon,
-  Person as PersonIcon,
-  Dashboard as DashboardIcon,
-  Settings as SettingsIcon,
-  Logout as LogoutIcon,
-  AdminPanelSettings as AdminIcon,
-  Home as HomeIcon,
-  Search as SearchIcon,
-  Apartment as ApartmentIcon,
-  Add as AddIcon,
-} from '@mui/icons-material';
-import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { motion } from 'framer-motion';
-
-// Styled Components
-const NavbarContainer = styled(AppBar)(({ theme }) => ({
-  position: 'fixed',
-  top: '20px',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  width: '95%',
-  maxWidth: '1400px',
-  background: 'rgba(255, 255, 255, 0.7)',
-  backdropFilter: 'blur(20px)',
-  borderRadius: '50px',
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-  padding: theme.spacing(1, 2),
-  zIndex: theme.zIndex.appBar,
-}));
-
-const StyledBadge = styled(Badge)(({ theme }) => ({
-  '& .MuiBadge-badge': {
-    background: 'linear-gradient(135deg, #FF6B6B 0%, #FF4081 100%)',
-    color: 'white',
-    fontWeight: 'bold',
-    boxShadow: '0 4px 12px rgba(255, 64, 129, 0.3)',
-  },
-}));
-
-const LogoText = styled(Typography)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  fontWeight: 800,
-  letterSpacing: '0.1em',
-  textDecoration: 'none',
-  fontSize: '1.5rem',
-}));
-
-const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
-  borderRadius: '8px',
-  margin: '4px 0',
-  padding: '8px 16px',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    background: 'rgba(255, 255, 255, 0.2)',
-    transform: 'translateX(4px)',
-  },
-  '& .MuiListItemIcon-root': {
-    color: theme.palette.primary.main,
-  },
-}));
+import { useRouter } from 'next/router';
+import { Menu, X, User, LogOut, Home, Search, PlusCircle, Bell } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
-  const { user, handleLogout } = useAuth();
-  const router = useRouter();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  const [anchorElNav, setAnchorElNav] = useState(null);
-  const [anchorElUser, setAnchorElUser] = useState(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, logout } = useAuth();
+  const router = useRouter();
 
-  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
   };
 
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleMenuClick = (path) => {
-    handleCloseNavMenu();
-    router.push(path);
-  };
-
-  // Navigation items based on user role
-  const getNavigationItems = () => {
-    const items = [
-      { label: 'Home', path: '/', icon: <HomeIcon /> },
-      { label: 'Search', path: '/search', icon: <SearchIcon /> },
-      { label: 'Properties', path: '/properties', icon: <ApartmentIcon /> },
-    ];
-
-    if (user) {
-      if (user.role === 'renter') {
-        items.push({
-          label: 'Add Property',
-          path: '/properties/add',
-          icon: <AddIcon />,
-        });
-      }
-      if (['admin', 'super-admin'].includes(user.role)) {
-        items.push({
-          label: 'Admin',
-          path: '/admin/dashboard',
-          icon: <AdminIcon />,
-        });
-      }
-    }
-
-    return items;
-  };
-
-  // User menu items based on role
-  const getUserMenuItems = () => {
-    if (!user) {
-      return [
-        { label: 'Login', path: '/login', icon: <PersonIcon /> },
-        { label: 'Register', path: '/register', icon: <AddIcon /> },
-      ];
-    }
-
-    const items = [
-      { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
-      { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
-      { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
-    ];
-
-    if (user.role === 'super-admin') {
-      items.push({
-        label: 'Admin Panel',
-        path: '/admin/dashboard',
-        icon: <AdminIcon />,
-      });
-    }
-
-    items.push({
-      label: 'Logout',
-      onClick: async () => {
-        await handleLogout();
-        handleCloseUserMenu();
-      },
-      icon: <LogoutIcon />,
-    });
-
-    return items;
-  };
-
-  const navigationItems = getNavigationItems();
-  const userMenuItems = getUserMenuItems();
-
-  const drawer = (
-    <Box onClick={handleDrawerToggle}>
-      <List>
-        {navigationItems.map((item) => (
-          <ListItem
-            button
-            key={item.label}
-            onClick={() => handleMenuClick(item.path)}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {userMenuItems.map((item) => (
-          <ListItem
-            button
-            key={item.label}
-            onClick={item.onClick || (() => handleMenuClick(item.path))}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
+  const navLinks = [
+    { href: '/', label: 'Home', icon: Home },
+    { href: '/search', label: 'Search', icon: Search },
+    { href: '/list-property', label: 'List Property', icon: PlusCircle },
+  ];
 
   return (
-    <NavbarContainer elevation={0}>
-      <Container maxWidth="lg">
-        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-          <Link href="/" passHref>
-            <LogoText
-              component="a"
-              sx={{
-                mr: 4,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-              }}
-            >
-              <HomeIcon sx={{ fontSize: '1.8rem' }} />
-              RENT HOUSE BD
-            </LogoText>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-white shadow-md' : 'bg-transparent'
+      }`}
+    >
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2">
+            <span className={`text-xl font-bold ${isScrolled ? 'text-primary-600' : 'text-white'}`}>
+              RentHouse<span className="text-primary-500">BD</span>
+            </span>
           </Link>
 
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
-            {navigationItems.map((item, index) => (
-              <motion.div
-                key={item.label}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center space-x-1 ${
+                  isScrolled ? 'text-gray-700 hover:text-primary-600' : 'text-white hover:text-primary-200'
+                }`}
               >
-                <Button
-                  onClick={() => handleMenuClick(item.path)}
-                  startIcon={item.icon}
-                >
-                  {item.label}
-                </Button>
-              </motion.div>
+                <Icon className="w-4 h-4" />
+                <span>{label}</span>
+              </Link>
             ))}
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {user && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                <IconButton
-                  sx={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(4px)',
-                    borderRadius: '12px',
-                    width: 40,
-                    height: 40,
-                    '&:hover': {
-                      background: 'rgba(255, 255, 255, 0.2)',
-                    },
-                  }}
+          {/* User Menu */}
+          <div className="hidden md:flex items-center space-x-4">
+            {user ? (
+              <div className="relative group">
+                <button
+                  className={`flex items-center space-x-2 ${
+                    isScrolled ? 'text-gray-700 hover:text-primary-600' : 'text-white hover:text-primary-200'
+                  }`}
                 >
-                  <StyledBadge badgeContent={4} color="error">
-                    <NotificationsIcon />
-                  </StyledBadge>
-                </IconButton>
-              </motion.div>
-            )}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Tooltip title={user ? `${user.name} (${user.role})` : 'Account'}>
-                <IconButton 
-                  onClick={handleOpenUserMenu}
-                  sx={{
-                    p: 0.5,
-                    border: '2px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '14px',
-                    '&:hover': {
-                      border: '2px solid rgba(255, 255, 255, 0.4)',
-                    },
-                  }}
-                >
-                  <Avatar
-                    alt={user?.name || 'Guest'}
-                    src={user?.avatar}
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      bgcolor: user ? 'primary.main' : 'grey.500',
-                      background: user 
-                        ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`
-                        : undefined,
-                    }}
+                  <User className="w-5 h-5" />
+                  <span>{user.name}</span>
+                </button>
+                <div className="absolute right-0 w-48 mt-2 py-2 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    {user?.name?.charAt(0) || 'G'}
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
-            </motion.div>
-            <Menu
-              sx={{
-                mt: '45px',
-                '& .MuiPaper-root': {
-                  background: 'rgba(255, 255, 255, 0.8)',
-                  backdropFilter: 'blur(20px)',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-                  minWidth: 220,
-                },
-              }}
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {userMenuItems.map((item, index) => (
-                <StyledMenuItem
-                  key={item.label}
-                  onClick={item.onClick || (() => handleMenuClick(item.path))}
+                    Profile
+                  </Link>
+                  <Link
+                    href="/dashboard"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-x-4">
+                <Link
+                  href="/login"
+                  className={`px-4 py-2 rounded-lg ${
+                    isScrolled
+                      ? 'text-primary-600 hover:text-primary-700'
+                      : 'text-white hover:text-primary-200'
+                  }`}
                 >
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <Typography>{item.label}</Typography>
-                </StyledMenuItem>
-              ))}
-            </Menu>
-          </Box>
-        </Toolbar>
-      </Container>
-    </NavbarContainer>
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
+          </div>
 
-    {/* Mobile Drawer */}
-    <Drawer
-      variant="temporary"
-      anchor="left"
-      open={mobileOpen}
-      onClose={handleDrawerToggle}
-      ModalProps={{
-        keepMounted: true,
-      }}
-      sx={{
-        display: { xs: 'block', md: 'none' },
-      }}
-    >
-      <Box sx={{ mb: 4, px: 2 }}>
-        <LogoText sx={{ fontSize: '1.8rem' }}>
-          <HomeIcon sx={{ fontSize: '2rem', mr: 1 }} />
-          RENT HOUSE BD
-        </LogoText>
-      </Box>
-      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-      <List sx={{ px: 1 }}>
-        {navigationItems.map((item, index) => (
-          <motion.div
-            key={item.label}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={`md:hidden ${isScrolled ? 'text-gray-700' : 'text-white'}`}
           >
-            <ListItem
-              button
-              onClick={() => handleMenuClick(item.path)}
-              sx={{
-                borderRadius: '12px',
-                mb: 1,
-                '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  transform: 'translateX(4px)',
-                },
-              }}
-            >
-              <ListItemIcon sx={{ color: 'primary.main' }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText 
-                primary={item.label}
-                primaryTypographyProps={{
-                  fontWeight: 500,
-                }}
-              />
-            </ListItem>
-          </motion.div>
-        ))}
-      </List>
-      <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-      <List sx={{ px: 1 }}>
-        {userMenuItems.map((item, index) => (
-          <motion.div
-            key={item.label}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: (index + navigationItems.length) * 0.1 }}
-          >
-            <ListItem
-              button
-              onClick={item.onClick || (() => handleMenuClick(item.path))}
-              sx={{
-                borderRadius: '12px',
-                mb: 1,
-                '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  transform: 'translateX(4px)',
-                },
-              }}
-            >
-              <ListItemIcon sx={{ color: 'primary.main' }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText 
-                primary={item.label}
-                primaryTypographyProps={{
-                  fontWeight: 500,
-                }}
-              />
-            </ListItem>
-          </motion.div>
-        ))}
-      </List>
-    </Drawer>
-  </>;
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isOpen && (
+          <div className="md:hidden bg-white shadow-lg rounded-lg mt-2 py-4">
+            {navLinks.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center space-x-2 px-4 py-3 text-gray-700 hover:bg-gray-100"
+                onClick={() => setIsOpen(false)}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{label}</span>
+              </Link>
+            ))}
+            {user ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="flex items-center space-x-2 px-4 py-3 text-gray-700 hover:bg-gray-100"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <User className="w-5 h-5" />
+                  <span>Profile</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  className="w-full flex items-center space-x-2 px-4 py-3 text-red-600 hover:bg-gray-100"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              <div className="px-4 py-3 space-y-2">
+                <Link
+                  href="/login"
+                  className="block w-full px-4 py-2 text-center text-primary-600 hover:bg-gray-100 rounded-lg"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="block w-full px-4 py-2 text-center bg-primary-600 text-white hover:bg-primary-700 rounded-lg"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Register
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </nav>
+  );
 };
 
 export default Navbar;

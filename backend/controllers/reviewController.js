@@ -31,18 +31,45 @@ exports.getReview = catchAsync(async (req, res) => {
 });
 
 // Create review
-exports.createReview = catchAsync(async (req, res) => {
-  // Add user and property to req.body
-  req.body.userId = req.user.id;
-  req.body.propertyId = req.params.propertyId;
-  
-  const review = await Review.create(req.body);
-  
-  res.status(201).json({
-    success: true,
-    data: review
-  });
-});
+exports.createReview = async (req, res) => {
+  try {
+    const { propertyId, rating, comment } = req.body;
+    const userId = req.user.id;
+
+    // Validate property existence
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({
+        message: 'Property not found'
+      });
+    }
+
+    // Check if user has already reviewed the property
+    const existingReview = await Review.findOne({ propertyId: propertyId, userId: userId });
+    if (existingReview) {
+      return res.status(400).json({
+        message: 'You have already reviewed this property'
+      });
+    }
+
+    // Add review
+    req.body.userId = req.user.id;
+    req.body.propertyId = req.params.propertyId;
+    
+    const review = await Review.create(req.body);
+    
+    res.status(201).json({
+      success: true,
+      data: review
+    });
+  } catch (error) {
+    console.error('Error adding review:', error);
+    res.status(500).json({
+      message: 'An error occurred while adding the review. Please try again later.',
+      error: error.message
+    });
+  }
+};
 
 // Update review
 exports.updateReview = catchAsync(async (req, res) => {

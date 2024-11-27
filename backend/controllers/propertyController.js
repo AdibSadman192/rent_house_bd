@@ -177,11 +177,19 @@ exports.getProperty = async (req, res) => {
 // @access  Private/Renter
 exports.createProperty = async (req, res) => {
   try {
-    // Add owner to req.body
-    req.body.owner = req.user.id;
+    const { title, description, address, price, propertyType, images } = req.body;
+
+    // Check if property already exists
+    const propertyExists = await Property.findOne({ title, owner: req.user.id });
+    if (propertyExists) {
+      return res.status(400).json({
+        success: false,
+        message: 'Property with this title already exists for the owner'
+      });
+    }
 
     // Validate Bangladesh-specific fields
-    if (!req.body.address.division || !req.body.address.district || !req.body.address.thana) {
+    if (!address.division || !address.district || !address.thana) {
       return res.status(400).json({
         success: false,
         message: 'Please provide complete Bangladesh address (division, district, and thana)'
@@ -189,7 +197,7 @@ exports.createProperty = async (req, res) => {
     }
 
     // Validate postal code format (Bangladesh)
-    if (!/^\d{4}$/.test(req.body.address.postCode)) {
+    if (!/^\d{4}$/.test(address.postCode)) {
       return res.status(400).json({
         success: false,
         message: 'Please provide a valid Bangladesh postal code (4 digits)'
@@ -197,36 +205,48 @@ exports.createProperty = async (req, res) => {
     }
 
     // Set default country
-    req.body.address.country = 'Bangladesh';
+    address.country = 'Bangladesh';
 
     // Convert price to BDT if not specified
-    if (!req.body.price.currency) {
-      req.body.price.currency = 'BDT';
+    if (!price.currency) {
+      price.currency = 'BDT';
     }
 
     // Process images
-    if (req.body.images && req.body.images.length > 0) {
-      req.body.images = await Promise.all(req.body.images.map(async (image) => ({
-        url: await getValidImageUrl(image.url, 'property', req.body.propertyType),
-        alt: image.alt || `${req.body.propertyType} Image`
+    if (images && images.length > 0) {
+      images = await Promise.all(images.map(async (image) => ({
+        url: await getValidImageUrl(image.url, 'property', propertyType),
+        alt: image.alt || `${propertyType} Image`
       })));
     } else {
-      req.body.images = [{
-        url: await getValidImageUrl(null, 'property', req.body.propertyType),
-        alt: `${req.body.propertyType} Default Image`
+      images = [{
+        url: await getValidImageUrl(null, 'property', propertyType),
+        alt: `${propertyType} Default Image`
       }];
     }
 
-    const property = await Property.create(req.body);
+    // Create property
+    const property = await Property.create({
+      title,
+      description,
+      address,
+      price,
+      propertyType,
+      images,
+      owner: req.user.id
+    });
 
     res.status(201).json({
       success: true,
+      message: 'Property created successfully',
       data: property
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error creating property:', error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: 'An error occurred while creating the property. Please try again later.',
+      error: error.message
     });
   }
 };
@@ -299,12 +319,15 @@ exports.updateProperty = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      message: 'Property updated successfully',
       data: property
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error updating property:', error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: 'An error occurred while updating the property. Please try again later.',
+      error: error.message
     });
   }
 };
@@ -335,12 +358,15 @@ exports.deleteProperty = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      message: 'Property deleted successfully',
       data: {}
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error deleting property:', error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: 'An error occurred while deleting the property. Please try again later.',
+      error: error.message
     });
   }
 };
@@ -381,12 +407,15 @@ exports.addPropertyRating = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      message: 'Rating added successfully',
       data: property
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error adding rating:', error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: 'An error occurred while adding the rating. Please try again later.',
+      error: error.message
     });
   }
 };
@@ -441,9 +470,11 @@ exports.getPropertiesInRadius = async (req, res) => {
       data: processedProperties
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error getting properties in radius:', error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: 'An error occurred while getting properties in radius. Please try again later.',
+      error: error.message
     });
   }
 };

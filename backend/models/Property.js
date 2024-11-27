@@ -342,6 +342,14 @@ propertySchema.methods.isAvailable = async function(startDate, endDate) {
   return conflictingBookings.length === 0;
 };
 
+// Add indexes to improve query performance
+propertySchema.index({
+  title: 'text',
+  description: 'text',
+  'address.division': 1,
+  'address.district': 1
+});
+
 // Add text index for search
 propertySchema.index({
   title: 'text',
