@@ -1,6 +1,13 @@
 [![Create Release](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml/badge.svg)](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml)
 # 🏠 rent_house_bd
 
+## 🖼️ Project Previews
+
+### Landing Page
+
+![Landing Preview](/preview/first_preview.jpeg)
+*Note: More screenshots will be added as the project progresses*
+
 ## 🌟 Overview
 A modern social media platform and service for house rentals in Bangladesh, connecting tenants with property owners through a community-driven approach.
 
@@ -129,13 +136,6 @@ The platform serves as both a social network and rental service, making it easie
 - [ ] AI chatbot
 - [ ] Complete admin dashboard
 
-## 🖼️ Project Previews
-
-### Landing Page
-
-![Landing Preview](/preview/first_preview.jpeg)
-*Note: More screenshots will be added as the project progresses*
-
 ## 🎯 Current Sprint Focus
 - Enhancing property search functionality
 - Implementing advanced filters
@@ -144,7 +144,6 @@ The platform serves as both a social network and rental service, making it easie
 - Adding more interactive elements to property listings
 
 ## 🔄 Recent Updates
-- Implemented glass-morphism design system
 - Added responsive navigation
 - Enhanced user authentication flow
 - Optimized property listing performance
