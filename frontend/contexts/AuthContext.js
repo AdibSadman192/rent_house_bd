@@ -1,11 +1,11 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import api from '../services/api';
 
 const AuthContext = createContext({});
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ['/login', '/register', '/', '/about', '/contact', '/properties'];
+const PUBLIC_ROUTES = ['/auth/login', '/auth/register', '/auth/forgot-password', '/', '/about', '/contact', '/properties'];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -45,75 +45,40 @@ export function AuthProvider({ children }) {
           localStorage.setItem('refreshToken', data.refreshToken);
         }
         setUser(data.user);
+        router.push('/dashboard');
       }
       return data;
     } catch (error) {
-      console.error('Login error:', error);
-      const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
-      throw new Error(message);
+      console.error('Login failed:', error);
+      throw error;
     }
   };
 
-  const register = async (userData) => {
-    try {
-      const { data } = await api.post('/auth/register', userData);
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-        if (data.refreshToken) {
-          localStorage.setItem('refreshToken', data.refreshToken);
-        }
-        setUser(data.user);
-      }
-      return data;
-    } catch (error) {
-      console.error('Registration error:', error);
-      const message = error.response?.data?.message || 'Registration failed. Please try again.';
-      throw new Error(message);
-    }
-  };
-
-  const logout = async () => {
-    try {
-      await api.post('/auth/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      setUser(null);
-      router.push('/login');
-    }
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    setUser(null);
+    router.push('/auth/login');
   };
 
   // Protect routes
   useEffect(() => {
-    if (!initialized) return;
-
-    const isPublicRoute = PUBLIC_ROUTES.includes(router.pathname);
-    if (!loading && !user && !isPublicRoute) {
-      router.push('/login');
+    if (!loading && initialized && !PUBLIC_ROUTES.includes(router.pathname)) {
+      if (!user) {
+        router.push('/auth/login');
+      }
     }
-  }, [initialized, loading, user, router.pathname]);
+  }, [loading, initialized, user, router.pathname]);
 
   const value = {
     user,
     loading,
     login,
     logout,
-    register,
+    checkAuth
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!initialized ? (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          Loading...
-        </div>
-      ) : (
-        children
-      )}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

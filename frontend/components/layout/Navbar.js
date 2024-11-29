@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Menu, X, User, LogOut, Home, Search, PlusCircle, Bell } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, Search, PlusCircle, Bell, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
@@ -19,163 +19,135 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/login');
+    try {
+      await logout();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
-  const navLinks = [
+  const publicNavLinks = [
     { href: '/', label: 'Home', icon: Home },
-    { href: '/search', label: 'Search', icon: Search },
-    { href: '/list-property', label: 'List Property', icon: PlusCircle },
+    { href: '/properties', label: 'Properties', icon: Search },
+    { href: '/about', label: 'About', icon: null },
+    { href: '/contact', label: 'Contact', icon: null },
   ];
+
+  const authNavLinks = [
+    { href: '/dashboard', label: 'Dashboard', icon: User },
+    { href: '/list-property', label: 'List Property', icon: PlusCircle },
+    { href: '/notifications', label: 'Notifications', icon: Bell },
+    { href: '/settings', label: 'Settings', icon: Settings },
+  ];
+
+  const activeNavLinks = user ? [...publicNavLinks, ...authNavLinks] : publicNavLinks;
+
+  const closeMenu = () => {
+    setIsOpen(false);
+  };
+
+  useEffect(() => {
+    router.events.on('routeChangeComplete', closeMenu);
+    return () => router.events.off('routeChangeComplete', closeMenu);
+  }, [router]);
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white shadow-md' : 'bg-transparent'
+        isScrolled || isOpen ? 'bg-white shadow-md' : 'bg-transparent'
       }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <span className={`text-xl font-bold ${isScrolled ? 'text-primary-600' : 'text-white'}`}>
+          <Link 
+            href="/" 
+            className="flex items-center space-x-2 z-10"
+            onClick={closeMenu}
+          >
+            <span className={`text-xl font-bold ${
+              isScrolled || isOpen ? 'text-primary-600' : 'text-white'
+            }`}>
               RentHouse<span className="text-primary-500">BD</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map(({ href, label, icon: Icon }) => (
+            {activeNavLinks.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
                 className={`flex items-center space-x-1 ${
-                  isScrolled ? 'text-gray-700 hover:text-primary-600' : 'text-white hover:text-primary-200'
-                }`}
+                  isScrolled ? 'text-gray-700' : 'text-white'
+                } hover:text-primary-500 transition-colors`}
               >
-                <Icon className="w-4 h-4" />
+                {Icon && <Icon className="w-4 h-4" />}
                 <span>{label}</span>
               </Link>
             ))}
-          </div>
-
-          {/* User Menu */}
-          <div className="hidden md:flex items-center space-x-4">
-            {user ? (
-              <div className="relative group">
-                <button
-                  className={`flex items-center space-x-2 ${
-                    isScrolled ? 'text-gray-700 hover:text-primary-600' : 'text-white hover:text-primary-200'
-                  }`}
-                >
-                  <User className="w-5 h-5" />
-                  <span>{user.name}</span>
-                </button>
-                <div className="absolute right-0 w-48 mt-2 py-2 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Profile
-                  </Link>
-                  <Link
-                    href="/dashboard"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
+            {!user ? (
+              <Link
+                href="/auth/login"
+                className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+              >
+                Sign In
+              </Link>
             ) : (
-              <div className="space-x-4">
-                <Link
-                  href="/login"
-                  className={`px-4 py-2 rounded-lg ${
-                    isScrolled
-                      ? 'text-primary-600 hover:text-primary-700'
-                      : 'text-white hover:text-primary-200'
-                  }`}
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/register"
-                  className="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700"
-                >
-                  Register
-                </Link>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile menu button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className={`md:hidden ${isScrolled ? 'text-gray-700' : 'text-white'}`}
+            className="md:hidden p-2 rounded-md text-gray-700 hover:text-primary-500 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden bg-white shadow-lg rounded-lg mt-2 py-4">
-            {navLinks.map(({ href, label, icon: Icon }) => (
+          <div className="md:hidden absolute top-16 left-0 right-0 bg-white shadow-lg py-4 px-4 space-y-4">
+            {activeNavLinks.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
-                className="flex items-center space-x-2 px-4 py-3 text-gray-700 hover:bg-gray-100"
-                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors"
+                onClick={closeMenu}
               >
-                <Icon className="w-5 h-5" />
+                {Icon && <Icon className="w-4 h-4" />}
                 <span>{label}</span>
               </Link>
             ))}
-            {user ? (
-              <>
-                <Link
-                  href="/profile"
-                  className="flex items-center space-x-2 px-4 py-3 text-gray-700 hover:bg-gray-100"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <User className="w-5 h-5" />
-                  <span>Profile</span>
-                </Link>
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsOpen(false);
-                  }}
-                  className="w-full flex items-center space-x-2 px-4 py-3 text-red-600 hover:bg-gray-100"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span>Logout</span>
-                </button>
-              </>
+            {!user ? (
+              <Link
+                href="/auth/login"
+                className="block px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-center"
+                onClick={closeMenu}
+              >
+                Sign In
+              </Link>
             ) : (
-              <div className="px-4 py-3 space-y-2">
-                <Link
-                  href="/login"
-                  className="block w-full px-4 py-2 text-center text-primary-600 hover:bg-gray-100 rounded-lg"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/register"
-                  className="block w-full px-4 py-2 text-center bg-primary-600 text-white hover:bg-primary-700 rounded-lg"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Register
-                </Link>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors w-full"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
             )}
           </div>
         )}

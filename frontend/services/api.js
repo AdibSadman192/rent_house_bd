@@ -50,49 +50,102 @@ api.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error);
+    // Handle other error statuses
+    const errorMap = {
+      400: 'Bad Request',
+      403: 'Forbidden',
+      404: 'Not Found',
+      500: 'Internal Server Error'
+    };
+
+    const errorMessage = errorMap[error.response.status] || 'An unexpected error occurred';
+    return Promise.reject(new Error(errorMessage));
   }
 );
 
-// Auth endpoints
-export const login = async (credentials) => {
-  try {
-    const response = await api.post('/auth/login', credentials);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-    }
-    return response;
-  } catch (error) {
-    console.error('Login Error:', error);
-    throw error;
+// Utility methods for common operations
+const apiService = {
+  // Authentication endpoints
+  login(credentials) {
+    return api.post('/auth/login', credentials);
+  },
+
+  refreshToken() {
+    return api.post('/auth/refresh', { 
+      token: localStorage.getItem('refreshToken') 
+    });
+  },
+
+  logout() {
+    return api.post('/auth/logout')
+      .then(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+      });
+  },
+
+  // Generic CRUD operations
+  getAll(endpoint, params = {}) {
+    return api.get(endpoint, { params });
+  },
+
+  getById(endpoint, id) {
+    return api.get(`${endpoint}/${id}`);
+  },
+
+  create(endpoint, data) {
+    return api.post(endpoint, data);
+  },
+
+  update(endpoint, id, data) {
+    return api.put(`${endpoint}/${id}`, data);
+  },
+
+  patch(endpoint, id, data) {
+    return api.patch(`${endpoint}/${id}`, data);
+  },
+
+  delete(endpoint, id) {
+    return api.delete(`${endpoint}/${id}`);
+  },
+
+  // File upload utility
+  uploadFile(endpoint, file, additionalData = {}) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Append additional data if provided
+    Object.keys(additionalData).forEach(key => {
+      formData.append(key, additionalData[key]);
+    });
+
+    return api.post(endpoint, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
+
+  // Batch operations
+  batchCreate(endpoint, items) {
+    return api.post(`${endpoint}/batch`, { items });
+  },
+
+  batchUpdate(endpoint, items) {
+    return api.put(`${endpoint}/batch`, { items });
+  },
+
+  // Search and filter
+  search(endpoint, query, params = {}) {
+    return api.get(endpoint, {
+      params: {
+        search: query,
+        ...params
+      }
+    });
   }
 };
 
-export const refreshToken = async () => {
-  const token = localStorage.getItem('token');
-  try {
-    const response = await api.post('/auth/refresh', { token });
-    localStorage.setItem('token', response.data.token);
-    return response;
-  } catch (error) {
-    console.error('Refresh Token Error:', error);
-    throw error;
-  }
-};
-
-export const logout = async () => {
-  try {
-    await api.post('/auth/logout');
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-  } catch (error) {
-    console.error('Logout Error:', error);
-    // Still remove tokens even if the request fails
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    throw error;
-  }
-};
-
-export default api;
+export { api, apiService };
+export default apiService;

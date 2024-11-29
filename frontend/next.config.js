@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const path = require('path');
+
 const nextConfig = {
   reactStrictMode: false,
   poweredByHeader: false,
@@ -11,8 +13,8 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
   },
   trailingSlash: true,
-  // Disable file watching for certain directories
   webpack: (config, { isServer }) => {
+    config.resolve.alias['@'] = path.join(__dirname, '.');
     config.watchOptions = {
       ignored: [
         '**/node_modules/**',

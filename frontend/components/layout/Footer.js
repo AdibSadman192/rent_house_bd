@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from 'lucide-react';
 
@@ -115,7 +116,7 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm">
-              © {currentYear} RentHouse BD. All rights reserved.
+              {currentYear} RentHouse BD. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm">
               <Link href="/terms" className="hover:text-primary-400 transition-colors">

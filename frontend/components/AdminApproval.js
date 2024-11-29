@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   VStack,
@@ -63,11 +63,7 @@ const AdminApproval = () => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [
         pendingResponse,
@@ -87,14 +83,18 @@ const AdminApproval = () => {
       setStats(statsResponse.data);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to fetch data',
+        title: 'Error fetching data',
+        description: error.message,
         status: 'error',
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleAction = async () => {
     try {

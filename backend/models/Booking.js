@@ -6,10 +6,10 @@ const bookingSchema = new mongoose.Schema({
     ref: 'Property',
     required: [true, 'Property is required']
   },
-  tenant: {
+  renter: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'Tenant is required']
+    required: [true, 'Renter is required']
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
@@ -128,7 +128,7 @@ bookingSchema.pre('save', function(next) {
 
 // Index for efficient queries
 bookingSchema.index({ property: 1, startDate: 1, endDate: 1 });
-bookingSchema.index({ tenant: 1, status: 1 });
+bookingSchema.index({ renter: 1, status: 1 });
 bookingSchema.index({ owner: 1, status: 1 });
 
 // Check for booking conflicts

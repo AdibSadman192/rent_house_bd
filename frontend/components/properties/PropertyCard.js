@@ -37,9 +37,6 @@ const PropertyCard = ({ property }) => {
             Featured
           </span>
         )}
-        <button className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-primary-50 transition-colors">
-          <Heart className="w-5 h-5 text-primary-600" />
-        </button>
       </div>
 
       {/* Content */}

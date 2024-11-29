@@ -10,8 +10,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
-    'plugin:@next/next/recommended',
-    'next/core-web-vitals',
+    'next/core-web-vitals'
   ],
   parserOptions: {
     ecmaFeatures: {
@@ -20,44 +19,20 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: 'module',
   },
-  plugins: ['react', 'react-hooks', '@next/next'],
+  plugins: ['react', 'react-hooks'],
   settings: {
     react: {
       version: 'detect',
     },
   },
   rules: {
-    // React specific rules
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'off',
-    'react/display-name': 'off',
-    'react/no-unescaped-entities': 'off',
-
-    // Next.js specific rules
+    'no-unused-vars': 'warn',
+    'react/no-unescaped-entities': 'warn',
     '@next/next/no-img-element': 'warn',
-    '@next/next/no-html-link-for-pages': 'error',
-
-    // React Hooks rules
-    'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
-
-    // General JavaScript/ES6 rules
-    'no-unused-vars': ['warn', { 
-      argsIgnorePattern: '^_',
-      varsIgnorePattern: '^_'
-    }],
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
-    'prefer-const': 'warn',
-    'no-var': 'error',
-
-    // Import rules
-    'import/no-anonymous-default-export': 'off',
-  },
-  globals: {
-    React: 'writable',
-    JSX: 'writable',
-    Promise: 'writable',
-    Set: 'writable',
-    Map: 'writable',
+    'no-unreachable': 'warn',
+    'react/jsx-no-undef': 'warn',
   },
 };

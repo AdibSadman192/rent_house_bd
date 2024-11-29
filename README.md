@@ -100,6 +100,42 @@ The platform serves as both a social network and rental service, making it easie
 | Image Upload | ✅ Working | With optimization and CDN delivery |
 | Property Analytics | ❌ Pending | Planned for Phase 3 |
 
+## 🚧 Project Status: What's Working & Not Working
+
+### ✅ Currently Working
+- [x] User Authentication System
+  - [x] Login page with responsive design
+  - [x] Registration page with comprehensive validation
+  - [x] Social login buttons (UI implemented)
+  - [x] NID number validation for Bangladeshi users
+- [x] Frontend Design
+  - [x] Responsive layout
+  - [x] Tailwind CSS styling
+  - [x] Modern, clean UI for auth pages
+- [x] Basic routing
+- [x] Error handling for form submissions
+
+### 🛠 In Progress
+- [ ] Complete social login backend integration
+- [ ] Full API connection for authentication
+- [ ] Comprehensive error handling
+- [ ] User profile creation flow
+- [ ] Property listing functionality
+
+### ❌ Not Yet Implemented
+- [ ] Payment processing
+- [ ] Advanced property search
+- [ ] Real-time chat system
+- [ ] AI chatbot
+- [ ] Complete admin dashboard
+
+## 🖼️ Project Previews
+
+### Landing Page
+
+![Landing Preview](/preview/first_preview.jpeg)
+*Note: More screenshots will be added as the project progresses*
+
 ## 🎯 Current Sprint Focus
 - Enhancing property search functionality
 - Implementing advanced filters
