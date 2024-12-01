@@ -142,7 +142,11 @@ The platform serves as both a social network and rental service, making it easie
 - Optimizing image loading and caching
 - Improving user experience with smoother transitions
 - Adding more interactive elements to property listings
+refactor(readme): Reposition project preview section
 
+- Move project preview section above overview
+- Remove duplicate preview section
+- Maintain existing formatting and content
 ## 🔄 Recent Updates
 - Added responsive navigation
 - Enhanced user authentication flow

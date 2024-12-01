@@ -10,6 +10,48 @@ import {
   CheckCircle 
 } from 'lucide-react';
 
+// Animation variants
+const pageTransition = {
+  initial: { opacity: 0, y: 20 },
+  animate: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut"
+    }
+  },
+  exit: { 
+    opacity: 0,
+    y: 20,
+    transition: {
+      duration: 0.3,
+      ease: "easeIn"
+    }
+  }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut"
+    }
+  }
+};
+
 export default function AboutPage() {
   const teamMembers = [
     {
@@ -25,49 +67,70 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <motion.div 
+      className="bg-gray-50 min-h-screen pt-24"
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageTransition}
+    >
       <Head>
         <title>About RentHouse BD - Revolutionizing Property Rentals</title>
       </Head>
 
       <main className="container mx-auto px-4 py-16">
         <motion.section 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <motion.h1 
+            variants={fadeInUp}
+            className="text-4xl font-bold text-gray-900 mb-4"
+          >
             About RentHouse BD
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          </motion.h1>
+          <motion.p 
+            variants={fadeInUp}
+            className="text-xl text-gray-600 max-w-3xl mx-auto"
+          >
             We are transforming the property rental landscape in Bangladesh by creating a transparent, efficient, and user-friendly platform that connects property owners and renters seamlessly.
-          </p>
+          </motion.p>
         </motion.section>
 
         <motion.section 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
           className="grid md:grid-cols-3 gap-8 mb-16"
         >
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <motion.div 
+            variants={fadeInUp} 
+            className="bg-white p-6 rounded-lg shadow-md"
+          >
             <Target className="w-12 h-12 text-primary-600 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Our Mission</h3>
             <p className="text-gray-600">
               To simplify property rentals by providing a reliable, transparent, and innovative digital platform.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <motion.div 
+            variants={fadeInUp}
+            className="bg-white p-6 rounded-lg shadow-md"
+          >
             <Users className="w-12 h-12 text-primary-600 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Our Vision</h3>
             <p className="text-gray-600">
               Become the most trusted and comprehensive property rental ecosystem in Bangladesh.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <motion.div 
+            variants={fadeInUp}
+            className="bg-white p-6 rounded-lg shadow-md"
+          >
             <Shield className="w-12 h-12 text-primary-600 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Our Values</h3>
             <ul className="text-gray-600 space-y-2">
@@ -84,21 +147,31 @@ export default function AboutPage() {
                 Innovation
               </li>
             </ul>
-          </div>
+          </motion.div>
         </motion.section>
 
         <motion.section 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
           className="text-center"
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">
+          <motion.h2 
+            variants={fadeInUp}
+            className="text-3xl font-bold text-gray-900 mb-8"
+          >
             Our Team
-          </h2>
-          <div className="flex justify-center space-x-8">
+          </motion.h2>
+          <motion.div 
+            variants={fadeInUp}
+            className="flex justify-center space-x-8"
+          >
             {teamMembers.map((member, index) => (
-              <div key={index} className="text-center">
+              <motion.div 
+                key={index} 
+                variants={fadeInUp}
+                className="text-center"
+              >
                 <div className="w-48 h-48 mx-auto mb-4 rounded-full overflow-hidden border-4 border-primary-100">
                   <Image 
                     src={member.image} 
@@ -112,11 +185,11 @@ export default function AboutPage() {
                   {member.name}
                 </h3>
                 <p className="text-gray-600">{member.role}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </motion.section>
       </main>
-    </div>
+    </motion.div>
   );
 }

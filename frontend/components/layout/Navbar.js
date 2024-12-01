@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Menu, X, User, LogOut, Home, Search, PlusCircle, Bell, Settings } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, Search, PlusCircle, Bell, Settings, Info, Mail } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import ProfileDropdown from '@/components/ProfileDropdown';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,13 +11,19 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
 
+  // Add check for About and Contact pages
+  const isAboutOrContact = router.pathname === '/about' || router.pathname === '/contact';
+
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      // Always show background on About/Contact pages, otherwise check scroll
+      setIsScrolled(isAboutOrContact || window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
+    // Trigger initial check
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isAboutOrContact]);
 
   const handleLogout = async () => {
     try {
@@ -30,18 +37,9 @@ const Navbar = () => {
   const publicNavLinks = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/properties', label: 'Properties', icon: Search },
-    { href: '/about', label: 'About', icon: null },
-    { href: '/contact', label: 'Contact', icon: null },
+    { href: '/about', label: 'About', icon: Info },
+    { href: '/contact', label: 'Contact', icon: Mail },
   ];
-
-  const authNavLinks = [
-    { href: '/dashboard', label: 'Dashboard', icon: User },
-    { href: '/list-property', label: 'List Property', icon: PlusCircle },
-    { href: '/notifications', label: 'Notifications', icon: Bell },
-    { href: '/settings', label: 'Settings', icon: Settings },
-  ];
-
-  const activeNavLinks = user ? [...publicNavLinks, ...authNavLinks] : publicNavLinks;
 
   const closeMenu = () => {
     setIsOpen(false);
@@ -55,7 +53,7 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled || isOpen ? 'bg-white shadow-md' : 'bg-transparent'
+        isScrolled || isOpen || isAboutOrContact ? 'bg-white shadow-md' : 'bg-transparent'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -67,7 +65,7 @@ const Navbar = () => {
             onClick={closeMenu}
           >
             <span className={`text-xl font-bold ${
-              isScrolled || isOpen ? 'text-primary-600' : 'text-white'
+              isScrolled || isOpen || isAboutOrContact ? 'text-primary-600' : 'text-white'
             }`}>
               RentHouse<span className="text-primary-500">BD</span>
             </span>
@@ -75,12 +73,12 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {activeNavLinks.map(({ href, label, icon: Icon }) => (
+            {publicNavLinks.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
                 className={`flex items-center space-x-1 ${
-                  isScrolled ? 'text-gray-700' : 'text-white'
+                  isScrolled || isAboutOrContact ? 'text-gray-700' : 'text-white'
                 } hover:text-primary-500 transition-colors`}
               >
                 {Icon && <Icon className="w-4 h-4" />}
@@ -95,13 +93,7 @@ const Navbar = () => {
                 Sign In
               </Link>
             ) : (
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </button>
+              <ProfileDropdown />
             )}
           </div>
 
@@ -121,7 +113,7 @@ const Navbar = () => {
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden absolute top-16 left-0 right-0 bg-white shadow-lg py-4 px-4 space-y-4">
-            {activeNavLinks.map(({ href, label, icon: Icon }) => (
+            {publicNavLinks.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
@@ -141,13 +133,9 @@ const Navbar = () => {
                 Sign In
               </Link>
             ) : (
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors w-full"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </button>
+              <div className="pt-2 border-t border-gray-100">
+                <ProfileDropdown />
+              </div>
             )}
           </div>
         )}

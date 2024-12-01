@@ -72,158 +72,145 @@ export default function PropertiesPage() {
   return (
     <>
       <Head>
-        <title>Search Properties - RentHouse BD</title>
-        <meta 
-          name="description" 
-          content="Search and filter through thousands of rental properties across Bangladesh." 
-        />
+        <title>Properties | RentHouse BD</title>
+        <meta name="description" content="Browse rental properties across Bangladesh" />
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
-        {/* Search Header */}
-        <div className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-8">
-            <motion.div
-              initial="initial"
-              animate="animate"
-              variants={stagger}
-            >
-              <motion.h1
-                variants={fadeInUp}
-                className="text-3xl font-display font-bold text-gray-900 mb-6"
+      <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+        {/* Search and Filter Section */}
+        <div className="container mx-auto px-4">
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search Input */}
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="Search by location, property type..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-3 pl-10 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+                <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+              </div>
+
+              {/* Filter Button */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors flex items-center justify-center space-x-2"
               >
-                Find Your Perfect Rental Property
-              </motion.h1>
+                <SlidersHorizontal className="h-5 w-5" />
+                <span>Filters</span>
+              </button>
+            </div>
 
-              {/* Search Bar */}
-              <motion.div variants={fadeInUp} className="flex gap-4">
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    placeholder="Search by location, property type..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  />
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            {/* Filter Panel */}
+            {showFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-4 pt-4 border-t border-gray-200"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* Property Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Property Type
+                    </label>
+                    <select
+                      value={filters.propertyType}
+                      onChange={(e) => handleFilterChange('propertyType', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value="">All Types</option>
+                      {propertyTypes.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Price Range */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Price Range
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        value={filters.priceRange[0]}
+                        onChange={(e) => handleFilterChange('priceRange', [parseInt(e.target.value), filters.priceRange[1]])}
+                        className="w-1/2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.priceRange[1]}
+                        onChange={(e) => handleFilterChange('priceRange', [filters.priceRange[0], parseInt(e.target.value)])}
+                        className="w-1/2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bedrooms */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bedrooms
+                    </label>
+                    <select
+                      value={filters.bedrooms}
+                      onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value="">Any</option>
+                      {[1, 2, 3, 4, 5].map(num => (
+                        <option key={num} value={num}>{num}+ Beds</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Bathrooms */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bathrooms
+                    </label>
+                    <select
+                      value={filters.bathrooms}
+                      onChange={(e) => handleFilterChange('bathrooms', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value="">Any</option>
+                      {[1, 2, 3, 4].map(num => (
+                        <option key={num} value={num}>{num}+ Baths</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="px-4 py-3 bg-white border border-gray-300 rounded-lg flex items-center gap-2 hover:bg-gray-50 transition-colors"
-                >
-                  <SlidersHorizontal className="w-5 h-5" />
-                  Filters
-                </button>
+
+                {/* Additional Filters */}
+                <div className="mt-4 flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={filters.furnished}
+                      onChange={(e) => handleFilterChange('furnished', e.target.checked)}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">Furnished</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={filters.parking}
+                      onChange={(e) => handleFilterChange('parking', e.target.checked)}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">Parking Available</span>
+                  </label>
+                </div>
               </motion.div>
-
-              {/* Filters Panel */}
-              {showFilters && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-4 p-6 bg-white border border-gray-200 rounded-lg"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* Property Type */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Property Type
-                      </label>
-                      <select
-                        value={filters.propertyType}
-                        onChange={(e) => handleFilterChange('propertyType', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      >
-                        <option value="">All Types</option>
-                        {propertyTypes.map(type => (
-                          <option key={type} value={type}>{type}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Price Range */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Price Range
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="number"
-                          placeholder="Min"
-                          value={filters.priceRange[0]}
-                          onChange={(e) => handleFilterChange('priceRange', [parseInt(e.target.value), filters.priceRange[1]])}
-                          className="w-1/2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        />
-                        <input
-                          type="number"
-                          placeholder="Max"
-                          value={filters.priceRange[1]}
-                          onChange={(e) => handleFilterChange('priceRange', [filters.priceRange[0], parseInt(e.target.value)])}
-                          className="w-1/2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Bedrooms */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Bedrooms
-                      </label>
-                      <select
-                        value={filters.bedrooms}
-                        onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      >
-                        <option value="">Any</option>
-                        {[1, 2, 3, 4, 5].map(num => (
-                          <option key={num} value={num}>{num}+ Beds</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Bathrooms */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Bathrooms
-                      </label>
-                      <select
-                        value={filters.bathrooms}
-                        onChange={(e) => handleFilterChange('bathrooms', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      >
-                        <option value="">Any</option>
-                        {[1, 2, 3, 4].map(num => (
-                          <option key={num} value={num}>{num}+ Baths</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Additional Filters */}
-                  <div className="mt-4 flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={filters.furnished}
-                        onChange={(e) => handleFilterChange('furnished', e.target.checked)}
-                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                      />
-                      <span className="ml-2 text-sm text-gray-600">Furnished</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={filters.parking}
-                        onChange={(e) => handleFilterChange('parking', e.target.checked)}
-                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                      />
-                      <span className="ml-2 text-sm text-gray-600">Parking Available</span>
-                    </label>
-                  </div>
-                </motion.div>
-              )}
-            </motion.div>
+            )}
           </div>
         </div>
 

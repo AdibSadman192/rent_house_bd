@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, UserPlus } from 'lucide-react';
+import { useRouter } from 'next/router';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -19,13 +20,14 @@ const stagger = {
 };
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     nidNumber: '',  
     password: '',
     confirmPassword: '',
@@ -34,6 +36,7 @@ export default function RegisterPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const validateNID = (nid) => {
     // Bangladeshi NID validation rules
@@ -53,75 +56,81 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    // Validate all fields are filled
-    const requiredFields = [
-      'firstName', 
-      'lastName', 
-      'email', 
-      'phone', 
-      'nidNumber', 
-      'password', 
-      'confirmPassword'
-    ];
-
-    const emptyFields = requiredFields.filter(field => 
-      !formData[field] || formData[field].trim() === ''
-    );
-
-    if (emptyFields.length > 0) {
-      setError(`Please fill in all required fields: ${emptyFields.join(', ')}`);
+    
+    if (!formData.agreeToTerms) {
+      setError('Please agree to the Terms of Service and Privacy Policy');
       return;
     }
 
-    // Validate NID
-    if (!validateNID(formData.nidNumber)) {
-      setError('Please enter a valid Bangladeshi National ID number (10 or 17 digits)');
-      return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    // Validate phone number (Bangladeshi format)
-    const phoneRegex = /^(\+88)?01[3-9]\d{8}$/;
-    if (!phoneRegex.test(formData.phone)) {
-      setError('Please enter a valid Bangladeshi phone number');
-      return;
-    }
-
-    // Password validation
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
-    // Password match check
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    // Terms agreement check
-    if (!formData.agreeToTerms) {
-      setError('You must agree to the terms and conditions');
+    // Basic validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phoneNumber || !formData.nidNumber || !formData.password) {
+      setError('Please fill in all required fields');
       return;
     }
 
-    setIsLoading(true);
+    // Validate NID number (10 or 17 digits)
+    if (!/^\d{10}$|^\d{17}$/.test(formData.nidNumber)) {
+      setError('NID number must be either 10 or 17 digits');
+      return;
+    }
+
+    // Validate phone number (BD format)
+    if (!/^\+8801\d{9}$/.test(formData.phoneNumber)) {
+      setError('Please enter a valid Bangladeshi phone number (+8801XXXXXXXXX)');
+      return;
+    }
+
+    // Email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
 
     try {
-      // TODO: Implement actual registration logic
-      console.log('Registration data:', formData);
-      // const response = await registerUser(formData);
-      // Handle successful registration
+      setIsLoading(true);
+      setError('');
+
+      // Prepare the user data
+      const userData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        nidNumber: formData.nidNumber,
+        password: formData.password,
+        userType: formData.userType.toLowerCase(),
+      };
+
+      // Make API call to create account
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create account');
+      }
+
+      // Show success message
+      setSuccess(true);
+      
+      // Redirect to login page after successful registration
+      setTimeout(() => {
+        router.push('/auth/login');
+      }, 2000);
+
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -148,30 +157,55 @@ export default function RegisterPage() {
           >
             {/* Logo and Title */}
             <motion.div variants={fadeInUp} className="text-center mb-8">
-              <Link href="/" className="inline-block mb-6">
-                <Image
-                  src="/images/logo.png"
-                  alt="RentHouse BD"
-                  width={180}
-                  height={40}
-                  className="h-10 w-auto"
-                />
-              </Link>
-              <h1 className="text-2xl font-display font-bold text-gray-900">
-                Create your account
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Join RentHouse BD to find your perfect home
-              </p>
+              <div className="mb-8">
+                <Link href="/" className="inline-block">
+                  <h1 className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                    RentHouse BD
+                  </h1>
+                </Link>
+                <p className="text-gray-600 mt-2">
+                  Join RentHouse BD to find your perfect home
+                </p>
+              </div>
             </motion.div>
+
+            {/* Success Message */}
+            {success && (
+              <motion.div
+                variants={fadeInUp}
+                className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center"
+              >
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-green-800">Registration Successful!</h3>
+                  <p className="mt-1 text-sm text-green-600">
+                    Your account has been created. Redirecting you to login...
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
             {/* Error Message */}
             {error && (
               <motion.div
                 variants={fadeInUp}
-                className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm"
+                className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center"
               >
-                {error}
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">Registration Error</h3>
+                  <p className="mt-1 text-sm text-red-600">
+                    {error}
+                  </p>
+                </div>
               </motion.div>
             )}
 
@@ -244,17 +278,17 @@ export default function RegisterPage() {
               {/* Phone Input */}
               <div>
                 <label 
-                  htmlFor="phone" 
+                  htmlFor="phoneNumber" 
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Phone Number
                 </label>
                 <input
-                  id="phone"
-                  name="phone"
+                  id="phoneNumber"
+                  name="phoneNumber"
                   type="tel"
                   required
-                  value={formData.phone}
+                  value={formData.phoneNumber}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
                   placeholder="Enter your phone number"
@@ -423,16 +457,13 @@ export default function RegisterPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isLoading || !formData.agreeToTerms}
-                className="w-full py-3 px-4 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                disabled={isLoading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <>
-                    <UserPlus className="w-5 h-5 mr-2" />
-                    Create Account
-                  </>
+                  'Create Account'
                 )}
               </button>
 
@@ -454,19 +485,19 @@ export default function RegisterPage() {
         <div className="hidden lg:block lg:w-1/2 relative">
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/30 z-10" />
           <Image
-            src="https://images.unsplash.com/photo-1600607687939-ce8a6c540f7d"
-            alt="Modern Residential Complex in Dhaka"
+            src="/images/house-register-illustration.jpg"
+            alt="Property Search Illustration"
             layout="fill"
-            objectFit="cover"
-            className="object-center"
+            objectFit="contain"
+            className="object-center bg-gray-100 p-8"
             priority
           />
-          <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-20">
+          <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-20 bg-gradient-to-t from-black/80">
             <h2 className="text-3xl font-bold mb-2">
               Join Bangladesh's Premier Property Platform
             </h2>
             <p className="text-lg text-gray-200">
-              Create your account and unlock a world of property opportunities
+              Connect with trusted property owners and find your ideal home
             </p>
           </div>
         </div>

@@ -9,6 +9,48 @@ import {
   MessageCircle 
 } from 'lucide-react';
 
+// Animation variants
+const pageTransition = {
+  initial: { opacity: 0, y: 20 },
+  animate: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut"
+    }
+  },
+  exit: { 
+    opacity: 0,
+    y: 20,
+    transition: {
+      duration: 0.3,
+      ease: "easeIn"
+    }
+  }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut"
+    }
+  }
+};
+
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -29,38 +71,59 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <motion.div 
+      className="bg-gray-50 min-h-screen pt-24"
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageTransition}
+    >
       <Head>
         <title>Contact RentHouse BD - Get in Touch</title>
       </Head>
 
       <main className="container mx-auto px-4 py-16">
         <motion.section 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <motion.h1 
+            variants={fadeInUp}
+            className="text-4xl font-bold text-gray-900 mb-4"
+          >
             Contact Us
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          </motion.h1>
+          <motion.p 
+            variants={fadeInUp}
+            className="text-xl text-gray-600 max-w-3xl mx-auto"
+          >
             Have questions or need assistance? We're here to help! Reach out to us through the form below or our contact information.
-          </p>
+          </motion.p>
         </motion.section>
 
         <div className="grid md:grid-cols-2 gap-12">
           <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            variants={fadeInUp}
+            initial="initial"
+            animate="animate"
             className="bg-white p-8 rounded-lg shadow-md"
           >
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            <motion.h2 
+              variants={fadeInUp}
+              className="text-2xl font-semibold text-gray-900 mb-6"
+            >
               Send us a Message
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+            </motion.h2>
+            <motion.form 
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              onSubmit={handleSubmit} 
+              className="space-y-4"
+            >
+              <motion.div variants={fadeInUp}>
                 <label className="block text-gray-700 mb-2">Full Name</label>
                 <input
                   type="text"
@@ -70,8 +133,8 @@ export default function ContactPage() {
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
-              </div>
-              <div>
+              </motion.div>
+              <motion.div variants={fadeInUp}>
                 <label className="block text-gray-700 mb-2">Email Address</label>
                 <input
                   type="email"
@@ -81,8 +144,8 @@ export default function ContactPage() {
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
-              </div>
-              <div>
+              </motion.div>
+              <motion.div variants={fadeInUp}>
                 <label className="block text-gray-700 mb-2">Phone Number</label>
                 <input
                   type="tel"
@@ -91,8 +154,8 @@ export default function ContactPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
-              </div>
-              <div>
+              </motion.div>
+              <motion.div variants={fadeInUp}>
                 <label className="block text-gray-700 mb-2">Your Message</label>
                 <textarea
                   name="message"
@@ -102,24 +165,28 @@ export default function ContactPage() {
                   rows={4}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
-              </div>
-              <button
+              </motion.div>
+              <motion.button
+                variants={fadeInUp}
                 type="submit"
                 className="w-full flex items-center justify-center px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
               >
                 <Send className="w-5 h-5 mr-2" />
                 Send Message
-              </button>
-            </form>
+              </motion.button>
+            </motion.form>
           </motion.div>
 
           <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
             className="space-y-8"
           >
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <motion.div 
+              variants={fadeInUp}
+              className="bg-white p-6 rounded-lg shadow-md"
+            >
               <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
                 <MapPin className="w-6 h-6 mr-3 text-primary-600" />
                 Our Office
@@ -128,9 +195,12 @@ export default function ContactPage() {
                 House 42, Road 15, Sector 10
                 Uttara, Dhaka 1230, Bangladesh
               </p>
-            </div>
+            </motion.div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <motion.div 
+              variants={fadeInUp}
+              className="bg-white p-6 rounded-lg shadow-md"
+            >
               <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
                 <Phone className="w-6 h-6 mr-3 text-primary-600" />
                 Contact Numbers
@@ -139,9 +209,12 @@ export default function ContactPage() {
                 +880 1234 567890
                 +880 9876 543210
               </p>
-            </div>
+            </motion.div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <motion.div 
+              variants={fadeInUp}
+              className="bg-white p-6 rounded-lg shadow-md"
+            >
               <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
                 <Mail className="w-6 h-6 mr-3 text-primary-600" />
                 Email Addresses
@@ -150,10 +223,10 @@ export default function ContactPage() {
                 support@renthousebd.com
                 info@renthousebd.com
               </p>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 }

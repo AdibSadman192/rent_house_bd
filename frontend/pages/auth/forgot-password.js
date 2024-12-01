@@ -54,59 +54,66 @@ export default function ForgotPasswordPage() {
 
       <div className="min-h-screen flex">
         {/* Left Side - Form */}
-        <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
-          <motion.div
-            initial="initial"
-            animate="animate"
-            variants={stagger}
-            className="w-full max-w-md"
-          >
-            {/* Logo and Title */}
-            <motion.div variants={fadeInUp} className="text-center mb-8">
-              <Link href="/" className="inline-block mb-6">
-                <Image
-                  src="/images/logo.png"
-                  alt="RentHouse BD"
-                  width={180}
-                  height={40}
-                  className="h-10 w-auto"
-                />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="max-w-md w-full space-y-8">
+            {/* Logo */}
+            <div className="mb-8">
+              <Link href="/" className="inline-block">
+                <h1 className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                  RentHouse BD
+                </h1>
               </Link>
-              <h1 className="text-2xl font-display font-bold text-gray-900">
+              <h2 className="mt-6 text-2xl font-bold text-gray-900">
                 Reset your password
-              </h1>
-              <p className="text-gray-600 mt-2">
+              </h2>
+              <p className="mt-2 text-gray-600">
                 Enter your email and we'll send you instructions to reset your password
               </p>
-            </motion.div>
+            </div>
 
-            {/* Back to Login */}
-            <motion.div variants={fadeInUp} className="mb-8">
-              <Link
-                href="/auth/login"
-                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to login
-              </Link>
-            </motion.div>
+            {/* Form */}
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email address
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your email"
+                />
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    'Send Reset Instructions'
+                  )}
+                </button>
+              </div>
+            </form>
 
             {/* Error Message */}
             {error && (
-              <motion.div
-                variants={fadeInUp}
-                className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm"
-              >
+              <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
                 {error}
-              </motion.div>
+              </div>
             )}
 
             {/* Success Message */}
             {isEmailSent ? (
-              <motion.div
-                variants={fadeInUp}
-                className="text-center"
-              >
+              <div className="text-center">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Send className="w-8 h-8 text-green-600" />
                 </div>
@@ -123,63 +130,36 @@ export default function ForgotPasswordPage() {
                 >
                   Return to Login
                 </Link>
-              </motion.div>
+              </div>
             ) : (
-              /* Reset Password Form */
-              <motion.form
-                variants={fadeInUp}
-                onSubmit={handleSubmit}
-                className="space-y-6"
-              >
-                <div>
-                  <label 
-                    htmlFor="email" 
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Email address
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                    placeholder="Enter your email"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full py-3 px-4 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              <div className="mt-4 text-center">
+                <Link
+                  href="/auth/login"
+                  className="text-sm text-blue-600 hover:text-blue-500"
                 >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    'Send Reset Instructions'
-                  )}
-                </button>
-              </motion.form>
+                  ← Back to login
+                </Link>
+              </div>
             )}
-          </motion.div>
+          </div>
         </div>
 
         {/* Right Side - Image */}
-        <div className="hidden lg:block relative flex-1">
+        <div className="hidden lg:block lg:w-1/2 relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/30 z-10" />
           <Image
-            src="/images/auth-bg-3.jpg"
-            alt="Cozy home office"
-            fill
-            className="object-cover"
+            src="/images/forgot-password-illustration.jpg"
+            alt="Password Reset Illustration"
+            layout="fill"
+            objectFit="contain"
+            className="object-center bg-gray-100 p-8"
+            priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-          <div className="absolute bottom-8 left-8 right-8 text-white">
-            <blockquote className="text-2xl font-display font-medium mb-4">
-              "Secure access to your RentHouse BD account."
-            </blockquote>
-            <p className="text-white/80">
+          <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-20 bg-gradient-to-t from-black/80">
+            <h2 className="text-3xl font-bold mb-2">
+              Secure access to your RentHouse BD account
+            </h2>
+            <p className="text-lg text-gray-200">
               We take your account security seriously
             </p>
           </div>
