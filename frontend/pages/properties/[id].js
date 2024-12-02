@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MapPin, Bed, Bath, Square, Heart, Phone, Mail, Share2, Calendar } from 'lucide-react';
+import Link from 'next/link';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -59,6 +60,12 @@ export default function PropertyDetailsPage({ property }) {
       phone: '+880 1234567890',
       email: 'john@example.com',
       image: '/images/avatar.jpg'
+    },
+    agent: {
+      id: 1,
+      name: 'Jane Doe',
+      image: '/images/avatar.jpg',
+      properties: 10
     },
     availableFrom: '2024-02-01'
   };
@@ -182,6 +189,37 @@ export default function PropertyDetailsPage({ property }) {
                 variants={stagger}
                 className="sticky top-4"
               >
+                {/* Agent Information */}
+                <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+                  <h3 className="text-xl font-semibold mb-4">Property Agent</h3>
+                  <div className="flex items-center space-x-4">
+                    <Image
+                      src={property.agent.image}
+                      alt={property.agent.name}
+                      width={64}
+                      height={64}
+                      className="rounded-full"
+                    />
+                    <div>
+                      <Link 
+                        href={`/agents?id=${property.agent.id}`}
+                        className="text-lg font-medium text-gray-900 hover:text-blue-600"
+                      >
+                        {property.agent.name}
+                      </Link>
+                      <p className="text-gray-600">{property.agent.properties} properties listed</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex space-x-4">
+                    <Link
+                      href="/agents"
+                      className="text-blue-600 hover:text-blue-700 text-sm"
+                    >
+                      View all agents →
+                    </Link>
+                  </div>
+                </div>
+
                 {/* Contact Card */}
                 <motion.div
                   variants={fadeInUp}

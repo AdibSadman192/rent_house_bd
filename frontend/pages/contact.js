@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
   MapPin, 
@@ -89,12 +90,28 @@ export default function ContactPage() {
           animate="animate"
           className="text-center mb-16"
         >
-          <motion.h1 
-            variants={fadeInUp}
-            className="text-4xl font-bold text-gray-900 mb-4"
-          >
-            Contact Us
-          </motion.h1>
+          <motion.div className="text-center mb-8">
+            <motion.h1 
+              variants={fadeInUp}
+              className="text-4xl font-bold text-gray-900 mb-4"
+            >
+              Contact Us
+            </motion.h1>
+            <motion.p 
+              variants={fadeInUp}
+              className="text-lg text-gray-600"
+            >
+              Have questions? Check our{' '}
+              <Link href="/faq" className="text-blue-600 hover:text-blue-700">
+                FAQ
+              </Link>
+              {' '}or{' '}
+              <Link href="/help" className="text-blue-600 hover:text-blue-700">
+                Help Center
+              </Link>
+              {' '}first.
+            </motion.p>
+          </motion.div>
           <motion.p 
             variants={fadeInUp}
             className="text-xl text-gray-600 max-w-3xl mx-auto"

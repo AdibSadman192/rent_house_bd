@@ -454,6 +454,17 @@ export default function RegisterPage() {
                 </label>
               </div>
 
+              <div className="mt-4 text-sm text-gray-600">
+                By registering, you agree to our{' '}
+                <Link href="/terms" className="text-blue-600 hover:text-blue-700">
+                  Terms of Service
+                </Link>
+                {' '}and{' '}
+                <Link href="/privacy" className="text-blue-600 hover:text-blue-700">
+                  Privacy Policy
+                </Link>
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"

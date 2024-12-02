@@ -5,7 +5,7 @@ import api from '../services/api';
 const AuthContext = createContext({});
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ['/auth/login', '/auth/register', '/auth/forgot-password', '/', '/about', '/contact', '/properties'];
+const PUBLIC_ROUTES = ['/auth/login', '/auth/register', '/auth/forgot-password', '/', '/about', '/contact', '/properties', '/faq', '/help', '/blog'];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

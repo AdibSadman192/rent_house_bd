@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Menu, X, User, LogOut, Home, Search, PlusCircle, Bell, Settings, Info, Mail } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, Search, PlusCircle, Bell, Settings, Info, Mail, Building2, Users, Heart, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import ProfileDropdown from '@/components/ProfileDropdown';
 
@@ -34,11 +34,18 @@ const Navbar = () => {
     }
   };
 
-  const publicNavLinks = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/properties', label: 'Properties', icon: Search },
-    { href: '/about', label: 'About', icon: Info },
-    { href: '/contact', label: 'Contact', icon: Mail },
+  const navigation = [
+    { name: 'Home', href: '/', icon: Home },
+    { name: 'Search', href: '/search', icon: Search },
+    { name: 'Properties', href: '/properties', icon: Building2 },
+    { name: 'Agents', href: '/agents', icon: Users },
+    { name: 'About', href: '/about', icon: Info },
+    { name: 'Contact', href: '/contact', icon: Mail },
+  ];
+
+  const userNavigation = [
+    { name: 'Favorites', href: '/favorites', icon: Heart },
+    { name: 'Help Center', href: '/help', icon: HelpCircle },
   ];
 
   const closeMenu = () => {
@@ -73,7 +80,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {publicNavLinks.map(({ href, label, icon: Icon }) => (
+            {navigation.map(({ href, name, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
@@ -82,7 +89,7 @@ const Navbar = () => {
                 } hover:text-primary-500 transition-colors`}
               >
                 {Icon && <Icon className="w-4 h-4" />}
-                <span>{label}</span>
+                <span>{name}</span>
               </Link>
             ))}
             {!user ? (
@@ -113,7 +120,7 @@ const Navbar = () => {
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden absolute top-16 left-0 right-0 bg-white shadow-lg py-4 px-4 space-y-4">
-            {publicNavLinks.map(({ href, label, icon: Icon }) => (
+            {navigation.map(({ href, name, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
@@ -121,7 +128,18 @@ const Navbar = () => {
                 onClick={closeMenu}
               >
                 {Icon && <Icon className="w-4 h-4" />}
-                <span>{label}</span>
+                <span>{name}</span>
+              </Link>
+            ))}
+            {userNavigation.map(({ href, name, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors"
+                onClick={closeMenu}
+              >
+                {Icon && <Icon className="w-4 h-4" />}
+                <span>{name}</span>
               </Link>
             ))}
             {!user ? (

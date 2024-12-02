@@ -20,6 +20,11 @@ const stagger = {
   }
 };
 
+const sectionVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+};
+
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -230,6 +235,45 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Blog Section */}
+      <motion.section
+        variants={sectionVariants}
+        className="py-16 bg-gray-50"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Latest from Our Blog</h2>
+            <p className="text-lg text-gray-600">Stay updated with property insights and tips</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Sample blog posts - Replace with actual data */}
+            {[1, 2, 3].map((post) => (
+              <Link 
+                key={post} 
+                href="/blog"
+                className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
+              >
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Property Market Insights</h3>
+                  <p className="text-gray-600 mb-4">Latest trends and analysis of the Bangladesh property market...</p>
+                  <span className="text-blue-600 hover:text-blue-700">Read more →</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+          
+          <div className="text-center">
+            <Link
+              href="/blog"
+              className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+            >
+              View All Articles
+            </Link>
+          </div>
+        </div>
+      </motion.section>
 
       {/* CTA Section */}
       <section className="py-20 bg-primary-600">

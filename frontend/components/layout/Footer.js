@@ -5,6 +5,31 @@ import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from 'lucide-react'
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
+  const footerNavigation = {
+    company: [
+      { name: 'About', href: '/about' },
+      { name: 'Blog', href: '/blog' },
+      { name: 'Agents', href: '/agents' },
+      { name: 'Contact', href: '/contact' },
+    ],
+    support: [
+      { name: 'Help Center', href: '/help' },
+      { name: 'FAQ', href: '/faq' },
+      { name: 'Contact Support', href: '/contact' },
+    ],
+    legal: [
+      { name: 'Terms', href: '/terms' },
+      { name: 'Privacy', href: '/privacy' },
+      { name: 'Cookie Policy', href: '/privacy#cookies' },
+    ],
+    services: [
+      { name: 'Property Search', href: '/search' },
+      { name: 'My Favorites', href: '/favorites' },
+      { name: 'Property Listing', href: '/properties' },
+      { name: 'Agent Directory', href: '/agents' },
+    ],
+  };
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -33,35 +58,17 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Company */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-white">Quick Links</h3>
+            <h3 className="text-lg font-semibold mb-4 text-white">Company</h3>
             <ul className="space-y-2">
-              <li>
-                <Link href="/properties" className="hover:text-primary-400 transition-colors">
-                  Browse Properties
-                </Link>
-              </li>
-              <li>
-                <Link href="/list-property" className="hover:text-primary-400 transition-colors">
-                  List Your Property
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="hover:text-primary-400 transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="hover:text-primary-400 transition-colors">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-primary-400 transition-colors">
-                  Contact Us
-                </Link>
-              </li>
+              {footerNavigation.company.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="hover:text-primary-400 transition-colors">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -69,45 +76,27 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4 text-white">Support</h3>
             <ul className="space-y-2">
-              <li>
-                <Link href="/help" className="hover:text-primary-400 transition-colors">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-primary-400 transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-primary-400 transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="hover:text-primary-400 transition-colors">
-                  FAQ
-                </Link>
-              </li>
+              {footerNavigation.support.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="hover:text-primary-400 transition-colors">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* Services */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-white">Contact Us</h3>
-            <ul className="space-y-4">
-              <li className="flex items-start space-x-3">
-                <MapPin className="w-5 h-5 text-primary-400 flex-shrink-0 mt-0.5" />
-                <span>123 Main Street, Dhaka 1200, Bangladesh</span>
-              </li>
-              <li className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                <span>+880 1234-567890</span>
-              </li>
-              <li className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                <span>contact@renthousebd.com</span>
-              </li>
+            <h3 className="text-lg font-semibold mb-4 text-white">Services</h3>
+            <ul className="space-y-2">
+              {footerNavigation.services.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="hover:text-primary-400 transition-colors">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -119,15 +108,11 @@ const Footer = () => {
               {currentYear} RentHouse BD. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm">
-              <Link href="/terms" className="hover:text-primary-400 transition-colors">
-                Terms
-              </Link>
-              <Link href="/privacy" className="hover:text-primary-400 transition-colors">
-                Privacy
-              </Link>
-              <Link href="/cookies" className="hover:text-primary-400 transition-colors">
-                Cookies
-              </Link>
+              {footerNavigation.legal.map((item) => (
+                <Link key={item.href} href={item.href} className="hover:text-primary-400 transition-colors">
+                  {item.name}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

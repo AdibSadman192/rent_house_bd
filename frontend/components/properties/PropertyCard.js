@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { MapPin, Bed, Bath, Square, Heart } from 'lucide-react';
 
-const PropertyCard = ({ property }) => {
+const PropertyCard = ({ property, error }) => {
   const {
     id,
     title,
@@ -83,6 +83,15 @@ const PropertyCard = ({ property }) => {
           </div>
         </div>
       </div>
+
+      {error && (
+        <div className="text-red-500 text-sm mt-2">
+          {error}
+          <Link href="/help" className="text-blue-500 hover:text-blue-600 ml-2">
+            Need help?
+          </Link>
+        </div>
+      )}
 
       {/* View Details Link - Overlay */}
       <Link
