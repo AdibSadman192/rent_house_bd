@@ -51,6 +51,11 @@ app.use(compression());
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Swagger API Documentation
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./config/swagger');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

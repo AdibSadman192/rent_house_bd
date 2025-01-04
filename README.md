@@ -5,7 +5,7 @@
 
 ### Landing Page
 
-![Landing Preview](/preview/first_preview.jpeg)
+![Landing Preview](/preview/second_preview.jpeg)
 *Note: More screenshots will be added as the project progresses*
 
 ## 🌟 Overview

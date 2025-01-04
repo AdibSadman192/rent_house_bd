@@ -6,9 +6,39 @@ const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 const { isAdmin } = require('../middleware/roleCheck');
 
-// @route   POST /api/auth/register
-// @desc    Register a user
-// @access  Public
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - name
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minimum: 6
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User registered successfully
+ *       400:
+ *         description: Invalid input
+ *       409:
+ *         description: User already exists
+ */
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name, phone, nid, address, role } = req.body;
@@ -116,9 +146,35 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// @route   POST /api/auth/login
-// @desc    Login user
-// @access  Public
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login to an existing user account
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User logged in successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Invalid credentials
+ */
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -172,9 +228,20 @@ router.post('/login', (req, res) => {
     });
 });
 
-// @route   GET /api/auth/me
-// @desc    Get current user
-// @access  Private
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get the current user's profile
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ */
 router.get('/me', protect, (req, res) => {
   User.findById(req.user.userId)
     .select('-password')
@@ -190,9 +257,31 @@ router.get('/me', protect, (req, res) => {
     });
 });
 
-// @route   POST /api/auth/refresh
-// @desc    Refresh access token
-// @access  Public
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Access token refreshed successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Invalid refresh token
+ */
 router.post('/refresh', (req, res) => {
   const { token } = req.body;
   
@@ -230,16 +319,48 @@ router.post('/refresh', (req, res) => {
   }
 });
 
-// @route   POST /api/auth/logout
-// @desc    Logout user
-// @access  Private
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout from the current user account
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User logged out successfully
+ */
 router.post('/logout', protect, (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
-// @route   POST /api/auth/forgot-password
-// @desc    Send password reset email
-// @access  Public
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Send password reset email
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Password reset email sent successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: User not found
+ */
 router.post('/forgot-password', (req, res) => {
   const { email } = req.body;
 
@@ -272,9 +393,38 @@ router.post('/forgot-password', (req, res) => {
     });
 });
 
-// @route   POST /api/auth/reset-password/:token
-// @desc    Reset password using token
-// @access  Public
+/**
+ * @swagger
+ * /api/auth/reset-password/{token}:
+ *   post:
+ *     summary: Reset password using token
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Password reset token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Invalid or expired reset token
+ */
 router.post('/reset-password/:token', (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
@@ -314,9 +464,36 @@ router.post('/reset-password/:token', (req, res) => {
   }
 });
 
-// @route   POST /api/auth/change-password
-// @desc    Change password (when logged in)
-// @access  Private
+/**
+ * @swagger
+ * /api/auth/change-password:
+ *   post:
+ *     summary: Change password (when logged in)
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Invalid current password
+ */
 router.post('/change-password', protect, (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
@@ -355,9 +532,27 @@ router.post('/change-password', protect, (req, res) => {
     });
 });
 
-// @route   GET /api/auth/verify-email/:token
-// @desc    Verify email address
-// @access  Public
+/**
+ * @swagger
+ * /api/auth/verify-email/{token}:
+ *   get:
+ *     summary: Verify email address
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Email verification token
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Invalid or expired verification token
+ */
 router.get('/verify-email/:token', (req, res) => {
   const { token } = req.params;
 
@@ -392,9 +587,32 @@ router.get('/verify-email/:token', (req, res) => {
   }
 });
 
-// @route   POST /api/auth/resend-verification
-// @desc    Resend email verification link
-// @access  Public
+/**
+ * @swagger
+ * /api/auth/resend-verification:
+ *   post:
+ *     summary: Resend email verification link
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Verification email sent successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: User not found
+ */
 router.post('/resend-verification', (req, res) => {
   const { email } = req.body;
 
@@ -431,9 +649,20 @@ router.post('/resend-verification', (req, res) => {
     });
 });
 
-// @route   DELETE /api/auth/delete-account
-// @desc    Delete user account
-// @access  Private
+/**
+ * @swagger
+ * /api/auth/delete-account:
+ *   delete:
+ *     summary: Delete user account
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Account deleted successfully
+ *       404:
+ *         description: User not found
+ */
 router.delete('/delete-account', protect, (req, res) => {
   User.findByIdAndDelete(req.user.userId)
     .then(user => {
@@ -448,9 +677,40 @@ router.delete('/delete-account', protect, (req, res) => {
     });
 });
 
-// @route   POST /api/auth/create-admin
-// @desc    Create admin account (admin only)
-// @access  Private + Admin
+/**
+ * @swagger
+ * /api/auth/create-admin:
+ *   post:
+ *     summary: Create admin account (admin only)
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - name
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Admin account created successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ */
 router.post('/create-admin', [protect, isAdmin], (req, res) => {
   const { email, password, name, phone, nid, address } = req.body;
 
@@ -491,9 +751,45 @@ router.post('/create-admin', [protect, isAdmin], (req, res) => {
     });
 });
 
-// @route   PUT /api/auth/update-role/:userId
-// @desc    Update user role (admin only)
-// @access  Private + Admin
+/**
+ * @swagger
+ * /api/auth/update-role/{userId}:
+ *   put:
+ *     summary: Update user role (admin only)
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum:
+ *                   - user
+ *                   - admin
+ *     responses:
+ *       200:
+ *         description: User role updated successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ */
 router.put('/update-role/:userId', [protect, isAdmin], (req, res) => {
   const { role } = req.body;
   const { userId } = req.params;
