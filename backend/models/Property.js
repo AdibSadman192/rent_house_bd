@@ -56,55 +56,17 @@ const propertySchema = new mongoose.Schema({
    */
   address: {
     /**
-     * Street address of the property
-     * @type {String}
-     * @required
-     */
-    street: {
-      type: String,
-      required: [true, 'Please add a street address']
-    },
-    /**
-     * House number of the property
-     * @type {String}
-     * @required
-     */
-    houseNumber: {
-      type: String,
-      required: [true, 'Please add a house number']
-    },
-    /**
-     * Floor number of the property
-     * @type {Number}
-     * @required
-     */
-    floor: {
-      type: Number,
-      required: [true, 'Please specify the floor number'],
-      min: [0, 'Floor number cannot be negative']
-    },
-    /**
      * Division of the property
      * @type {String}
      * @required
      */
     division: {
       type: String,
-      required: [true, 'Please add a division'],
-      enum: {
-        values: [
-          'Dhaka',
-          'Chittagong',
-          'Rajshahi',
-          'Khulna',
-          'Barishal',
-          'Sylhet',
-          'Rangpur',
-          'Mymensingh'
-        ],
-        message: '{VALUE} is not a valid division'
-      },
-      index: true
+      required: [true, 'Division is required'],
+      enum: [
+        'Dhaka', 'Chittagong', 'Rajshahi', 'Khulna', 
+        'Barishal', 'Sylhet', 'Rangpur', 'Mymensingh'
+      ]
     },
     /**
      * District of the property
@@ -113,19 +75,22 @@ const propertySchema = new mongoose.Schema({
      */
     district: {
       type: String,
-      required: [true, 'Please add a district'],
-      index: true
+      required: [true, 'District is required']
     },
     /**
-     * Thana/Upazila of the property
+     * Upazila/Thana of the property
      * @type {String}
      * @required
      */
-    thana: {
+    upazila: {
       type: String,
-      required: [true, 'Please add a thana/upazila'],
-      index: true
+      required: [true, 'Upazila/Thana is required']
     },
+    /**
+     * Union of the property
+     * @type {String}
+     */
+    union: String,
     /**
      * Area of the property
      * @type {String}
@@ -133,8 +98,28 @@ const propertySchema = new mongoose.Schema({
      */
     area: {
       type: String,
-      required: [true, 'Please add an area']
+      required: [true, 'Area name is required']
     },
+    /**
+     * Road number of the property
+     * @type {String}
+     */
+    roadNumber: String,
+    /**
+     * House number of the property
+     * @type {String}
+     */
+    houseNumber: String,
+    /**
+     * Floor number of the property
+     * @type {String}
+     */
+    floor: String,
+    /**
+     * Landmark of the property
+     * @type {String}
+     */
+    landmark: String,
     /**
      * Postal code of the property
      * @type {String}
@@ -142,23 +127,13 @@ const propertySchema = new mongoose.Schema({
      */
     postCode: {
       type: String,
-      required: [true, 'Please add a postal code'],
+      required: true,
       validate: {
         validator: function(v) {
-          return /^\d{4}$/.test(v);
+          return /^[0-9]{4}$/.test(v);
         },
-        message: props => `${props.value} is not a valid Bangladesh postal code!`
+        message: 'Invalid Bangladesh postal code'
       }
-    },
-    /**
-     * Country of the property
-     * @type {String}
-     * @required
-     */
-    country: {
-      type: String,
-      default: 'Bangladesh',
-      required: true
     }
   },
   /**
@@ -250,26 +225,32 @@ const propertySchema = new mongoose.Schema({
    */
   propertyType: {
     type: String,
-    required: [true, 'Please add a property type'],
-    enum: {
-      values: [
-        'Apartment',
-        'House',
-        'Duplex',
-        'Studio',
-        'Villa',
-        'Office',
-        'Shop',
-        'Warehouse',
-        'Bachelor',
-        'Family',
-        'Sublet',
-        'Mess',
-        'Hostel'
-      ],
-      message: '{VALUE} is not supported'
-    },
-    index: true
+    required: true,
+    enum: [
+      // Residential
+      'apartment', 'house', 'flat', 'duplex', 'penthouse',
+      // Mess/Hostel
+      'male_mess', 'female_mess', 'family_mess',
+      'male_hostel', 'female_hostel', 'family_hostel',
+      // Bachelor
+      'bachelor_male', 'bachelor_female',
+      // Sublet
+      'sublet_family', 'sublet_bachelor_male', 'sublet_bachelor_female',
+      // Commercial
+      'office', 'shop', 'warehouse', 'industrial',
+      // Other
+      'plot', 'other'
+    ]
+  },
+  /**
+   * Category of property (Residential, Commercial, Industrial)
+   * @type {String}
+   * @required
+   */
+  propertyCategory: {
+    type: String,
+    required: true,
+    enum: ['residential', 'commercial', 'industrial']
   },
   /**
    * Status of the property (available, rented, etc.)
@@ -382,65 +363,177 @@ const propertySchema = new mongoose.Schema({
      */
     utilities: {
       /**
-       * Whether electricity is available
-       * @type {Boolean}
+       * Electricity information
+       * @type {Object}
        */
       electricity: {
-        type: Boolean,
-        default: true
+        type: String,
+        enum: ['included', 'excluded', 'shared'],
+        required: true
       },
       /**
-       * Whether gas is available
-       * @type {Boolean}
-       */
-      gas: {
-        type: Boolean,
-        default: false
-      },
-      /**
-       * Whether water is available
-       * @type {Boolean}
+       * Water information
+       * @type {Object}
        */
       water: {
-        type: Boolean,
-        default: true
+        type: String,
+        enum: ['included', 'excluded', 'shared'],
+        required: true
       },
       /**
-       * Whether internet is available
-       * @type {Boolean}
+       * Gas information
+       * @type {Object}
+       */
+      gas: {
+        /**
+         * Type of gas connection
+         * @type {String}
+         */
+        connection: {
+          type: String,
+          enum: ['line_connection', 'cylinder', 'none'],
+          required: true
+        },
+        /**
+         * Cost of gas
+         * @type {String}
+         */
+        cost: {
+          type: String,
+          enum: ['included', 'excluded', 'shared']
+        }
+      },
+      /**
+       * Internet information
+       * @type {Object}
        */
       internet: {
-        type: Boolean,
-        default: false
-      },
-      /**
-       * Whether maintenance is available
-       * @type {Boolean}
-       */
-      maintenance: {
-        type: Boolean,
-        default: false
+        /**
+         * Whether internet is available
+         * @type {Boolean}
+         */
+        available: {
+          type: Boolean,
+          default: false
+        },
+        /**
+         * Cost of internet
+         * @type {String}
+         */
+        cost: {
+          type: String,
+          enum: ['included', 'excluded', 'shared']
+        }
       }
     },
     /**
      * Amenities available in the property
-     * @type {Array}
+     * @type {Object}
      */
-    amenities: [{
-      type: String,
-      enum: [
-        'lift',
-        'generator',
-        'security',
-        'cctv',
-        'intercom',
-        'prayer_room',
-        'community_hall',
-        'roof_access',
-        'gym',
-        'playground'
-      ]
-    }]
+    amenities: {
+      /**
+       * Generator information
+       * @type {Object}
+       */
+      generator: {
+        /**
+         * Whether generator is available
+         * @type {Boolean}
+         */
+        available: Boolean,
+        /**
+         * Capacity of generator
+         * @type {String}
+         */
+        capacity: String
+      },
+      /**
+       * Lift information
+       * @type {Boolean}
+       */
+      lift: Boolean,
+      /**
+       * Parking information
+       * @type {Object}
+       */
+      parking: {
+        /**
+         * Whether parking is available
+         * @type {Boolean}
+         */
+        available: Boolean,
+        /**
+         * Type of parking
+         * @type {String}
+         */
+        type: {
+          type: String,
+          enum: ['garage', 'open', 'covered']
+        }
+      },
+      /**
+       * Water reservoir information
+       * @type {Object}
+       */
+      waterReservoir: {
+        /**
+         * Whether water reservoir is available
+         * @type {Boolean}
+         */
+        available: Boolean,
+        /**
+         * Type of water reservoir
+         * @type {String}
+         */
+        type: {
+          type: String,
+          enum: ['underground', 'overhead', 'both']
+        }
+      },
+      /**
+       * Prayer information
+       * @type {Object}
+       */
+      prayer: {
+        /**
+         * Mosque information
+         * @type {Object}
+         */
+        mosque: {
+          /**
+           * Whether mosque is available
+           * @type {Boolean}
+           */
+          available: Boolean,
+          /**
+           * Distance to mosque
+           * @type {Number}
+           */
+          distance: Number // in meters
+        },
+        /**
+         * Prayer room information
+         * @type {Boolean}
+         */
+        prayerRoom: Boolean
+      },
+      /**
+       * Security information
+       * @type {Object}
+       */
+      security: {
+        /**
+         * Guard information
+         * @type {Boolean}
+         */
+        guard: Boolean,
+        /**
+         * CCTV information
+         * @type {Boolean}
+         */
+        cctv: Boolean
+      }
+    }
   },
   /**
    * Preferences of the property
@@ -448,13 +541,20 @@ const propertySchema = new mongoose.Schema({
    */
   preferences: {
     /**
+     * Religion preference
+     * @type {String}
+     */
+    religion: {
+      type: String,
+      enum: ['any', 'muslim', 'hindu', 'christian', 'buddhist', 'other']
+    },
+    /**
      * Type of tenant preferred
      * @type {Array}
      */
     tenantType: [{
       type: String,
-      enum: ['family', 'bachelor', 'office', 'student', 'any'],
-      default: ['any']
+      enum: ['family', 'bachelor', 'student', 'professional']
     }],
     /**
      * Gender preference
@@ -462,25 +562,177 @@ const propertySchema = new mongoose.Schema({
      */
     gender: {
       type: String,
-      enum: ['male', 'female', 'any'],
-      default: 'any'
+      enum: ['any', 'male', 'female']
     },
     /**
      * Maximum number of occupants
      * @type {Number}
      */
-    maxOccupants: {
-      type: Number,
-      min: [1, 'Maximum occupants must be at least 1']
+    maxOccupants: Number
+  },
+  /**
+   * Nearby places of the property
+   * @type {Object}
+   */
+  nearby: {
+    /**
+     * Education information
+     * @type {Array}
+     */
+    education: [{
+      /**
+       * Type of education
+       * @type {String}
+       */
+      type: {
+        type: String,
+        enum: ['school', 'college', 'university', 'madrasa']
+      },
+      /**
+       * Name of education
+       * @type {String}
+       */
+      name: String,
+      /**
+       * Distance to education
+       * @type {Number}
+       */
+      distance: Number // in meters
+    }],
+    /**
+     * Transport information
+     * @type {Array}
+     */
+    transport: [{
+      /**
+       * Type of transport
+       * @type {String}
+       */
+      type: {
+        type: String,
+        enum: ['bus_stop', 'train_station', 'metro_station']
+      },
+      /**
+       * Name of transport
+       * @type {String}
+       */
+      name: String,
+      /**
+       * Distance to transport
+       * @type {Number}
+       */
+      distance: Number // in meters
+    }],
+    /**
+     * Shopping information
+     * @type {Array}
+     */
+    shopping: [{
+      /**
+       * Type of shopping
+       * @type {String}
+       */
+      type: {
+        type: String,
+        enum: ['market', 'shopping_mall', 'grocery']
+      },
+      /**
+       * Name of shopping
+       * @type {String}
+       */
+      name: String,
+      /**
+       * Distance to shopping
+       * @type {Number}
+       */
+      distance: Number // in meters
+    }],
+    /**
+     * Healthcare information
+     * @type {Array}
+     */
+    healthcare: [{
+      /**
+       * Type of healthcare
+       * @type {String}
+       */
+      type: {
+        type: String,
+        enum: ['hospital', 'clinic', 'pharmacy']
+      },
+      /**
+       * Name of healthcare
+       * @type {String}
+       */
+      name: String,
+      /**
+       * Distance to healthcare
+       * @type {Number}
+       */
+      distance: Number // in meters
+    }]
+  },
+  /**
+   * Payment details of the property
+   * @type {Object}
+   */
+  paymentDetails: {
+    /**
+     * Advance payment information
+     * @type {Object}
+     */
+    advancePayment: {
+      /**
+       * Number of months for advance payment
+       * @type {Number}
+       */
+      months: {
+        type: Number,
+        required: true,
+        min: 0,
+        max: 12
+      },
+      /**
+       * Amount of advance payment
+       * @type {Number}
+       */
+      amount: {
+        type: Number,
+        required: true
+      }
     },
     /**
-     * Whether pets are allowed
-     * @type {Boolean}
+     * Security deposit information
+     * @type {Number}
      */
-    petsAllowed: {
-      type: Boolean,
-      default: false
-    }
+    securityDeposit: {
+      type: Number,
+      required: true
+    },
+    /**
+     * Monthly charges information
+     * @type {Array}
+     */
+    monthlyCharges: [{
+      /**
+       * Type of monthly charge
+       * @type {String}
+       */
+      type: {
+        type: String,
+        enum: ['service_charge', 'maintenance', 'garbage', 'other']
+      },
+      /**
+       * Amount of monthly charge
+       * @type {Number}
+       */
+      amount: Number,
+      /**
+       * Description of monthly charge
+       * @type {String}
+       */
+      description: String
+    }]
   },
   /**
    * Images of the property

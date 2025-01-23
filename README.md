@@ -1,12 +1,15 @@
-[![Create Release](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml/badge.svg)](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml)
 # 🏠 rent_house_bd
+
+[![Create Release](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml/badge.svg)](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml)
 
 ## 🖼️ Project Previews
 
 ### Landing Page
-
 ![Landing Preview](/preview/second_preview.jpeg)
-*Note: More screenshots will be added as the project progresses*
+
+
+
+*Note: The platform features a modern, responsive design with glass-morphism UI elements*
 
 ## 🌟 Overview
 A modern social media platform and service for house rentals in Bangladesh, connecting tenants with property owners through a community-driven approach.
@@ -89,70 +92,6 @@ The platform serves as both a social network and rental service, making it easie
 - [ ] Market analysis tools
 - [ ] API marketplace for third-party integrations
 
-## 📊 Current Project Status
-
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Authentication | ✅ Working | Email and social login implemented |
-| User Profiles | ✅ Working | Basic profile management available |
-| Property Listing | ⚠️ Partial | Basic listing without advanced features |
-| Search System | ⚠️ Partial | Basic search implemented, advanced filters pending |
-| Glass-morphism UI | ✅ Working | Complete component library with modern design |
-| Responsive Design | ✅ Working | Fully responsive across all devices |
-| Chat System | ❌ Pending | Planned for Phase 2 |
-| Payment System | ❌ Pending | Planned for Phase 2 |
-| Admin Dashboard | ⚠️ Partial | Basic management features available |
-| Email Notifications | ✅ Working | Transactional emails implemented |
-| Map Integration | ❌ Pending | Planned for Phase 2 |
-| Image Upload | ✅ Working | With optimization and CDN delivery |
-| Property Analytics | ❌ Pending | Planned for Phase 3 |
-
-## 🚧 Project Status: What's Working & Not Working
-
-### ✅ Currently Working
-- [x] User Authentication System
-  - [x] Login page with responsive design
-  - [x] Registration page with comprehensive validation
-  - [x] Social login buttons (UI implemented)
-  - [x] NID number validation for Bangladeshi users
-- [x] Frontend Design
-  - [x] Responsive layout
-  - [x] Tailwind CSS styling
-  - [x] Modern, clean UI for auth pages
-- [x] Basic routing
-- [x] Error handling for form submissions
-
-### 🛠 In Progress
-- [ ] Complete social login backend integration
-- [ ] Full API connection for authentication
-- [ ] Comprehensive error handling
-- [ ] User profile creation flow
-- [ ] Property listing functionality
-
-### ❌ Not Yet Implemented
-- [ ] Payment processing
-- [ ] Advanced property search
-- [ ] Real-time chat system
-- [ ] AI chatbot
-- [ ] Complete admin dashboard
-
-## 🎯 Current Sprint Focus
-- Enhancing property search functionality
-- Implementing advanced filters
-- Optimizing image loading and caching
-- Improving user experience with smoother transitions
-- Adding more interactive elements to property listings
-refactor(readme): Reposition project preview section
-
-- Move project preview section above overview
-- Remove duplicate preview section
-- Maintain existing formatting and content
-## 🔄 Recent Updates
-- Added responsive navigation
-- Enhanced user authentication flow
-- Optimized property listing performance
-- Added basic search functionality
-
 ## 🛠️ Development
 
 ### Tech Stack
@@ -180,14 +119,56 @@ refactor(readme): Reposition project preview section
 - 📡 HTTP Client: Axios
 - 🎭 Form Validation: Yup
 
-#### DevOps & Tools
-- 📦 Package Manager: npm/yarn
-- 🔄 Version Control: Git
-- 🐳 Containerization: Docker (optional)
-- 📝 API Documentation: Swagger/OpenAPI
-- 🧪 Testing: Jest
-- 📊 Code Quality: ESLint, Prettier
-- 🔄 CI/CD: GitHub Actions
+### 📁 Project Structure
+```
+rent_house_bd/
+├── backend/                 # Backend server application
+│   ├── config/             # Configuration files
+│   │   ├── database.js     # Database configuration
+│   │   ├── dialogflow.js   # Chatbot configuration
+│   │   └── swagger.js      # API documentation
+│   ├── controllers/        # Request handlers
+│   │   ├── authController.js
+│   │   ├── propertyController.js
+│   │   ├── bookingController.js
+│   │   └── ...
+│   ├── middleware/         # Express middleware
+│   │   ├── auth.js         # Authentication middleware
+│   │   ├── errorHandler.js # Error handling
+│   │   └── upload.js       # File upload handling
+│   ├── models/            # Database models
+│   │   ├── User.js
+│   │   ├── Property.js
+│   │   ├── Booking.js
+│   │   └── ...
+│   ├── routes/            # API routes
+│   │   ├── auth.js
+│   │   ├── properties.js
+│   │   └── ...
+│   ├── services/          # Business logic
+│   └── utils/             # Helper functions
+│
+├── frontend/              # Next.js frontend application
+│   ├── components/        # Reusable React components
+│   │   ├── common/        # Shared components
+│   │   ├── dashboard/     # Dashboard components
+│   │   └── property/      # Property-related components
+│   ├── contexts/          # React context providers
+│   ├── hooks/             # Custom React hooks
+│   ├── lib/              # Utility libraries
+│   ├── pages/            # Next.js pages
+│   │   ├── api/          # API routes
+│   │   ├── auth/         # Authentication pages
+│   │   ├── dashboard/    # Dashboard pages
+│   │   └── properties/   # Property pages
+│   ├── public/           # Static files
+│   │   ├── images/
+│   │   └── icons/
+│   └── styles/           # CSS and styling files
+│
+├── docs/                 # Documentation files
+└── preview/             # Project preview images
+```
 
 ### Prerequisites
 - Node.js 18 or higher
@@ -199,7 +180,7 @@ refactor(readme): Reposition project preview section
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/rent_house_bd.git
+git clone https://github.com/AdibSadman192/rent_house_bd.git
 cd rent_house_bd
 ```
 
@@ -222,47 +203,27 @@ MONGODB_URI=your_mongodb_uri
 JWT_SECRET=your_jwt_secret
 AWS_ACCESS_KEY=your_aws_access_key
 AWS_SECRET_KEY=your_aws_secret_key
-DIALOGFLOW_PROJECT_ID=your_dialogflow_project_id
+S3_BUCKET_NAME=your_s3_bucket_name
 
 # Frontend (.env.local)
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
 ```
 
-4. Start development servers:
+4. Start the development servers:
 ```bash
 # Start backend server
 cd backend
 npm run dev
 
 # Start frontend server
-cd frontend
+cd ../frontend
 npm run dev
 ```
 
-### API Documentation
-- Base URL: `http://localhost:5000/api`
-- Documentation: `http://localhost:5000/api-docs`
-
-### Development Guidelines
-- Follow ESLint and Prettier configurations
-- Write unit tests for new features
-- Follow Git branching strategy
-- Document API changes in Swagger
-- Keep dependencies updated
-
-### Deployment
-- Backend: Node.js server (PM2)
-- Frontend: Vercel/Netlify
-- Database: MongoDB Atlas
-- Storage: AWS S3
-- Monitoring: PM2/Sentry
-- SSL: Let's Encrypt
+The application will be available at:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000
 
 ## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Contributing
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-
-## 📞 Support
-For support, email support@renthousebd.com or join our Slack channel.
+This project is licensed under the MIT License - see the LICENSE file for details.
