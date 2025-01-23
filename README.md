@@ -1,4 +1,4 @@
-# 🏠 rent_house_bd
+# 🏠 Rent_House_BD
 
 [![Create Release](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml/badge.svg)](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml)
 
