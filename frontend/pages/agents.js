@@ -88,39 +88,41 @@ const AgentsPage = () => {
   return (
     <>
       <Head>
-        <title>Our Agents | RentHouseBD</title>
-        <meta name="description" content="Find the perfect real estate agent to help you find your next home in Bangladesh" />
+        <title>Our Expert Agents | RentHouseBD</title>
+        <meta name="description" content="Connect with our experienced real estate agents" />
       </Head>
 
-      <div className="pt-24 pb-16">
-        {/* Hero Section */}
-        <div className="bg-gradient-to-r from-primary-50 to-primary-100 mb-8">
-          <div className="container mx-auto px-4 py-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Our Expert Agents
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl">
-              Connect with our experienced real estate agents who will help you find the perfect property that matches your needs and preferences.
+      <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white">
+        <div className="pt-8 pb-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-2xl font-bold text-gray-900">Our Expert Agents</h1>
+            <p className="mt-2 text-gray-600 text-sm">
+              Connect with our experienced real estate agents who will help you find the perfect
+              property that matches your needs and preferences.
             </p>
           </div>
         </div>
 
-        {/* Search and Filters */}
-        <div className="container mx-auto px-4 mb-8">
-          <div className="relative mb-6">
-            <input
-              type="text"
-              placeholder="Search agents by name, location, or specialization..."
-              className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-soft"
-            />
-            <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center text-gray-600 hover:text-primary-600"
-            >
-              <FiFilter className="w-5 h-5 mr-2" />
-              <span className="hidden sm:inline">Filters</span>
-            </button>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          {/* Search and Filter Section */}
+          <div className="bg-white rounded-lg shadow-sm p-4 mb-8">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="w-full relative">
+                <input
+                  type="text"
+                  placeholder="Search agents by name, location, or specialization..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <FiSearch className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              </div>
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap"
+              >
+                <FiFilter className="h-5 w-5" />
+                Filters
+              </button>
+            </div>
           </div>
 
           {/* View Toggle */}
@@ -153,7 +155,7 @@ const AgentsPage = () => {
           </div>
 
           {/* Filters */}
-          <div className={`bg-white rounded-xl shadow-soft p-6 mb-8 ${isFilterOpen ? 'block' : 'hidden'}`}>
+          <div className={`bg-white rounded-lg shadow-sm p-4 mb-8 ${isFilterOpen ? 'block' : 'hidden'}`}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Location Filter */}
               <div>
@@ -259,7 +261,7 @@ const AgentsPage = () => {
             {agents.map((agent) => (
               <div
                 key={agent.id}
-                className={`bg-white rounded-xl shadow-soft overflow-hidden hover:shadow-medium transition-shadow duration-200 ${
+                className={`bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 ${
                   viewMode === 'list' ? 'flex' : ''
                 }`}
               >

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { FiLayout, FiHome, FiCalendar, FiMessageSquare, FiHeart, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
+import { FiLayout, FiHome, FiCalendar, FiMessageSquare, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 
 const menuItems = [
   {
@@ -30,12 +30,6 @@ const menuItems = [
     label: 'Messages',
     icon: FiMessageSquare,
     href: '/dashboard/messages',
-  },
-  {
-    label: 'Favorites',
-    icon: FiHeart,
-    href: '/dashboard/favorites',
-    renterOnly: true,
   },
   {
     label: 'Settings',

@@ -11,12 +11,10 @@ import {
   FiChevronRight,
   FiPlus,
   FiEye,
-  FiHeart,
   FiClock,
   FiDollarSign,
   FiSearch,
-  FiActivity,
-  FiBell
+  FiActivity
 } from 'react-icons/fi';
 
 export default function DashboardPage() {
@@ -25,8 +23,7 @@ export default function DashboardPage() {
   // Mock data (replace with API data)
   const user = {
     name: 'John Doe',
-    role: 'owner',
-    avatar: '/images/avatar.jpg'
+    role: 'owner'
   };
 
   const stats = {
@@ -53,71 +50,44 @@ export default function DashboardPage() {
         isPositive: true,
       },
       {
-        label: 'New Messages',
-        value: '24',
-        icon: FiMessageSquare,
+        label: 'Total Revenue',
+        value: '৳480,000',
+        icon: FiDollarSign,
         trend: '+18%',
         isPositive: true,
-      },
+      }
     ],
     renter: [
       {
-        label: 'Saved Properties',
-        value: '15',
-        icon: FiHeart,
-        trend: '+3',
+        label: 'Viewed Properties',
+        value: '42',
+        icon: FiEye,
+        trend: '+7.2%',
+        isPositive: true,
+      },
+      {
+        label: 'Booking Requests',
+        value: '6',
+        icon: FiClock,
+        trend: '+3%',
         isPositive: true,
       },
       {
         label: 'Active Rentals',
         value: '2',
         icon: FiHome,
-        trend: '0',
-        isPositive: true,
-      },
-      {
-        label: 'Pending Requests',
-        value: '3',
-        icon: FiClock,
         trend: '+1',
         isPositive: true,
       },
       {
-        label: 'Total Spent',
-        value: '৳45,000',
+        label: 'Spent This Month',
+        value: '৳24,000',
         icon: FiDollarSign,
-        trend: '+৳5,000',
+        trend: '+5%',
         isPositive: true,
-      },
-    ],
+      }
+    ]
   };
-
-  const recentActivities = [
-    {
-      id: 1,
-      type: 'property_listed',
-      title: 'New Property Listed',
-      description: 'You listed "Modern Apartment in Gulshan" for rent',
-      time: '2 hours ago',
-      icon: FiHome,
-    },
-    {
-      id: 2,
-      type: 'booking_request',
-      title: 'Booking Request Received',
-      description: 'New booking request for "Luxury Villa in Banani"',
-      time: '5 hours ago',
-      icon: FiCalendar,
-    },
-    {
-      id: 3,
-      type: 'message',
-      title: 'New Message',
-      description: 'Sarah sent you a message about the apartment',
-      time: '1 day ago',
-      icon: FiMessageSquare,
-    },
-  ];
 
   const quickActions = user.role === 'owner' ? [
     {
@@ -146,16 +116,43 @@ export default function DashboardPage() {
       description: 'Find your next home',
     },
     {
-      label: 'View Saved Properties',
-      icon: FiHeart,
-      href: '/dashboard/favorites',
-      description: 'Access your saved properties',
-    },
-    {
       label: 'My Rentals',
       icon: FiHome,
       href: '/dashboard/rentals',
       description: 'Manage your current rentals',
+    },
+    {
+      label: 'View Messages',
+      icon: FiMessageSquare,
+      href: '/dashboard/messages',
+      description: 'Check your messages',
+    },
+  ];
+
+  const recentActivities = [
+    {
+      id: 1,
+      type: 'property_listed',
+      title: 'New Property Listed',
+      description: 'You listed "Modern Apartment in Gulshan" for rent',
+      time: '2 hours ago',
+      icon: FiHome,
+    },
+    {
+      id: 2,
+      type: 'booking_request',
+      title: 'Booking Request Received',
+      description: 'New booking request for "Luxury Villa in Banani"',
+      time: '5 hours ago',
+      icon: FiCalendar,
+    },
+    {
+      id: 3,
+      type: 'message',
+      title: 'New Message',
+      description: 'Sarah sent you a message about the apartment',
+      time: '1 day ago',
+      icon: FiMessageSquare,
     },
   ];
 
@@ -177,17 +174,6 @@ export default function DashboardPage() {
               <p className="text-gray-600">
                 Here's what's happening with your {user.role === 'owner' ? 'properties' : 'rentals'} today.
               </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button className="p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors relative">
-                <FiBell className="w-6 h-6 text-gray-600" />
-                <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500"></span>
-              </button>
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-12 h-12 rounded-full border-2 border-white shadow-md"
-              />
             </div>
           </div>
         </div>
@@ -220,7 +206,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* Overview */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Overview</h2>

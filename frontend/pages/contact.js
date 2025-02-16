@@ -31,11 +31,11 @@ const ContactPage = () => {
         <meta name="description" content="Get in touch with RentHouseBD for any questions or support regarding property rentals in Bangladesh" />
       </Head>
 
-      <div className="pt-24 pb-16">
+      <div className=" pb-16">
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-primary-50 to-primary-100 mb-16">
           <div className="container mx-auto px-4 py-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h1 className="text-xl md:text-5xl font-bold text-gray-900 mb-6">
               Contact Us
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl">
