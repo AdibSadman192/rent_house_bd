@@ -1,178 +1,180 @@
-import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { motion } from 'framer-motion';
-import { Search as SearchIcon, SlidersHorizontal, MapPin, Home, Currency, BedDouble, Bath, Square } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import PropertyCard from '@/components/properties/PropertyCard';
+import { 
+  FiSearch, 
+  FiMapPin, 
+  FiDollarSign, 
+  FiHome,
+  FiFilter,
+  FiX,
+  FiChevronDown,
+  FiHeart,
+  FiBed,
+  FiBath,
+  FiMaximize2,
+  FiSliders
+} from 'react-icons/fi';
 
 const SearchPage = () => {
-  const [searchParams, setSearchParams] = useState({
-    query: '',
-    location: '',
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    priceRange: '',
     propertyType: '',
-    priceRange: { min: '', max: '' },
     bedrooms: '',
     bathrooms: '',
     minArea: '',
-    maxArea: ''
+    maxArea: '',
+    location: '',
+    amenities: []
   });
-  const [searchResults, setSearchResults] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  const handleSearch = async (e) => {
-    e?.preventDefault();
-    setLoading(true);
-    try {
-      // TODO: Implement API call to search properties
-      const response = await fetch('/api/properties/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(searchParams)
-      });
-      const data = await response.json();
-      setSearchResults(data);
-    } catch (error) {
-      console.error('Search failed:', error);
-    } finally {
+  // Mock properties data
+  const mockProperties = [
+    {
+      id: 1,
+      title: 'Modern Apartment in Gulshan',
+      description: 'Beautifully furnished 3-bedroom apartment with city views',
+      price: 45000,
+      location: 'Gulshan, Dhaka',
+      bedrooms: 3,
+      bathrooms: 2,
+      area: 1800,
+      images: ['/images/property1.jpg', '/images/property2.jpg'],
+      amenities: ['Parking', 'Security', 'Generator', 'Elevator'],
+      type: 'Apartment',
+      status: 'Available'
+    },
+    {
+      id: 2,
+      title: 'Spacious House in Dhanmondi',
+      description: 'Family-friendly 4-bedroom house with garden',
+      price: 65000,
+      location: 'Dhanmondi, Dhaka',
+      bedrooms: 4,
+      bathrooms: 3,
+      area: 2500,
+      images: ['/images/property3.jpg', '/images/property4.jpg'],
+      amenities: ['Garden', 'Parking', 'Security', 'Generator'],
+      type: 'House',
+      status: 'Available'
+    }
+  ];
+
+  useEffect(() => {
+    // Simulate API call
+    setTimeout(() => {
+      setProperties(mockProperties);
       setLoading(false);
-    }
+    }, 1000);
+  }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // Implement search logic
+    console.log('Searching for:', searchTerm);
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
+  const handleFilterChange = (name, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1
-    }
-  };
+  const FilterSection = ({ title, children }) => (
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+      {children}
+    </div>
+  );
 
   return (
     <>
       <Head>
-        <title>Search Properties | RentHouse BD</title>
-        <meta name="description" content="Search for your perfect rental property in Bangladesh" />
+        <title>Search Properties | RentHouseBD</title>
+        <meta name="description" content="Search for rental properties in Bangladesh" />
       </Head>
 
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8"
-      >
-        <motion.div variants={itemVariants} className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Find Your Perfect Home</h1>
+      <div className="pt-24 pb-16">
+        {/* Search Header */}
+        <div className="bg-gradient-to-r from-primary-50 to-primary-100 mb-8">
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-4xl mx-auto">
+              <form onSubmit={handleSearch} className="relative">
+                <input
+                  type="text"
+                  placeholder="Search by location, property type, or keywords..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-soft"
+                />
+                <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <button
+                  type="button"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary-600"
+                >
+                  <FiSliders className="w-5 h-5" />
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
 
-          <form onSubmit={handleSearch} className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Search Query */}
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Search
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Search properties..."
-                    value={searchParams.query}
-                    onChange={(e) => setSearchParams({ ...searchParams, query: e.target.value })}
-                  />
-                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Enter location..."
-                    value={searchParams.location}
-                    onChange={(e) => setSearchParams({ ...searchParams, location: e.target.value })}
-                  />
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-
-              {/* Property Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Property Type
-                </label>
-                <div className="relative">
-                  <select
-                    className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={searchParams.propertyType}
-                    onChange={(e) => setSearchParams({ ...searchParams, propertyType: e.target.value })}
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Filters Section */}
+            {showFilters && (
+              <div className="lg:w-1/4 bg-white rounded-xl shadow-soft p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900">Filters</h2>
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="text-gray-400 hover:text-gray-600"
                   >
-                    <option value="">All Types</option>
+                    <FiX className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <FilterSection title="Price Range">
+                  <select
+                    value={filters.priceRange}
+                    onChange={(e) => handleFilterChange('priceRange', e.target.value)}
+                    className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="">Any Price</option>
+                    <option value="0-20000">৳0 - ৳20,000</option>
+                    <option value="20000-40000">৳20,000 - ৳40,000</option>
+                    <option value="40000-60000">৳40,000 - ৳60,000</option>
+                    <option value="60000+">৳60,000+</option>
+                  </select>
+                </FilterSection>
+
+                <FilterSection title="Property Type">
+                  <select
+                    value={filters.propertyType}
+                    onChange={(e) => handleFilterChange('propertyType', e.target.value)}
+                    className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="">Any Type</option>
                     <option value="apartment">Apartment</option>
                     <option value="house">House</option>
                     <option value="room">Room</option>
                     <option value="commercial">Commercial</option>
                   </select>
-                  <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                </div>
-              </div>
+                </FilterSection>
 
-              {/* Price Range */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Price Range
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="relative">
-                    <input
-                      type="number"
-                      className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Min"
-                      value={searchParams.priceRange.min}
-                      onChange={(e) => setSearchParams({
-                        ...searchParams,
-                        priceRange: { ...searchParams.priceRange, min: e.target.value }
-                      })}
-                    />
-                    <Currency className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Max"
-                      value={searchParams.priceRange.max}
-                      onChange={(e) => setSearchParams({
-                        ...searchParams,
-                        priceRange: { ...searchParams.priceRange, max: e.target.value }
-                      })}
-                    />
-                    <Currency className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Bedrooms */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bedrooms
-                </label>
-                <div className="relative">
+                <FilterSection title="Bedrooms">
                   <select
-                    className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={searchParams.bedrooms}
-                    onChange={(e) => setSearchParams({ ...searchParams, bedrooms: e.target.value })}
+                    value={filters.bedrooms}
+                    onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
+                    className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Any</option>
                     <option value="1">1</option>
@@ -180,105 +182,123 @@ const SearchPage = () => {
                     <option value="3">3</option>
                     <option value="4">4+</option>
                   </select>
-                  <BedDouble className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                </div>
-              </div>
+                </FilterSection>
 
-              {/* Bathrooms */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bathrooms
-                </label>
-                <div className="relative">
+                <FilterSection title="Bathrooms">
                   <select
-                    className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={searchParams.bathrooms}
-                    onChange={(e) => setSearchParams({ ...searchParams, bathrooms: e.target.value })}
+                    value={filters.bathrooms}
+                    onChange={(e) => handleFilterChange('bathrooms', e.target.value)}
+                    className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Any</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3+</option>
                   </select>
-                  <Bath className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                </FilterSection>
+
+                <FilterSection title="Area (sqft)">
+                  <div className="flex gap-4">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={filters.minArea}
+                      onChange={(e) => handleFilterChange('minArea', e.target.value)}
+                      className="w-1/2 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={filters.maxArea}
+                      onChange={(e) => handleFilterChange('maxArea', e.target.value)}
+                      className="w-1/2 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    />
+                  </div>
+                </FilterSection>
+
+                <button
+                  onClick={() => setFilters({
+                    priceRange: '',
+                    propertyType: '',
+                    bedrooms: '',
+                    bathrooms: '',
+                    minArea: '',
+                    maxArea: '',
+                    location: '',
+                    amenities: []
+                  })}
+                  className="w-full mt-4 px-4 py-2 text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            )}
+
+            {/* Results Section */}
+            <div className={showFilters ? 'lg:w-3/4' : 'w-full'}>
+              {/* Results Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {loading ? 'Loading properties...' : `${properties.length} Properties Found`}
+                  </h2>
+                  <p className="text-gray-600">
+                    <FiMapPin className="inline-block mr-1" />
+                    Showing results for all locations
+                  </p>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <select className="border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    <option>Sort by: Featured</option>
+                    <option>Price: Low to High</option>
+                    <option>Price: High to Low</option>
+                    <option>Newest First</option>
+                  </select>
                 </div>
               </div>
-            </div>
 
-            {/* Area Range */}
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Area (sq ft)
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="relative">
-                  <input
-                    type="number"
-                    className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Min Area"
-                    value={searchParams.minArea}
-                    onChange={(e) => setSearchParams({ ...searchParams, minArea: e.target.value })}
-                  />
-                  <Square className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              {/* Property Grid */}
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <div
+                      key={n}
+                      className="bg-gray-100 rounded-xl animate-pulse h-[400px]"
+                    />
+                  ))}
                 </div>
-                <div className="relative">
-                  <input
-                    type="number"
-                    className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Max Area"
-                    value={searchParams.maxArea}
-                    onChange={(e) => setSearchParams({ ...searchParams, maxArea: e.target.value })}
-                  />
-                  <Square className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {properties.map((property) => (
+                    <PropertyCard key={property.id} property={property} />
+                  ))}
                 </div>
+              )}
+
+              {/* Pagination */}
+              <div className="mt-12 flex justify-center">
+                <nav className="flex items-center space-x-2">
+                  <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Previous
+                  </button>
+                  <button className="px-4 py-2 bg-primary-600 text-white rounded-lg">
+                    1
+                  </button>
+                  <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    2
+                  </button>
+                  <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    3
+                  </button>
+                  <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Next
+                  </button>
+                </nav>
               </div>
             </div>
-
-            {/* Search Button */}
-            <div className="mt-6">
-              <button
-                type="submit"
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Searching...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center">
-                    <SearchIcon className="mr-2 h-5 w-5" />
-                    Search Properties
-                  </span>
-                )}
-              </button>
-            </div>
-          </form>
-
-          {/* Search Results */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {searchResults.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
           </div>
-
-          {/* No Results Message */}
-          {searchResults.length === 0 && !loading && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-12"
-            >
-              <p className="text-gray-500 text-lg">No properties found matching your criteria.</p>
-              <p className="text-gray-400">Try adjusting your search filters.</p>
-            </motion.div>
-          )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </>
   );
 };

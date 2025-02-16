@@ -1,141 +1,161 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import { Heart, Trash2 } from 'lucide-react';
 import PropertyCard from '@/components/properties/PropertyCard';
-import { useSession } from '@/hooks/useSession';
+import useSession from '@/hooks/useSession';
 
 const FavoritesPage = () => {
+  const router = useRouter();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { session } = useSession();
+  const { user, isAuthenticated } = useSession();
 
   useEffect(() => {
-    fetchFavorites();
-  }, []);
+    if (isAuthenticated) {
+      fetchFavorites();
+    }
+  }, [isAuthenticated]);
 
   const fetchFavorites = async () => {
     try {
       const response = await fetch('/api/user/favorites', {
         headers: {
-          'Authorization': `Bearer ${session?.token}`
+          'Authorization': `Bearer ${user?.token}`
         }
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch favorites');
+      }
+
       const data = await response.json();
       setFavorites(data);
+      setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch favorites:', error);
-    } finally {
+      console.error('Error fetching favorites:', error);
       setLoading(false);
     }
   };
 
   const removeFavorite = async (propertyId) => {
     try {
-      await fetch(`/api/user/favorites/${propertyId}`, {
+      const response = await fetch(`/api/user/favorites/${propertyId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${session?.token}`
+          'Authorization': `Bearer ${user?.token}`
         }
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to remove favorite');
+      }
+
       setFavorites(favorites.filter(fav => fav.id !== propertyId));
     } catch (error) {
-      console.error('Failed to remove favorite:', error);
+      console.error('Error removing favorite:', error);
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1
-    }
-  };
-
-  if (!session) {
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Heart className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Sign in to view favorites</h2>
-          <p className="text-gray-600">Please sign in to access your favorite properties.</p>
+      <>
+        <Head>
+          <title>My Favorites | RentHouseBD</title>
+          <meta name="description" content="View and manage your favorite properties" />
+        </Head>
+        <div className="pt-24 pb-16">
+          <div className="container mx-auto px-4">
+            <div className="text-center py-16">
+              <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Please Sign In</h1>
+              <p className="text-gray-600 mb-8">
+                Sign in to view and manage your favorite properties
+              </p>
+              <button
+                onClick={() => router.push('/signin')}
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
     <>
       <Head>
-        <title>My Favorites | RentHouse BD</title>
+        <title>My Favorites | RentHouseBD</title>
         <meta name="description" content="View and manage your favorite properties" />
       </Head>
 
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8"
-      >
-        <motion.div variants={itemVariants} className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">My Favorites</h1>
-            <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-              {favorites.length} {favorites.length === 1 ? 'Property' : 'Properties'}
-            </span>
+      <div className="pt-24 pb-16">
+        <div className="container mx-auto px-4">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Favorites</h1>
+            <p className="text-gray-600">
+              {loading
+                ? 'Loading your favorite properties...'
+                : `${favorites.length} properties saved`}
+            </p>
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center min-h-[400px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          ) : favorites.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {favorites.map((property) => (
-                <motion.div
-                  key={property.id}
-                  variants={itemVariants}
-                  className="relative"
-                >
-                  <button
-                    onClick={() => removeFavorite(property.id)}
-                    className="absolute right-4 top-4 z-10 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition-colors duration-200"
-                    title="Remove from favorites"
-                  >
-                    <Trash2 className="h-5 w-5 text-red-600" />
-                  </button>
-                  <PropertyCard property={property} />
-                </motion.div>
+              {[1, 2, 3].map((n) => (
+                <div
+                  key={n}
+                  className="bg-gray-100 rounded-xl animate-pulse h-[400px]"
+                />
               ))}
+            </div>
+          ) : favorites.length === 0 ? (
+            <div className="text-center py-16">
+              <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">No Favorites Yet</h2>
+              <p className="text-gray-600 mb-8">
+                Start browsing properties and save your favorites to view them here
+              </p>
+              <button
+                onClick={() => router.push('/search')}
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                Browse Properties
+              </button>
             </div>
           ) : (
             <motion.div
-              variants={itemVariants}
-              className="text-center py-12 bg-white rounded-lg shadow-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              <Heart className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">No favorites yet</h2>
-              <p className="text-gray-600 mb-4">Start adding properties to your favorites list!</p>
-              <a
-                href="/properties"
-                className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Browse Properties
-              </a>
+              {favorites.map((property) => (
+                <motion.div
+                  key={property.id}
+                  layout
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div className="relative">
+                    <PropertyCard property={property} />
+                    <button
+                      onClick={() => removeFavorite(property.id)}
+                      className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    >
+                      <Trash2 className="w-5 h-5 text-red-600" />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
           )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </>
   );
 };

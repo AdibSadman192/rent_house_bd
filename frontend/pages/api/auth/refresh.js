@@ -1,7 +1,6 @@
-import { connectToDatabase } from '../../../lib/mongodb';
+import { connectDB } from '@/lib/db';
+import User from '@/models/User';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -9,76 +8,85 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'No token provided' });
+    console.log('Starting token refresh...');
+    await connectDB();
+
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      console.log('No refresh token provided');
+      return res.status(401).json({ message: 'No refresh token provided' });
     }
 
-    const token = authHeader.split(' ')[1];
-
-    // Verify the existing token
+    // Verify the refresh token
     let decoded;
     try {
-      decoded = jwt.verify(token, JWT_SECRET);
+      decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET || 'your-refresh-token-secret');
+      console.log('Refresh token verified successfully');
     } catch (error) {
-      if (error.name === 'TokenExpiredError') {
-        // Token is expired, but we can still decode it to get the user info
-        decoded = jwt.decode(token);
-      } else {
-        return res.status(401).json({ message: 'Invalid token' });
-      }
+      console.error('Refresh token verification failed:', error);
+      return res.status(401).json({ message: 'Invalid refresh token' });
     }
 
-    // Connect to MongoDB
-    const { db } = await connectToDatabase();
-    const usersCollection = db.collection('users');
-
     // Find user
-    const user = await usersCollection.findOne({ 
-      _id: decoded.userId,
-      email: decoded.email 
-    });
+    console.log('Finding user with ID:', decoded.userId);
+    const user = await User.findById(decoded.userId);
 
     if (!user) {
+      console.log('User not found:', decoded.userId);
       return res.status(404).json({ message: 'User not found' });
     }
 
     // Update last activity
-    await usersCollection.updateOne(
-      { _id: user._id },
-      { 
-        $set: { 
-          lastActivity: new Date(),
-          lastTokenRefresh: new Date()
-        }
-      }
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+    console.log('Updated last login time for user:', user._id);
+
+    // Generate new tokens
+    console.log('Generating new tokens...');
+    const newToken = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET || 'your-jwt-secret',
+      { expiresIn: '30d' }
     );
 
-    // Create new token
-    const newToken = jwt.sign(
-      {
-        userId: user._id,
-        email: user.email,
-        userType: user.userType,
-        rememberMe: decoded.rememberMe
-      },
-      JWT_SECRET,
-      { expiresIn: decoded.rememberMe ? '30d' : '7d' }
+    const newRefreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.REFRESH_TOKEN_SECRET || 'your-refresh-token-secret',
+      { expiresIn: '90d' }
     );
+
+    // Set new cookies
+    console.log('Setting new cookies...');
+    res.setHeader('Set-Cookie', [
+      `token=${newToken}; HttpOnly; Path=/; Max-Age=2592000; SameSite=Strict`,
+      `refreshToken=${newRefreshToken}; HttpOnly; Path=/; Max-Age=7776000; SameSite=Strict`
+    ]);
 
     // Remove sensitive data
-    const { password, ...userWithoutPassword } = user;
+    const userResponse = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      lastLogin: user.lastLogin
+    };
 
+    console.log('Token refresh successful for user:', user._id);
     return res.status(200).json({
+      success: true,
       message: 'Session refreshed successfully',
       token: newToken,
-      user: userWithoutPassword
+      refreshToken: newRefreshToken,
+      user: userResponse
     });
   } catch (error) {
     console.error('Session refresh error:', error);
     return res.status(500).json({
-      message: 'An error occurred while refreshing the session'
+      success: false,
+      message: 'An error occurred while refreshing the session',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 }

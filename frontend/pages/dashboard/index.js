@@ -1,41 +1,32 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import {
-  Building2,
-  Users,
-  CalendarCheck,
-  MessageSquare,
-  TrendingUp,
-  ArrowRight,
-  Plus,
-  Eye,
-  Heart,
-  Home,
-  Clock,
-  Wallet,
-  Search
-} from 'lucide-react';
+import { useState } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
-
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-};
-
-const stagger = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
+import { 
+  FiHome,
+  FiUsers,
+  FiCalendar,
+  FiMessageSquare,
+  FiTrendingUp,
+  FiChevronRight,
+  FiPlus,
+  FiEye,
+  FiHeart,
+  FiClock,
+  FiDollarSign,
+  FiSearch,
+  FiActivity,
+  FiBell
+} from 'react-icons/fi';
 
 export default function DashboardPage() {
+  const [selectedPeriod, setSelectedPeriod] = useState('week');
+
   // Mock data (replace with API data)
   const user = {
     name: 'John Doe',
     role: 'owner',
+    avatar: '/images/avatar.jpg'
   };
 
   const stats = {
@@ -43,60 +34,60 @@ export default function DashboardPage() {
       {
         label: 'Total Properties',
         value: '12',
-        icon: Building2,
+        icon: FiHome,
         trend: '+2.5%',
-        color: 'blue',
+        isPositive: true,
       },
       {
         label: 'Total Tenants',
         value: '48',
-        icon: Users,
+        icon: FiUsers,
         trend: '+12%',
-        color: 'green',
+        isPositive: true,
       },
       {
         label: 'Active Bookings',
         value: '8',
-        icon: CalendarCheck,
+        icon: FiCalendar,
         trend: '+5%',
-        color: 'purple',
+        isPositive: true,
       },
       {
         label: 'New Messages',
         value: '24',
-        icon: MessageSquare,
+        icon: FiMessageSquare,
         trend: '+18%',
-        color: 'orange',
+        isPositive: true,
       },
     ],
     renter: [
       {
         label: 'Saved Properties',
         value: '15',
-        icon: Heart,
+        icon: FiHeart,
         trend: '+3',
-        color: 'red',
+        isPositive: true,
       },
       {
         label: 'Active Rentals',
         value: '2',
-        icon: Home,
+        icon: FiHome,
         trend: '0',
-        color: 'blue',
+        isPositive: true,
       },
       {
         label: 'Pending Requests',
         value: '3',
-        icon: Clock,
+        icon: FiClock,
         trend: '+1',
-        color: 'yellow',
+        isPositive: true,
       },
       {
         label: 'Total Spent',
         value: '৳45,000',
-        icon: Wallet,
+        icon: FiDollarSign,
         trend: '+৳5,000',
-        color: 'green',
+        isPositive: true,
       },
     ],
   };
@@ -108,6 +99,7 @@ export default function DashboardPage() {
       title: 'New Property Listed',
       description: 'You listed "Modern Apartment in Gulshan" for rent',
       time: '2 hours ago',
+      icon: FiHome,
     },
     {
       id: 2,
@@ -115,207 +107,182 @@ export default function DashboardPage() {
       title: 'Booking Request Received',
       description: 'New booking request for "Luxury Villa in Banani"',
       time: '5 hours ago',
+      icon: FiCalendar,
     },
-    // Add more activities
+    {
+      id: 3,
+      type: 'message',
+      title: 'New Message',
+      description: 'Sarah sent you a message about the apartment',
+      time: '1 day ago',
+      icon: FiMessageSquare,
+    },
   ];
 
   const quickActions = user.role === 'owner' ? [
     {
       label: 'Add New Property',
-      icon: Plus,
+      icon: FiPlus,
       href: '/dashboard/properties/new',
-      color: 'primary',
+      description: 'List a new property for rent',
     },
     {
       label: 'View Bookings',
-      icon: CalendarCheck,
+      icon: FiCalendar,
       href: '/dashboard/bookings',
-      color: 'secondary',
+      description: 'Manage your property bookings',
     },
     {
       label: 'Manage Properties',
-      icon: Building2,
+      icon: FiHome,
       href: '/dashboard/properties',
-      color: 'success',
+      description: 'View and edit your properties',
     },
   ] : [
     {
       label: 'Browse Properties',
-      icon: Search,
+      icon: FiSearch,
       href: '/properties',
-      color: 'primary',
+      description: 'Find your next home',
     },
     {
       label: 'View Saved Properties',
-      icon: Heart,
+      icon: FiHeart,
       href: '/dashboard/favorites',
-      color: 'secondary',
+      description: 'Access your saved properties',
     },
     {
       label: 'My Rentals',
-      icon: Home,
+      icon: FiHome,
       href: '/dashboard/rentals',
-      color: 'success',
+      description: 'Manage your current rentals',
     },
   ];
 
   return (
     <DashboardLayout>
       <Head>
-        <title>Dashboard - RentHouse BD</title>
+        <title>Dashboard | RentHouseBD</title>
+        <meta name="description" content="Manage your properties and rentals" />
       </Head>
 
-      <motion.div
-        initial="initial"
-        animate="animate"
-        variants={stagger}
-        className="space-y-6"
-      >
+      <div className="space-y-8">
         {/* Welcome Section */}
-        <motion.div variants={fadeInUp} className="bg-white rounded-lg p-6">
-          <h1 className="text-2xl font-display font-bold text-gray-900">
-            Welcome back, {user.name}!
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Here's what's happening with your {user.role === 'owner' ? 'properties' : 'rentals'} today.
-          </p>
-        </motion.div>
+        <div className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-2xl p-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome back, {user.name}!
+              </h1>
+              <p className="text-gray-600">
+                Here's what's happening with your {user.role === 'owner' ? 'properties' : 'rentals'} today.
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button className="p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors relative">
+                <FiBell className="w-6 h-6 text-gray-600" />
+                <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500"></span>
+              </button>
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-12 h-12 rounded-full border-2 border-white shadow-md"
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Quick Actions */}
-        <motion.div variants={fadeInUp}>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {quickActions.map((action) => (
               <Link
                 key={action.label}
                 href={action.href}
-                className={`p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-500 transition-colors flex items-center justify-between group`}
+                className="group bg-white rounded-xl shadow-soft p-6 hover:shadow-medium transition-shadow duration-200"
               >
-                <div className="flex items-center">
-                  <div className={`w-10 h-10 rounded-lg bg-${action.color}-50 flex items-center justify-center mr-3`}>
-                    <action.icon className={`w-5 h-5 text-${action.color}-600`} />
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center mr-4">
+                    <action.icon className="w-6 h-6 text-primary-600" />
                   </div>
-                  <span className="font-medium text-gray-900">{action.label}</span>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{action.label}</h3>
+                    <p className="text-sm text-gray-600">{action.description}</p>
+                  </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                <div className="flex items-center text-primary-600 text-sm font-medium group-hover:translate-x-1 transition-transform duration-200">
+                  <span>Get started</span>
+                  <FiChevronRight className="w-4 h-4 ml-1" />
+                </div>
               </Link>
             ))}
           </div>
-        </motion.div>
+        </div>
 
-        {/* Statistics */}
-        <motion.div variants={fadeInUp}>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Overview</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stats Grid */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Overview</h2>
+            <div className="flex items-center space-x-2 bg-white rounded-lg shadow-soft p-1">
+              {['week', 'month', 'year'].map((period) => (
+                <button
+                  key={period}
+                  onClick={() => setSelectedPeriod(period)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    selectedPeriod === period
+                      ? 'bg-primary-50 text-primary-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {period.charAt(0).toUpperCase() + period.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats[user.role].map((stat) => (
               <div
                 key={stat.label}
-                className="bg-white rounded-lg p-6 border border-gray-200"
+                className="bg-white rounded-xl shadow-soft p-6"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-lg bg-${stat.color}-50 flex items-center justify-center`}>
-                    <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
+                  <div className="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center">
+                    <stat.icon className="w-6 h-6 text-primary-600" />
                   </div>
-                  <div className="flex items-center text-sm font-medium text-green-600">
-                    <TrendingUp className="w-4 h-4 mr-1" />
-                    {stat.trend}
+                  <div className={`flex items-center ${stat.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                    <FiTrendingUp className={`w-4 h-4 mr-1 ${!stat.isPositive && 'transform rotate-180'}`} />
+                    <span className="text-sm font-medium">{stat.trend}</span>
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                  {stat.value}
-                </h3>
-                <p className="text-sm text-gray-600">{stat.label}</p>
+                <h3 className="text-sm font-medium text-gray-600 mb-1">{stat.label}</h3>
+                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Recent Activity */}
-        <motion.div variants={fadeInUp}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
-            <Link
-              href="/dashboard/activity"
-              className="text-sm text-primary-600 hover:text-primary-700 flex items-center"
-            >
-              View all
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Link>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+          <div className="bg-white rounded-xl shadow-soft divide-y divide-gray-100">
             {recentActivities.map((activity) => (
-              <div key={activity.id} className="p-4 hover:bg-gray-50">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    {/* Activity Icon based on type */}
-                    {activity.type === 'property_listed' ? (
-                      <Building2 className="w-5 h-5 text-blue-600" />
-                    ) : (
-                      <CalendarCheck className="w-5 h-5 text-green-600" />
-                    )}
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">
-                      {activity.title}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {activity.description}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {activity.time}
-                    </p>
-                  </div>
+              <div key={activity.id} className="p-6 flex items-start space-x-4">
+                <div className="w-10 h-10 rounded-full bg-primary-50 flex-shrink-0 flex items-center justify-center">
+                  <activity.icon className="w-5 h-5 text-primary-600" />
+                </div>
+                <div className="flex-grow">
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">
+                    {activity.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-1">{activity.description}</p>
+                  <span className="text-xs text-gray-500">{activity.time}</span>
                 </div>
               </div>
             ))}
           </div>
-        </motion.div>
-
-        {/* Property Performance (for owners) */}
-        {user.role === 'owner' && (
-          <motion.div variants={fadeInUp}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Property Performance</h2>
-              <Link
-                href="/dashboard/analytics"
-                className="text-sm text-primary-600 hover:text-primary-700 flex items-center"
-              >
-                View detailed analytics
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Sample Property Cards */}
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-gray-900">Modern Apartment in Gulshan</h3>
-                  <Link
-                    href="/dashboard/properties/1"
-                    className="text-sm text-primary-600 hover:text-primary-700"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Link>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Occupancy Rate</span>
-                    <span className="font-medium text-gray-900">92%</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Monthly Revenue</span>
-                    <span className="font-medium text-gray-900">৳45,000</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tenant Satisfaction</span>
-                    <span className="font-medium text-gray-900">4.8/5</span>
-                  </div>
-                </div>
-              </div>
-              {/* Add more property cards */}
-            </div>
-          </motion.div>
-        )}
-      </motion.div>
+        </div>
+      </div>
     </DashboardLayout>
   );
 }

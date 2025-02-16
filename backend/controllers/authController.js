@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Property = require('../models/Property');
 const Booking = require('../models/Booking');
@@ -20,39 +21,92 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password, phone, nid, address, role } = req.body;
 
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
+    // Validate required fields
+    if (!name || !email || !password || !phone) {
+      return res.status(400).json({
+        message: 'Please provide all required fields'
+      });
+    }
+
+    // Check if user already exists with email
+    const existingUser = await User.findOne({ 
+      email: email.toLowerCase() 
+    });
+
+    if (existingUser) {
       return res.status(400).json({
         message: 'User already exists with this email'
       });
     }
 
-    // Create user
+    // If NID is provided, check if it's unique
+    if (nid) {
+      const existingNID = await User.findOne({ nid });
+      if (existingNID) {
+        return res.status(400).json({
+          message: 'This National ID is already registered'
+        });
+      }
+    }
+
+    // Create user (password will be hashed by pre-save middleware)
     const user = await User.create({
       name,
-      email,
+      email: email.toLowerCase(),
       password,
       phone,
-      nid,
+      ...(nid && { nid }), // Only include NID if it's provided
       address,
       role: role || 'user'
     });
 
+    // Generate tokens
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET || 'your-jwt-secret',
+      { expiresIn: '30d' }
+    );
+
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.REFRESH_TOKEN_SECRET || 'your-refresh-token-secret',
+      { expiresIn: '90d' }
+    );
+
+    // Set cookies
+    res.setHeader('Set-Cookie', [
+      `token=${token}; HttpOnly; Path=/; Max-Age=2592000; SameSite=Strict`,
+      `refreshToken=${refreshToken}; HttpOnly; Path=/; Max-Age=7776000; SameSite=Strict`
+    ]);
+
     res.status(201).json({
+      success: true,
       message: 'Registration successful',
+      token,
+      refreshToken,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role
       }
     });
   } catch (error) {
     console.error('Error during registration:', error);
+    
+    // Handle MongoDB duplicate key error
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        message: `User already exists with this ${field === 'nid' ? 'National ID' : field}`
+      });
+    }
+
     res.status(500).json({
+      success: false,
       message: 'An error occurred during registration. Please try again later.',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -64,43 +118,76 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate email and password
+    if (!email || !password) {
+      return res.status(400).json({
+        message: 'Please provide email and password'
+      });
+    }
+
     // Check for user
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ 
+      email: email.toLowerCase() 
+    }).select('+password');
+
     if (!user) {
       return res.status(401).json({
         message: 'Invalid email or password'
       });
     }
 
-    // Check password
-    const isMatch = await user.matchPassword(password);
+    // Check password using bcrypt directly
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
         message: 'Invalid email or password'
       });
     }
 
-    // Create token
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    // Generate tokens
     const token = jwt.sign(
-      { id: user._id },
+      { userId: user._id, role: user.role },
       process.env.JWT_SECRET || 'your-jwt-secret',
       { expiresIn: '30d' }
     );
 
-    res.json({
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.REFRESH_TOKEN_SECRET || 'your-refresh-token-secret',
+      { expiresIn: '90d' }
+    );
+
+    // Set cookies
+    res.setHeader('Set-Cookie', [
+      `token=${token}; HttpOnly; Path=/; Max-Age=2592000; SameSite=Strict`,
+      `refreshToken=${refreshToken}; HttpOnly; Path=/; Max-Age=7776000; SameSite=Strict`
+    ]);
+
+    // Send response
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
       token,
+      refreshToken,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        phone: user.phone,
+        role: user.role,
+        lastLogin: user.lastLogin
       }
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({
-      message: 'An error occurred during login. Please try again later.',
-      error: error.message
+      success: false,
+      message: 'An error occurred during login. Please try again.',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -253,7 +340,7 @@ exports.changePassword = async (req, res) => {
     }
 
     // Check current password
-    const isMatch = await user.comparePassword(currentPassword);
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -295,7 +382,7 @@ exports.deleteAccount = async (req, res) => {
     }
 
     // Verify password
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,

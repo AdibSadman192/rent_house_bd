@@ -1,195 +1,119 @@
 import Head from 'next/head';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { 
-  Target, 
-  Users, 
-  Shield, 
-  Globe, 
-  Award, 
-  CheckCircle 
-} from 'lucide-react';
+import { FiHome, FiUsers, FiShield, FiAward } from 'react-icons/fi';
 
-// Animation variants
-const pageTransition = {
-  initial: { opacity: 0, y: 20 },
-  animate: { 
-    opacity: 1, 
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: "easeOut"
-    }
-  },
-  exit: { 
-    opacity: 0,
-    y: 20,
-    transition: {
-      duration: 0.3,
-      ease: "easeIn"
-    }
-  }
-};
-
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
-};
-
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { 
-    opacity: 1, 
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: "easeOut"
-    }
-  }
-};
-
-export default function AboutPage() {
-  const teamMembers = [
+const AboutPage = () => {
+  const features = [
     {
-      name: 'Adib Sadman',
-      role: 'Founder & CEO',
-      image: '/images/team/adib.jpg'
+      icon: FiHome,
+      title: 'Extensive Property Listings',
+      description: 'Access thousands of verified properties across Bangladesh, from modern apartments to traditional homes.'
+    },
+    {
+      icon: FiUsers,
+      title: 'Trusted Community',
+      description: 'Join a community of verified owners and tenants, making your property journey safe and reliable.'
+    },
+    {
+      icon: FiShield,
+      title: 'Secure Transactions',
+      description: 'Experience worry-free transactions with our secure payment system and verified property listings.'
+    },
+    {
+      icon: FiAward,
+      title: 'Quality Assurance',
+      description: 'Every property undergoes thorough verification to ensure you get exactly what you see.'
     }
-    //,{
-      //name: 'Sarah Khan',
-      //role: 'Head of Product',
-      //image: '/images/team/sarah.jpg'
-    //}
   ];
 
   return (
-    <motion.div 
-      className="bg-gray-50 min-h-screen pt-24"
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      variants={pageTransition}
-    >
+    <>
       <Head>
-        <title>About RentHouse BD - Revolutionizing Property Rentals</title>
+        <title>About Us | RentHouseBD</title>
+        <meta name="description" content="Learn about RentHouseBD's mission to revolutionize property rental in Bangladesh" />
       </Head>
 
-      <main className="container mx-auto px-4 py-16">
-        <motion.section 
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="text-center mb-16"
-        >
-          <motion.h1 
-            variants={fadeInUp}
-            className="text-4xl font-bold text-gray-900 mb-4"
-          >
-            About RentHouse BD
-          </motion.h1>
-          <motion.p 
-            variants={fadeInUp}
-            className="text-xl text-gray-600 max-w-3xl mx-auto"
-          >
-            We are transforming the property rental landscape in Bangladesh by creating a transparent, efficient, and user-friendly platform that connects property owners and renters seamlessly.
-          </motion.p>
-        </motion.section>
+      <div className="pt-24 pb-16">
+        {/* Hero Section */}
+        <div className="container mx-auto px-4 text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            Revolutionizing Property Rental
+            <br />
+            <span className="text-primary-600">in Bangladesh</span>
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            We're on a mission to make property rental simple, secure, and accessible for everyone in Bangladesh.
+          </p>
+        </div>
 
-        <motion.section 
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="grid md:grid-cols-3 gap-8 mb-16"
-        >
-          <motion.div 
-            variants={fadeInUp} 
-            className="bg-white p-6 rounded-lg shadow-md"
-          >
-            <Target className="w-12 h-12 text-primary-600 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Our Mission</h3>
-            <p className="text-gray-600">
-              To simplify property rentals by providing a reliable, transparent, and innovative digital platform.
-            </p>
-          </motion.div>
-
-          <motion.div 
-            variants={fadeInUp}
-            className="bg-white p-6 rounded-lg shadow-md"
-          >
-            <Users className="w-12 h-12 text-primary-600 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Our Vision</h3>
-            <p className="text-gray-600">
-              Become the most trusted and comprehensive property rental ecosystem in Bangladesh.
-            </p>
-          </motion.div>
-
-          <motion.div 
-            variants={fadeInUp}
-            className="bg-white p-6 rounded-lg shadow-md"
-          >
-            <Shield className="w-12 h-12 text-primary-600 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Our Values</h3>
-            <ul className="text-gray-600 space-y-2">
-              <li className="flex items-center">
-                <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
-                Transparency
-              </li>
-              <li className="flex items-center">
-                <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
-                Trust
-              </li>
-              <li className="flex items-center">
-                <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
-                Innovation
-              </li>
-            </ul>
-          </motion.div>
-        </motion.section>
-
-        <motion.section 
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="text-center"
-        >
-          <motion.h2 
-            variants={fadeInUp}
-            className="text-3xl font-bold text-gray-900 mb-8"
-          >
-            Our Team
-          </motion.h2>
-          <motion.div 
-            variants={fadeInUp}
-            className="flex justify-center space-x-8"
-          >
-            {teamMembers.map((member, index) => (
-              <motion.div 
-                key={index} 
-                variants={fadeInUp}
-                className="text-center"
-              >
-                <div className="w-48 h-48 mx-auto mb-4 rounded-full overflow-hidden border-4 border-primary-100">
-                  <Image 
-                    src={member.image} 
-                    alt={member.name} 
-                    width={192} 
-                    height={192} 
-                    className="object-cover" 
-                  />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900">
-                  {member.name}
-                </h3>
-                <p className="text-gray-600">{member.role}</p>
-              </motion.div>
+        {/* Features Grid */}
+        <div className="container mx-auto px-4 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="card p-6 text-center group hover:scale-105 transition-transform duration-300">
+                <feature.icon className="w-12 h-12 text-primary-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
+              </div>
             ))}
-          </motion.div>
-        </motion.section>
-      </main>
-    </motion.div>
+          </div>
+        </div>
+
+        {/* Mission Statement */}
+        <div className="bg-gradient-to-r from-primary-50 to-primary-100 py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
+              <p className="text-lg text-gray-700 mb-8">
+                At RentHouseBD, we believe everyone deserves access to quality housing. Our platform connects property owners with reliable tenants, creating a transparent and efficient rental marketplace that benefits all parties.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div className="p-4">
+                  <h4 className="text-2xl font-bold text-primary-600 mb-2">50K+</h4>
+                  <p className="text-gray-600">Active Listings</p>
+                </div>
+                <div className="p-4">
+                  <h4 className="text-2xl font-bold text-primary-600 mb-2">100K+</h4>
+                  <p className="text-gray-600">Happy Users</p>
+                </div>
+                <div className="p-4">
+                  <h4 className="text-2xl font-bold text-primary-600 mb-2">64</h4>
+                  <p className="text-gray-600">Districts Covered</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Team Section */}
+        <div className="container mx-auto px-4 py-16">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Our Values</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FiShield className="w-8 h-8 text-primary-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Trust</h3>
+              <p className="text-gray-600">Building trust through transparency and verification</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FiUsers className="w-8 h-8 text-primary-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Community</h3>
+              <p className="text-gray-600">Creating a supportive community of owners and tenants</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FiAward className="w-8 h-8 text-primary-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Excellence</h3>
+              <p className="text-gray-600">Striving for excellence in every interaction</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
-}
+};
+
+export default AboutPage;

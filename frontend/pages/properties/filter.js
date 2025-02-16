@@ -112,194 +112,268 @@ const AdvancedPropertyFilter = () => {
     });
   };
 
-  const renderFilterSection = (title, options, filterType) => (
-    <div className="mb-6">
-      <h3 className="text-lg font-semibold mb-3">{title}</h3>
-      <div className="grid grid-cols-3 gap-2">
-        {options.map(option => (
-          <label 
-            key={option} 
-            className="flex items-center space-x-2 cursor-pointer"
-          >
-            <input
-              type="checkbox"
-              checked={filters[filterType].includes(option)}
-              onChange={() => handleFilterChange(filterType, option)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <span>{option}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-
   return (
-    <>
-      <Head>
-        <title>Advanced Property Filter | RentHouse BD</title>
-      </Head>
-
-      <div className="container mx-auto px-4 py-8">
-        <motion.div 
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-24 pb-12">
+      <div className="container mx-auto px-4">
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-7xl mx-auto"
         >
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold flex items-center">
-              <FilterIcon className="mr-3 text-blue-600" /> 
-              Advanced Property Filter
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <FilterIcon className="h-8 w-8 text-primary-500" />
+              Advanced Property Search
             </h1>
-            <button 
-              onClick={applyFilters}
-              className="btn btn-primary flex items-center"
-            >
-              <Sliders className="mr-2" /> Apply Filters
-            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Filter Sidebar */}
-            <div className="bg-white shadow-md rounded-lg p-6">
-              {renderFilterSection('Property Type', availableFilters.types, 'type')}
-              
-              {renderFilterSection('Location', availableFilters.locations, 'location')}
-              
-              {renderFilterSection('Amenities', availableFilters.amenities, 'amenities')}
-
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">Price Range</h3>
-                <div className="flex items-center space-x-2">
-                  <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="number"
-                      placeholder="Min Price"
-                      value={filters.minPrice}
-                      onChange={(e) => setFilters(prev => ({ ...prev, minPrice: Number(e.target.value) }))}
-                      className="block w-full pl-10 border rounded-md"
-                    />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Filters Sidebar */}
+            <motion.div
+              variants={fadeInUp}
+              className="lg:col-span-1 space-y-6"
+            >
+              {/* Filter Sections */}
+              <div className="backdrop-blur-xl bg-white/70 rounded-2xl p-6 border border-gray-200/50 space-y-6">
+                {/* Property Type */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-gray-900">Property Type</h3>
+                  <div className="space-y-2">
+                    {availableFilters.types.map((type) => (
+                      <label key={type} className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={filters.type.includes(type)}
+                          onChange={(e) => {
+                            const updatedTypes = e.target.checked
+                              ? [...filters.type, type]
+                              : filters.type.filter((t) => t !== type);
+                            setFilters({ ...filters, type: updatedTypes });
+                          }}
+                          className="rounded text-primary-500 focus:ring-primary-500"
+                        />
+                        <span className="text-gray-700">{type}</span>
+                      </label>
+                    ))}
                   </div>
-                  <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign className="h-5 w-5 text-gray-400" />
+                </div>
+
+                {/* Price Range */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-gray-900">Price Range</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm text-gray-600">Minimum (৳)</label>
+                      <input
+                        type="number"
+                        value={filters.minPrice}
+                        onChange={(e) => setFilters({ ...filters, minPrice: parseInt(e.target.value) })}
+                        className="w-full px-4 py-2 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
+                      />
                     </div>
-                    <input
-                      type="number"
-                      placeholder="Max Price"
-                      value={filters.maxPrice}
-                      onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: Number(e.target.value) }))}
-                      className="block w-full pl-10 border rounded-md"
-                    />
+                    <div>
+                      <label className="text-sm text-gray-600">Maximum (৳)</label>
+                      <input
+                        type="number"
+                        value={filters.maxPrice}
+                        onChange={(e) => setFilters({ ...filters, maxPrice: parseInt(e.target.value) })}
+                        className="w-full px-4 py-2 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bedrooms & Bathrooms */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-gray-900">Rooms</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-gray-600">Bedrooms</label>
+                      <select
+                        multiple
+                        value={filters.bedrooms}
+                        onChange={(e) => {
+                          const values = Array.from(e.target.selectedOptions, option => parseInt(option.value));
+                          setFilters({ ...filters, bedrooms: values });
+                        }}
+                        className="w-full px-4 py-2 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
+                      >
+                        {[1, 2, 3, 4, 5].map(num => (
+                          <option key={num} value={num}>{num}+ Beds</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-600">Bathrooms</label>
+                      <select
+                        multiple
+                        value={filters.bathrooms}
+                        onChange={(e) => {
+                          const values = Array.from(e.target.selectedOptions, option => parseInt(option.value));
+                          setFilters({ ...filters, bathrooms: values });
+                        }}
+                        className="w-full px-4 py-2 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
+                      >
+                        {[1, 2, 3, 4].map(num => (
+                          <option key={num} value={num}>{num}+ Baths</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Area Range */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-gray-900">Area (sqft)</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm text-gray-600">Minimum</label>
+                      <input
+                        type="number"
+                        value={filters.minArea}
+                        onChange={(e) => setFilters({ ...filters, minArea: parseInt(e.target.value) })}
+                        className="w-full px-4 py-2 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-600">Maximum</label>
+                      <input
+                        type="number"
+                        value={filters.maxArea}
+                        onChange={(e) => setFilters({ ...filters, maxArea: parseInt(e.target.value) })}
+                        className="w-full px-4 py-2 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-gray-900">Location</h3>
+                  <div className="space-y-2">
+                    {availableFilters.locations.map((loc) => (
+                      <label key={loc} className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={filters.location.includes(loc)}
+                          onChange={(e) => {
+                            const updatedLocations = e.target.checked
+                              ? [...filters.location, loc]
+                              : filters.location.filter((l) => l !== loc);
+                            setFilters({ ...filters, location: updatedLocations });
+                          }}
+                          className="rounded text-primary-500 focus:ring-primary-500"
+                        />
+                        <span className="text-gray-700">{loc}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Amenities */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-gray-900">Amenities</h3>
+                  <div className="space-y-2">
+                    {availableFilters.amenities.map((amenity) => (
+                      <label key={amenity} className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={filters.amenities.includes(amenity)}
+                          onChange={(e) => {
+                            const updatedAmenities = e.target.checked
+                              ? [...filters.amenities, amenity]
+                              : filters.amenities.filter((a) => a !== amenity);
+                            setFilters({ ...filters, amenities: updatedAmenities });
+                          }}
+                          className="rounded text-primary-500 focus:ring-primary-500"
+                        />
+                        <span className="text-gray-700">{amenity}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
               </div>
+            </motion.div>
 
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">Bedrooms</h3>
-                <div className="flex space-x-2">
-                  {[1, 2, 3, 4].map(beds => (
-                    <button
-                      key={beds}
-                      onClick={() => handleFilterChange('bedrooms', beds)}
-                      className={`
-                        px-3 py-1 rounded-md
-                        ${filters.bedrooms.includes(beds) 
-                          ? 'bg-blue-500 text-white' 
-                          : 'bg-gray-200 text-gray-700'
-                        }
-                      `}
+            {/* Results Grid */}
+            <motion.div
+              variants={stagger}
+              initial="initial"
+              animate="animate"
+              className="lg:col-span-3 space-y-6"
+            >
+              {/* Results Header */}
+              <div className="backdrop-blur-xl bg-white/70 rounded-2xl p-6 border border-gray-200/50">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {filteredProperties.length} Properties Found
+                  </h2>
+                  <div className="flex items-center space-x-4">
+                    <select
+                      className="px-4 py-2 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
                     >
-                      {beds}+ Beds
-                    </button>
-                  ))}
+                      <option>Sort by: Featured</option>
+                      <option>Price: Low to High</option>
+                      <option>Price: High to Low</option>
+                      <option>Newest First</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Area Range (sq.ft)</h3>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="number"
-                    placeholder="Min Area"
-                    value={filters.minArea}
-                    onChange={(e) => setFilters(prev => ({ ...prev, minArea: Number(e.target.value) }))}
-                    className="block w-full border rounded-md"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max Area"
-                    value={filters.maxArea}
-                    onChange={(e) => setFilters(prev => ({ ...prev, maxArea: Number(e.target.value) }))}
-                    className="block w-full border rounded-md"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Properties Grid */}
-            <div className="md:col-span-3">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {filteredProperties.map(property => (
+              {/* Property Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredProperties.map((property) => (
                   <motion.div
                     key={property.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white shadow-md rounded-lg overflow-hidden"
+                    variants={fadeInUp}
+                    className="backdrop-blur-xl bg-white/70 rounded-2xl border border-gray-200/50 overflow-hidden transition-all duration-200 hover:shadow-lg"
                   >
-                    <div 
-                      className="h-48 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${property.images[0]})` }}
-                    />
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold mb-2">{property.title}</h3>
-                      <div className="flex items-center mb-2">
-                        <MapPin className="mr-2 h-4 w-4 text-blue-500" />
-                        <span>{property.location}</span>
+                    <Link href={`/properties/${property.id}`}>
+                      <div className="relative h-48">
+                        <img
+                          src={property.images[0]}
+                          alt={property.title}
+                          fill
+                          className="object-cover"
+                        />
                       </div>
-                      <div className="grid grid-cols-3 gap-2 mb-2">
-                        <div className="flex items-center">
-                          <Bed className="mr-1 h-4 w-4" />
-                          <span>{property.bedrooms}</span>
+                      <div className="p-6">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{property.title}</h3>
+                        <div className="flex items-center text-gray-600 mb-4">
+                          <MapPin className="h-4 w-4 mr-1" />
+                          <span>{property.location}</span>
                         </div>
-                        <div className="flex items-center">
-                          <Bath className="mr-1 h-4 w-4" />
-                          <span>{property.bathrooms}</span>
+                        <div className="grid grid-cols-3 gap-4 mb-4">
+                          <div className="flex items-center text-gray-600">
+                            <Bed className="h-4 w-4 mr-1" />
+                            <span>{property.bedrooms} Beds</span>
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <Bath className="h-4 w-4 mr-1" />
+                            <span>{property.bathrooms} Baths</span>
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <Square className="h-4 w-4 mr-1" />
+                            <span>{property.area} sqft</span>
+                          </div>
                         </div>
-                        <div className="flex items-center">
-                          <Square className="mr-1 h-4 w-4" />
-                          <span>{property.area} sqft</span>
+                        <div className="flex items-center justify-between">
+                          <div className="text-xl font-bold text-primary-600">
+                            ৳{property.price.toLocaleString()}/month
+                          </div>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <div className="text-xl font-bold text-blue-600">
-                          ৳{property.price.toLocaleString()}/month
-                        </div>
-                        <Link 
-                          href={`/properties/${property.id}`}
-                          className="text-blue-500 hover:underline"
-                        >
-                          View Details
-                        </Link>
-                      </div>
-                    </div>
+                    </Link>
                   </motion.div>
                 ))}
               </div>
-
-              {filteredProperties.length === 0 && (
-                <div className="text-center py-12 bg-gray-100 rounded-lg">
-                  <p className="text-xl text-gray-600">No properties found matching your filters</p>
-                </div>
-              )}
-            </div>
+            </motion.div>
           </div>
         </motion.div>
       </div>
-    </>
+    </div>
   );
 };
 

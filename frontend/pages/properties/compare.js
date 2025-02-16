@@ -74,168 +74,180 @@ const PropertyComparison = () => {
   };
 
   return (
-    <>
-      <Head>
-        <title>Property Comparison | RentHouse BD</title>
-      </Head>
-
-      <div className="container mx-auto px-4 py-8">
-        <motion.div 
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-24 pb-12">
+      <div className="container mx-auto px-4">
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-6xl mx-auto"
+          className="max-w-7xl mx-auto"
         >
-          <h1 className="text-3xl font-bold mb-8 flex items-center">
-            <Compare className="mr-3 text-blue-600" /> 
-            Property Comparison
-          </h1>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <Compare className="h-8 w-8 text-primary-500" />
+              Compare Properties
+            </h1>
+          </div>
 
-          {/* Search and Add Properties */}
-          <div className="mb-8 relative">
-            <div className="flex items-center">
-              <div className="flex-grow relative">
-                <input
-                  type="text"
-                  placeholder="Search properties to compare..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-                />
-                <Filter className="absolute left-3 top-3 text-gray-400" />
-              </div>
+          {/* Search Properties */}
+          <motion.div
+            variants={fadeInUp}
+            className="backdrop-blur-xl bg-white/70 rounded-2xl p-6 border border-gray-200/50 mb-8"
+          >
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search properties to compare..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-3 pl-10 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
+              />
+              <Filter className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
             </div>
 
             {/* Search Results */}
             {searchResults.length > 0 && (
-              <div className="absolute z-10 w-full bg-white border rounded-md shadow-lg mt-2 max-h-60 overflow-y-auto">
-                {searchResults.map(property => (
-                  <div 
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 space-y-2"
+              >
+                {searchResults.map((property) => (
+                  <motion.div
                     key={property.id}
-                    className="flex justify-between items-center p-3 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => addPropertyToComparison(property)}
+                    className="backdrop-blur-xl bg-white/50 rounded-xl p-4 border border-gray-200/50 flex items-center justify-between hover:bg-white/70 transition-all duration-200"
                   >
-                    <div className="flex items-center">
-                      <Image 
-                        src={property.images[0]} 
-                        alt={property.title}
-                        width={50}
-                        height={50}
-                        className="rounded-md mr-3"
-                      />
+                    <div className="flex items-center space-x-4">
+                      <div className="relative h-16 w-16 rounded-lg overflow-hidden">
+                        <Image
+                          src={property.images[0]}
+                          alt={property.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                       <div>
-                        <p className="font-semibold">{property.title}</p>
-                        <p className="text-sm text-gray-500">{property.location}</p>
+                        <h3 className="font-semibold text-gray-900">{property.title}</h3>
+                        <p className="text-sm text-gray-600">{property.location}</p>
                       </div>
                     </div>
-                    <PlusCircle className="text-blue-500" />
+                    <button
+                      onClick={() => addPropertyToComparison(property)}
+                      disabled={comparedProperties.length >= 4}
+                      className="px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      <span>Add to Compare</span>
+                    </button>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </motion.div>
+
+          {/* Comparison Table */}
+          {comparedProperties.length > 0 ? (
+            <motion.div
+              variants={fadeInUp}
+              className="backdrop-blur-xl bg-white/70 rounded-2xl border border-gray-200/50 overflow-hidden"
+            >
+              {/* Property Headers */}
+              <div className="grid grid-cols-1 md:grid-cols-4 border-b border-gray-200/50">
+                {comparedProperties.map((property) => (
+                  <div key={property.id} className="relative p-6">
+                    <button
+                      onClick={() => removePropertyFromComparison(property.id)}
+                      className="absolute top-2 right-2 p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                    <div className="relative h-48 rounded-xl overflow-hidden mb-4">
+                      <Image
+                        src={property.images[0]}
+                        alt={property.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <h3 className="font-semibold text-lg mb-2">{property.title}</h3>
+                    <p className="text-gray-600">{property.location}</p>
+                    <div className="text-xl font-bold text-primary-600 mt-2">
+                      ৳{property.price.toLocaleString()}/month
+                    </div>
+                  </div>
+                ))}
+                {Array.from({ length: 4 - comparedProperties.length }).map((_, index) => (
+                  <div
+                    key={`empty-${index}`}
+                    className="p-6 flex items-center justify-center border-l border-gray-200/50"
+                  >
+                    <div className="text-center text-gray-400">
+                      <PlusCircle className="h-12 w-12 mx-auto mb-2" />
+                      <p>Add Property</p>
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
 
-          {/* Comparison Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[...comparedProperties, null].slice(0, 4).map((property, index) => (
-              <motion.div
-                key={property ? property.id : 'empty'}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`
-                  ${property ? 'bg-white shadow-md rounded-lg overflow-hidden' : 'bg-gray-100 border-2 border-dashed border-gray-300'}
-                  relative
-                `}
-              >
-                {property ? (
-                  <>
-                    <div 
-                      className="h-48 bg-cover bg-center relative"
-                      style={{ backgroundImage: `url(${property.images[0]})` }}
-                    >
-                      <button 
-                        onClick={() => removePropertyFromComparison(property.id)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    <div className="p-4">
-                      <h2 className="text-lg font-semibold mb-2">{property.title}</h2>
-                      <p className="text-sm text-gray-600 mb-2">{property.location}</p>
-                      <div className="text-xl font-bold text-blue-600">
-                        ৳{property.price.toLocaleString()}/month
+              {/* Comparison Rows */}
+              <div className="divide-y divide-gray-200/50">
+                {/* Basic Info */}
+                <div className="grid grid-cols-1 md:grid-cols-4">
+                  {comparedProperties.map((property) => (
+                    <div key={property.id} className="p-6 space-y-4 border-l border-gray-200/50">
+                      <div className="flex items-center space-x-2">
+                        <Bed className="h-5 w-5 text-primary-500" />
+                        <span>{property.bedrooms} Bedrooms</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Bath className="h-5 w-5 text-primary-500" />
+                        <span>{property.bathrooms} Bathrooms</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Square className="h-5 w-5 text-primary-500" />
+                        <span>{property.area} sqft</span>
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center text-gray-400">
-                      <PlusCircle className="mx-auto mb-2 text-gray-300" size={48} />
-                      <p>Add a property to compare</p>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
+                  ))}
+                  {Array.from({ length: 4 - comparedProperties.length }).map((_, index) => (
+                    <div key={`empty-info-${index}`} className="p-6 border-l border-gray-200/50" />
+                  ))}
+                </div>
 
-          {/* Comparison Details */}
-          {comparedProperties.length > 1 && (
-            <div className="mt-8 bg-white shadow-md rounded-lg p-6">
-              <h2 className="text-2xl font-bold mb-6">Comparison Details</h2>
-              
-              {/* Key Features Comparison */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[
-                  { label: 'Bedrooms', feature: 'bedrooms' },
-                  { label: 'Bathrooms', feature: 'bathrooms' },
-                  { label: 'Area (sq.ft)', feature: 'area' },
-                  { label: 'Monthly Rent', feature: 'price' }
-                ].map(({ label, feature }) => {
-                  const comparison = compareFeatures(feature);
-                  return comparison && (
-                    <div 
-                      key={feature}
-                      className={`
-                        p-4 rounded-lg 
-                        ${comparison.allSame 
-                          ? 'bg-green-50 border-green-200' 
-                          : 'bg-yellow-50 border-yellow-200'
-                        }
-                      `}
-                    >
-                      <h3 className="font-semibold mb-2">{label}</h3>
-                      <div className="flex justify-between">
-                        {comparison.values.map((value, index) => (
-                          <span 
-                            key={index}
-                            className={`
-                              font-bold 
-                              ${comparison.allSame 
-                                ? 'text-green-700' 
-                                : 'text-yellow-700'
-                              }
-                            `}
-                          >
-                            {value}
-                          </span>
-                        ))}
-                      </div>
-                      {!comparison.allSame && (
-                        <div className="text-xs text-yellow-600 mt-1">
-                          Values differ between properties
+                {/* Features */}
+                <div className="grid grid-cols-1 md:grid-cols-4">
+                  {comparedProperties.map((property) => (
+                    <div key={property.id} className="p-6 space-y-3 border-l border-gray-200/50">
+                      <h4 className="font-semibold text-gray-900">Features</h4>
+                      {property.features.map((feature, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <Check className="h-4 w-4 text-primary-500" />
+                          <span className="text-gray-600">{feature}</span>
                         </div>
-                      )}
+                      ))}
                     </div>
-                  );
-                })}
+                  ))}
+                  {Array.from({ length: 4 - comparedProperties.length }).map((_, index) => (
+                    <div key={`empty-features-${index}`} className="p-6 border-l border-gray-200/50" />
+                  ))}
+                </div>
               </div>
-            </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              variants={fadeInUp}
+              className="backdrop-blur-xl bg-white/70 rounded-2xl p-12 border border-gray-200/50 text-center"
+            >
+              <Compare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Start Comparing Properties</h2>
+              <p className="text-gray-600">
+                Search and add up to 4 properties to compare their features side by side
+              </p>
+            </motion.div>
           )}
         </motion.div>
       </div>
-    </>
+    </div>
   );
 };
 

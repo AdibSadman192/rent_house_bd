@@ -69,14 +69,14 @@ const userSchema = new mongoose.Schema({
   /**
    * National ID number
    * @type {String}
-   * @required
    * @unique
    */
   nid: {
     type: String,
-    required: [true, 'National ID is required'],
-    unique: true,
-    trim: true
+    sparse: true, // This allows null/undefined values and only enforces uniqueness for non-null values
+    trim: true,
+    index: true, // Ensure index is created
+    default: null // Explicitly set default to null
   },
 
   /**
@@ -94,23 +94,12 @@ const userSchema = new mongoose.Schema({
   /**
    * User's role
    * @type {String}
-   * @enum {['user', 'renter', 'owner', 'student', 'admin', 'super_admin']}
+   * @enum {['user', 'owner', 'admin', 'super_admin']}
    */
   role: {
     type: String,
-    enum: ['user', 'renter', 'owner', 'student', 'admin', 'super_admin'],
+    enum: ['user', 'owner', 'admin', 'super_admin'],
     default: 'user'
-  },
-
-  /**
-   * User's address information
-   * @type {Address}
-   * @required
-   */
-  address: {
-    type: String,
-    required: [true, 'Address is required'],
-    trim: true
   },
 
   /**
@@ -124,9 +113,9 @@ const userSchema = new mongoose.Schema({
 
   /**
    * Account verification status
-   * @type {Verification}
+   * @type {Boolean}
    */
-  verified: {
+  isVerified: {
     type: Boolean,
     default: false
   },
@@ -177,17 +166,23 @@ const userSchema = new mongoose.Schema({
 });
 
 /**
- * Encrypt password using bcrypt
- * @function
- * @name preSave
+ * Hash password before saving
  */
 userSchema.pre('save', async function(next) {
+  // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) {
     return next();
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
+
+  try {
+    // Generate salt
+    const salt = await bcrypt.genSalt(10);
+    // Hash password with salt
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
@@ -198,7 +193,6 @@ userSchema.pre('save', async function(next) {
 userSchema.pre('validate', function(next) {
   this.email = this.email.toLowerCase();
   this.name = this.name.trim();
-  this.address = this.address.trim();
   next();
 });
 

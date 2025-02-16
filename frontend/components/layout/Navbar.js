@@ -1,160 +1,177 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Menu, X, User, LogOut, Home, Search, PlusCircle, Bell, Settings, Info, Mail, Building2, Users, Heart, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import ProfileDropdown from '@/components/ProfileDropdown';
+import { FiMenu, FiX, FiSearch, FiHeart, FiUser } from 'react-icons/fi';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  // Add check for About and Contact pages
-  const isAboutOrContact = router.pathname === '/about' || router.pathname === '/contact';
-
   useEffect(() => {
     const handleScroll = () => {
-      // Always show background on About/Contact pages, otherwise check scroll
-      setIsScrolled(isAboutOrContact || window.scrollY > 10);
+      setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
-    // Trigger initial check
-    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isAboutOrContact]);
+  }, []);
 
   const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
+    await logout();
+    router.push('/');
   };
-
-  const navigation = [
-    { name: 'Home', href: '/', icon: Home },
-    { name: 'Search', href: '/search', icon: Search },
-    { name: 'Properties', href: '/properties', icon: Building2 },
-    { name: 'Agents', href: '/agents', icon: Users },
-    { name: 'About', href: '/about', icon: Info },
-    { name: 'Contact', href: '/contact', icon: Mail },
-  ];
-
-  const userNavigation = [
-    { name: 'Favorites', href: '/favorites', icon: Heart },
-    { name: 'Help Center', href: '/help', icon: HelpCircle },
-  ];
-
-  const closeMenu = () => {
-    setIsOpen(false);
-  };
-
-  useEffect(() => {
-    router.events.on('routeChangeComplete', closeMenu);
-    return () => router.events.off('routeChangeComplete', closeMenu);
-  }, [router]);
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled || isOpen || isAboutOrContact ? 'bg-white shadow-md' : 'bg-transparent'
-      }`}
-    >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      scrolled ? 'bg-white shadow-sm h-14' : 'bg-white h-14'
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+        <div className="flex items-center justify-between h-full">
           {/* Logo */}
-          <Link 
-            href="/" 
-            className="flex items-center space-x-2 z-10"
-            onClick={closeMenu}
-          >
-            <span className={`text-xl font-bold ${
-              isScrolled || isOpen || isAboutOrContact ? 'text-primary-600' : 'text-white'
-            }`}>
-              RentHouse<span className="text-primary-500">BD</span>
-            </span>
+          <Link href="/" className="text-lg font-bold text-gray-900">
+            RentHouseBD
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navigation.map(({ href, name, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center space-x-1 ${
-                  isScrolled || isAboutOrContact ? 'text-gray-700' : 'text-white'
-                } hover:text-primary-500 transition-colors`}
-              >
-                {Icon && <Icon className="w-4 h-4" />}
-                <span>{name}</span>
-              </Link>
-            ))}
-            {!user ? (
-              <Link
-                href="/auth/login"
-                className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
-              >
-                Sign In
-              </Link>
+          <div className="hidden md:flex items-center space-x-6">
+            <Link 
+              href="/search" 
+              className={`text-sm ${router.pathname === '/search' ? 'text-primary-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              Properties
+            </Link>
+            <Link 
+              href="/agents" 
+              className={`text-sm ${router.pathname === '/agents' ? 'text-primary-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              Agents
+            </Link>
+            <Link 
+              href="/about" 
+              className={`text-sm ${router.pathname === '/about' ? 'text-primary-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              About
+            </Link>
+            <Link 
+              href="/contact" 
+              className={`text-sm ${router.pathname === '/contact' ? 'text-primary-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              Contact
+            </Link>
+          </div>
+
+          {/* Desktop Right Section */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link 
+              href="/search" 
+              className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <FiSearch className="h-4 w-4" />
+            </Link>
+            {user ? (
+              <>
+                <Link 
+                  href="/favorites" 
+                  className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <FiHeart className="h-4 w-4" />
+                </Link>
+                <div className="relative group">
+                  <button className="flex items-center space-x-1 p-2 text-sm text-gray-600 hover:text-gray-900 focus:outline-none">
+                    <FiUser className="h-4 w-4" />
+                    <span>{user.name?.split(' ')[0]}</span>
+                  </button>
+                  <div className="absolute right-0 w-48 py-2 mt-1 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    <Link 
+                      href={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link 
+                      href="/profile" 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Profile
+                    </Link>
+                    <Link 
+                      href="/settings" 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Settings
+                    </Link>
+                    <button 
+                      onClick={handleLogout} 
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </>
             ) : (
-              <ProfileDropdown />
+              <Link 
+                href="/auth/login" 
+                className="text-sm font-medium text-primary-600 hover:text-primary-700"
+              >
+                Login
+              </Link>
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-md text-gray-700 hover:text-primary-500 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="md:hidden p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
           >
-            {isOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {isOpen ? <FiX className="h-5 w-5" /> : <FiMenu className="h-5 w-5" />}
           </button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden absolute top-16 left-0 right-0 bg-white shadow-lg py-4 px-4 space-y-4">
-            {navigation.map(({ href, name, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors"
-                onClick={closeMenu}
+          <div className="md:hidden absolute top-14 left-0 right-0 bg-white border-t border-gray-100 shadow-lg">
+            <div className="px-4 py-3 space-y-3">
+              <Link 
+                href="/search" 
+                className={`block text-sm ${router.pathname === '/search' ? 'text-primary-600 font-medium' : 'text-gray-600'}`}
+                onClick={() => setIsOpen(false)}
               >
-                {Icon && <Icon className="w-4 h-4" />}
-                <span>{name}</span>
+                Properties
               </Link>
-            ))}
-            {userNavigation.map(({ href, name, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors"
-                onClick={closeMenu}
+              <Link 
+                href="/agents" 
+                className={`block text-sm ${router.pathname === '/agents' ? 'text-primary-600 font-medium' : 'text-gray-600'}`}
+                onClick={() => setIsOpen(false)}
               >
-                {Icon && <Icon className="w-4 h-4" />}
-                <span>{name}</span>
+                Agents
               </Link>
-            ))}
-            {!user ? (
-              <Link
-                href="/auth/login"
-                className="block px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-center"
-                onClick={closeMenu}
+              <Link 
+                href="/about" 
+                className={`block text-sm ${router.pathname === '/about' ? 'text-primary-600 font-medium' : 'text-gray-600'}`}
+                onClick={() => setIsOpen(false)}
               >
-                Sign In
+                About
               </Link>
-            ) : (
-              <div className="pt-2 border-t border-gray-100">
-                <ProfileDropdown />
-              </div>
-            )}
+              <Link 
+                href="/contact" 
+                className={`block text-sm ${router.pathname === '/contact' ? 'text-primary-600 font-medium' : 'text-gray-600'}`}
+                onClick={() => setIsOpen(false)}
+              >
+                Contact
+              </Link>
+              {!user && (
+                <Link 
+                  href="/auth/login" 
+                  className="block text-sm text-primary-600 font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Login
+                </Link>
+              )}
+            </div>
           </div>
         )}
       </div>

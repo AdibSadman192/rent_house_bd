@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { MapPin, Bed, Bath, Square, Heart, Phone, Mail, Share2, Calendar } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, Heart, Phone, Mail, Share2, Calendar, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 const fadeInUp = {
@@ -86,23 +86,34 @@ export default function PropertyDetailsPage({ property }) {
         />
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         {/* Property Images */}
-        <div className="relative h-[60vh] bg-gray-900">
-          <Image
-            src={property.images[activeImage]}
-            alt={property.title}
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute bottom-4 left-4 right-4 flex gap-2 overflow-x-auto p-2 bg-black/30 rounded-lg">
+        <div className="relative h-[70vh]">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={property.images[activeImage]}
+              alt={property.title}
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40" />
+          </motion.div>
+
+          {/* Image Navigation */}
+          <div className="absolute bottom-6 left-4 right-4 flex gap-2 overflow-x-auto p-2 backdrop-blur-xl bg-black/30 rounded-2xl border border-white/10">
             {property.images.map((image, index) => (
               <button
                 key={index}
                 onClick={() => setActiveImage(index)}
-                className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden 
-                  ${activeImage === index ? 'ring-2 ring-primary-500' : ''}`}
+                className={`relative flex-shrink-0 h-16 w-24 rounded-xl overflow-hidden transition-all duration-200 ${
+                  activeImage === index ? 'ring-2 ring-white scale-105' : 'opacity-70 hover:opacity-100'
+                }`}
               >
                 <Image
                   src={image}
@@ -113,163 +124,173 @@ export default function PropertyDetailsPage({ property }) {
               </button>
             ))}
           </div>
-          <div className="absolute top-4 right-4 flex gap-2">
-            <button 
-              className="p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
-              onClick={() => {/* Implement share functionality */}}
-            >
-              <Share2 className="w-5 h-5 text-gray-700" />
-            </button>
-            <button 
-              className="p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
-              onClick={() => {/* Implement favorite functionality */}}
-            >
-              <Heart className="w-5 h-5 text-gray-700" />
-            </button>
-          </div>
         </div>
 
         {/* Property Details */}
-        <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            {/* Basic Info */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold text-gray-900">{property.title}</h1>
-                <div className="text-2xl font-bold text-primary-600">
-                  ৳{property.price.toLocaleString()}<span className="text-sm text-gray-500">/month</span>
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <motion.div 
+              variants={stagger}
+              initial="initial"
+              animate="animate"
+              className="lg:col-span-2 space-y-8"
+            >
+              {/* Title and Location */}
+              <motion.div variants={fadeInUp} className="space-y-4">
+                <h1 className="text-4xl font-bold text-gray-900">{property.title}</h1>
+                <div className="flex items-center text-gray-600">
+                  <MapPin className="h-5 w-5 mr-2" />
+                  <span>{property.location}</span>
                 </div>
-              </div>
-              <div className="flex items-center text-gray-500 mb-6">
-                <MapPin className="w-5 h-5 mr-2" />
-                {property.location}
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                <div className="flex items-center">
-                  <Bed className="w-5 h-5 text-gray-400 mr-2" />
-                  <span>{property.bedrooms} Bedrooms</span>
+                <div className="text-3xl font-bold text-primary-600">
+                  ৳{property.price.toLocaleString()}/month
                 </div>
-                <div className="flex items-center">
-                  <Bath className="w-5 h-5 text-gray-400 mr-2" />
-                  <span>{property.bathrooms} Bathrooms</span>
-                </div>
-                <div className="flex items-center">
-                  <Square className="w-5 h-5 text-gray-400 mr-2" />
-                  <span>{property.area} sqft</span>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="w-5 h-5 text-gray-400 mr-2" />
-                  <span>Available {new Date(property.availableFrom).toLocaleDateString()}</span>
-                </div>
-              </div>
-              <p className="text-gray-600 whitespace-pre-line">{property.description}</p>
-            </div>
+              </motion.div>
 
-            {/* Features & Amenities */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">Features & Amenities</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {property.features.map((feature, index) => (
-                  <div key={index} className="flex items-center text-gray-600">
-                    <div className="w-2 h-2 bg-primary-500 rounded-full mr-2"></div>
-                    {feature}
+              {/* Key Features */}
+              <motion.div variants={fadeInUp} className="grid grid-cols-3 gap-4">
+                <div className="backdrop-blur-xl bg-white/70 rounded-2xl p-4 flex items-center space-x-3 border border-gray-200/50">
+                  <Bed className="h-6 w-6 text-primary-500" />
+                  <div>
+                    <div className="text-sm text-gray-500">Bedrooms</div>
+                    <div className="font-semibold">{property.bedrooms}</div>
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+                <div className="backdrop-blur-xl bg-white/70 rounded-2xl p-4 flex items-center space-x-3 border border-gray-200/50">
+                  <Bath className="h-6 w-6 text-primary-500" />
+                  <div>
+                    <div className="text-sm text-gray-500">Bathrooms</div>
+                    <div className="font-semibold">{property.bathrooms}</div>
+                  </div>
+                </div>
+                <div className="backdrop-blur-xl bg-white/70 rounded-2xl p-4 flex items-center space-x-3 border border-gray-200/50">
+                  <Square className="h-6 w-6 text-primary-500" />
+                  <div>
+                    <div className="text-sm text-gray-500">Area</div>
+                    <div className="font-semibold">{property.area} sqft</div>
+                  </div>
+                </div>
+              </motion.div>
 
-            {/* Location Map */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">Location</h2>
-              <div className="h-[400px] bg-gray-100 rounded-lg">
-                {/* Integrate Google Maps or Leaflet here */}
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
-                  Map integration coming soon
-                </div>
-              </div>
-            </div>
-          </div>
+              {/* Description */}
+              <motion.div variants={fadeInUp} className="backdrop-blur-xl bg-white/70 rounded-2xl p-6 border border-gray-200/50">
+                <h2 className="text-2xl font-semibold mb-4">Description</h2>
+                <p className="text-gray-600 leading-relaxed">{property.description}</p>
+              </motion.div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Contact Card */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden">
-                  <Image
-                    src={property.owner.image}
-                    alt={property.owner.name}
-                    fill
-                    className="object-cover"
-                  />
+              {/* Features */}
+              <motion.div variants={fadeInUp} className="backdrop-blur-xl bg-white/70 rounded-2xl p-6 border border-gray-200/50">
+                <h2 className="text-2xl font-semibold mb-4">Features</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {property.features.map((feature, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <CheckCircle className="h-5 w-5 text-primary-500" />
+                      <span className="text-gray-600">{feature}</span>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <h3 className="font-semibold">{property.owner.name}</h3>
-                  <p className="text-sm text-gray-500">Property Owner</p>
+              </motion.div>
+            </motion.div>
+
+            {/* Sidebar */}
+            <motion.div 
+              variants={fadeInUp}
+              initial="initial"
+              animate="animate"
+              className="space-y-6"
+            >
+              {/* Contact Card */}
+              <div className="backdrop-blur-xl bg-white/70 rounded-2xl p-6 border border-gray-200/50">
+                <div className="flex items-center space-x-4 mb-6">
+                  <div className="relative h-16 w-16 rounded-full overflow-hidden">
+                    <Image
+                      src={property.owner.image}
+                      alt={property.owner.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{property.owner.name}</h3>
+                    <p className="text-gray-500">Property Owner</p>
+                  </div>
                 </div>
-              </div>
-              
-              {showContactForm ? (
-                <form onSubmit={handleContact} className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Your Name"
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                    required
-                  />
-                  <input
-                    type="email"
-                    placeholder="Your Email"
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                    required
-                  />
-                  <textarea
-                    placeholder="Your Message"
-                    rows={4}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                    required
-                  ></textarea>
-                  <button
-                    type="submit"
-                    className="w-full bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition-colors"
-                  >
-                    Send Message
-                  </button>
-                </form>
-              ) : (
+
                 <div className="space-y-4">
                   <button
-                    onClick={() => setShowContactForm(true)}
-                    className="w-full bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition-colors"
+                    onClick={() => setShowContactForm(!showContactForm)}
+                    className="w-full py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors duration-200 flex items-center justify-center space-x-2"
                   >
-                    Contact Owner
+                    <Mail className="h-5 w-5" />
+                    <span>Contact Owner</span>
                   </button>
+                  
                   <a
                     href={`tel:${property.owner.phone}`}
-                    className="flex items-center justify-center w-full border border-gray-300 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="w-full py-3 bg-white text-primary-500 rounded-xl border border-primary-500 hover:bg-primary-50 transition-colors duration-200 flex items-center justify-center space-x-2"
                   >
-                    <Phone className="w-5 h-5 mr-2" />
-                    Call Now
-                  </a>
-                  <a
-                    href={`mailto:${property.owner.email}`}
-                    className="flex items-center justify-center w-full border border-gray-300 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <Mail className="w-5 h-5 mr-2" />
-                    Email
+                    <Phone className="h-5 w-5" />
+                    <span>Call Owner</span>
                   </a>
                 </div>
-              )}
-            </div>
 
-            {/* Similar Properties */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h3 className="font-semibold mb-4">Similar Properties</h3>
-              <div className="space-y-4">
-                {/* Add similar properties component */}
-                <p className="text-gray-500 text-center">Similar properties coming soon</p>
+                {showContactForm && (
+                  <motion.form
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    onSubmit={handleContact}
+                    className="mt-6 space-y-4"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Your Name"
+                      className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Your Email"
+                      className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
+                    />
+                    <textarea
+                      placeholder="Your Message"
+                      rows="4"
+                      className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
+                    ></textarea>
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors duration-200"
+                    >
+                      Send Message
+                    </button>
+                  </motion.form>
+                )}
               </div>
-            </div>
+
+              {/* Availability */}
+              <div className="backdrop-blur-xl bg-white/70 rounded-2xl p-6 border border-gray-200/50">
+                <h3 className="font-semibold text-lg mb-4">Availability</h3>
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Calendar className="h-5 w-5" />
+                  <span>Available from {new Date(property.availableFrom).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              {/* Share */}
+              <div className="backdrop-blur-xl bg-white/70 rounded-2xl p-6 border border-gray-200/50">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    // Show toast notification
+                  }}
+                  className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center space-x-2"
+                >
+                  <Share2 className="h-5 w-5" />
+                  <span>Share Property</span>
+                </button>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>

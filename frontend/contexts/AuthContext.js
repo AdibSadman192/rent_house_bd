@@ -1,12 +1,28 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import api from '../services/api';
 import SessionManager from '../services/sessionManager';
 
 const AuthContext = createContext({});
 
-// Routes that don't require authentication
-const PUBLIC_ROUTES = ['/auth/login', '/auth/register', '/auth/forgot-password', '/', '/about', '/contact', '/properties', '/faq', '/help', '/blog'];
+// Routes that require authentication
+const PROTECTED_ROUTES = [
+  '/dashboard',
+  '/profile',
+  '/settings',
+  '/admin',
+  '/owner',
+  '/properties/create',
+  '/properties/edit',
+  '/bookings',
+  '/messages',
+  '/favorites'
+];
+
+// Routes that require specific roles
+const ROLE_PROTECTED_ROUTES = {
+  '/admin': ['admin', 'super_admin'],
+  '/owner': ['owner', 'admin', 'super_admin']
+};
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -16,16 +32,31 @@ export function AuthProvider({ children }) {
   // Check authentication status on mount and setup session monitoring
   useEffect(() => {
     checkAuth();
-    const interval = setInterval(monitorSession, 60000); // Check every minute
+    const interval = setInterval(monitorSession, 300000); // Check every 5 minutes
     return () => clearInterval(interval);
   }, []);
 
   // Route protection
   useEffect(() => {
     if (!loading) {
-      const isPublicRoute = PUBLIC_ROUTES.includes(router.pathname);
-      if (!user && !isPublicRoute) {
-        router.push('/auth/login');
+      // Check if current route is protected
+      const isProtectedRoute = PROTECTED_ROUTES.some(route => router.pathname.startsWith(route));
+      
+      if (isProtectedRoute) {
+        if (!user) {
+          // Save the intended destination
+          SessionManager.saveIntendedRoute(router.pathname);
+          router.push('/auth/login');
+          return;
+        }
+
+        // Check role-based access
+        for (const [route, roles] of Object.entries(ROLE_PROTECTED_ROUTES)) {
+          if (router.pathname.startsWith(route) && !roles.includes(user.role)) {
+            router.push('/dashboard');
+            return;
+          }
+        }
       }
     }
   }, [loading, user, router.pathname]);
@@ -34,17 +65,25 @@ export function AuthProvider({ children }) {
   const monitorSession = async () => {
     try {
       const session = await SessionManager.validateAndRefreshSession();
-      setUser(session.user);
+      if (session?.user) {
+        setUser(session.user);
+      }
     } catch (error) {
-      console.error('Session validation failed:', error);
-      logout(); 
+      // Only logout if token refresh fails and we're on a protected route
+      const isProtectedRoute = PROTECTED_ROUTES.some(route => router.pathname.startsWith(route));
+      if (isProtectedRoute) {
+        console.error('Session validation failed:', error);
+        logout();
+      }
     }
   };
 
   const checkAuth = async () => {
     try {
       const session = await SessionManager.validateAndRefreshSession();
-      setUser(session.user);
+      if (session?.user) {
+        setUser(session.user);
+      }
     } catch (error) {
       console.error('Auth check failed:', error);
       setUser(null);
@@ -55,47 +94,102 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const { data } = await api.post('/auth/login', { email, password });
-      if (data.token && data.refreshToken) {
-        SessionManager.saveSession(data.token, data.refreshToken, data.user);
-        setUser(data.user);
-        router.push('/dashboard');
-        return { success: true };
+      console.log('AuthContext: Attempting login for:', email);
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include' // Important for cookies
+      });
+
+      const data = await response.json();
+      console.log('AuthContext: Login response:', data);
+
+      if (!response.ok) {
+        console.log('AuthContext: Login failed:', data.message);
+        throw new Error(data.message || 'Login failed');
       }
+
+      if (data.success && data.token && data.user) {
+        console.log('AuthContext: Login successful, saving session...');
+        
+        try {
+          // Save session first
+          await SessionManager.saveSession(data.token, data.refreshToken, data.user);
+          console.log('AuthContext: Session saved successfully');
+          
+          // Then update user state
+          setUser(data.user);
+          console.log('AuthContext: User state updated');
+          
+          return { 
+            success: true,
+            user: data.user
+          };
+        } catch (error) {
+          console.error('AuthContext: Error saving session:', error);
+          throw new Error('Failed to save session');
+        }
+      }
+
+      console.log('AuthContext: Invalid server response');
       return { success: false, error: 'Invalid response from server' };
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('AuthContext: Login error:', error);
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+        error: error.message || 'An error occurred during login'
       };
     }
   };
 
-  const logout = () => {
-    SessionManager.clearSession();
-    setUser(null);
-    router.push('/auth/login');
+  // Helper to get default route based on role
+  const getDefaultRoute = (role) => {
+    switch (role) {
+      case 'admin':
+      case 'super_admin':
+        return '/admin/dashboard';
+      case 'owner':
+        return '/owner/dashboard';
+      default:
+        return '/dashboard';
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      SessionManager.clearSession();
+      setUser(null);
+      router.push('/');
+    }
   };
 
   const value = {
     user,
-    loading,
     login,
     logout,
-    isAuthenticated: !!user
+    loading
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

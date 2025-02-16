@@ -10,6 +10,7 @@ import Layout from '../components/layout/Layout';
 import { ErrorBoundary } from '@/middleware/error-handler';
 import { ENV } from '@/config';
 import Head from 'next/head';
+import { Toaster } from 'react-hot-toast';
 
 function MyApp({ Component, pageProps }) {
   return (
@@ -23,6 +24,23 @@ function MyApp({ Component, pageProps }) {
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <Layout>
+              <Toaster
+                position="top-center"
+                reverseOrder={false}
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    background: '#363636',
+                    color: '#fff',
+                  },
+                  success: {
+                    duration: 3000,
+                    theme: {
+                      primary: '#4aed88',
+                    },
+                  },
+                }}
+              />
               <Component {...pageProps} />
               <ToastContainer
                 position="top-right"

@@ -1,4 +1,4 @@
-# 🏠 Rent_House_BD
+# 🏠 RentHouseBD
 
 [![Create Release](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml/badge.svg)](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml) <div align='center'><a href='https://www.websitecounterfree.com'><img src='https://www.websitecounterfree.com/c.php?d=9&id=65510&s=3' border='0' alt='Free Website Counter'></a></div>
 
@@ -9,11 +9,25 @@
 ## 🖼️ Project Previews
 
 ### Landing Page
-![Landing Preview](/preview/second_preview.jpeg)
+![Landing Preview](/preview/landing_page.jpeg)
+### Dashboard
+![Dashboard Preview](/preview/Dashboard_user.jpeg)
+### Contact Page
+![Contact Preview](/preview/contact_page.jpeg)
+### FAQ Page
+![FAQ Preview](/preview/faq_page.jpeg)
+### About Page
+![About Preview](/preview/about_page.jpeg)
+### Help Center
+![Help Center Preview](/preview/help_center.jpeg)
 
 
 
-*Note: The platform features a modern, responsive design with glass-morphism UI elements*
+
+
+
+
+*Note: The platform features a modern, responsive design with glass-morphism UI elements. More previews are coming soon as the project progresses.*
 
 ## 🌟 Overview
 A modern social media platform and service for house rentals in Bangladesh, connecting tenants with property owners through a community-driven approach.

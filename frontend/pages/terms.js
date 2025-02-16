@@ -1,158 +1,243 @@
 import Head from 'next/head';
-import { motion } from 'framer-motion';
-import { Shield, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { FiChevronRight } from 'react-icons/fi';
 
 const TermsPage = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1
-    }
-  };
+  const [activeSection, setActiveSection] = useState('introduction');
 
   const sections = [
-    {
-      title: '1. Acceptance of Terms',
-      content: `By accessing and using RentHouse BD's services, you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our services.`
-    },
-    {
-      title: '2. User Registration',
-      content: `Users must provide accurate and complete information during registration. You are responsible for maintaining the confidentiality of your account credentials.`
-    },
-    {
-      title: '3. Property Listings',
-      content: `3.1. Property owners must provide accurate information about their properties.
-3.2. All images must be genuine and represent the actual property.
-3.3. Pricing information must be current and accurate.
-3.4. RentHouse BD reserves the right to remove any listing that violates our policies.`
-    },
-    {
-      title: '4. Booking and Payments',
-      content: `4.1. All payments must be made through our secure payment system.
-4.2. Security deposits are handled according to local regulations.
-4.3. Cancellation policies vary by property and are clearly stated on each listing.`
-    },
-    {
-      title: '5. User Conduct',
-      content: `Users must:
-5.1. Not engage in fraudulent activities
-5.2. Respect other users' privacy and rights
-5.3. Not use the platform for illegal purposes
-5.4. Not manipulate listings or reviews`
-    },
-    {
-      title: '6. Privacy and Data Protection',
-      content: `6.1. We collect and process data in accordance with our Privacy Policy.
-6.2. User data is protected using industry-standard security measures.
-6.3. We do not sell personal information to third parties.`
-    },
-    {
-      title: '7. Intellectual Property',
-      content: `7.1. All content on RentHouse BD is protected by copyright laws.
-7.2. Users may not copy or reproduce content without permission.
-7.3. Property images remain the property of their respective owners.`
-    },
-    {
-      title: '8. Liability and Disclaimers',
-      content: `8.1. RentHouse BD is not responsible for disputes between users.
-8.2. We do not guarantee the accuracy of property listings.
-8.3. Users are responsible for verifying property conditions before renting.`
-    },
-    {
-      title: '9. Termination',
-      content: `We reserve the right to terminate or suspend accounts that violate our terms or engage in suspicious activities.`
-    },
-    {
-      title: '10. Changes to Terms',
-      content: `RentHouse BD may modify these terms at any time. Users will be notified of significant changes.`
-    }
+    { id: 'introduction', title: 'Introduction' },
+    { id: 'definitions', title: 'Definitions' },
+    { id: 'account', title: 'Account Terms' },
+    { id: 'services', title: 'Services' },
+    { id: 'responsibilities', title: 'User Responsibilities' },
+    { id: 'content', title: 'Content Guidelines' },
+    { id: 'payments', title: 'Payments & Fees' },
+    { id: 'termination', title: 'Account Termination' },
+    { id: 'liability', title: 'Limitation of Liability' },
+    { id: 'privacy', title: 'Privacy & Data' },
+    { id: 'changes', title: 'Changes to Terms' },
+    { id: 'contact', title: 'Contact Us' }
   ];
+
+  const content = {
+    introduction: {
+      title: 'Introduction',
+      content: `Welcome to RentHouseBD. These Terms of Service ("Terms") govern your access to and use of RentHouseBD's website, services, and applications. By using our services, you agree to be bound by these terms. Please read them carefully.
+
+RentHouseBD provides a platform for property owners and potential tenants to connect and facilitate property rentals in Bangladesh. These terms outline the rules and regulations for the use of our platform.`
+    },
+    definitions: {
+      title: 'Definitions',
+      content: `Throughout these Terms, we use certain terms with specific meanings:
+
+• "Service" refers to RentHouseBD's website, applications, and related services
+• "User" means any individual who accesses or uses the Service
+• "Property Owner" refers to users who list properties for rent
+• "Tenant" refers to users who seek to rent properties
+• "Content" includes text, images, photos, audio, video, and all other forms of data or communication
+• "Property Listing" means any rental property advertised on our platform`
+    },
+    account: {
+      title: 'Account Terms',
+      content: `To access certain features of our Service, you must register for an account. When you register, you agree to:
+
+• Provide accurate, current, and complete information
+• Maintain and update your information
+• Keep your password secure and confidential
+• Notify us immediately of any unauthorized use
+• Be responsible for all activities under your account
+• Be at least 18 years old to create an account`
+    },
+    services: {
+      title: 'Services',
+      content: `RentHouseBD provides the following services:
+
+• Property listing and browsing
+• Search and filter capabilities
+• Messaging between users
+• Booking and viewing scheduling
+• Payment processing
+• Verification services
+
+We reserve the right to modify or discontinue any service at any time. We will notify users of significant changes to our services.`
+    },
+    responsibilities: {
+      title: 'User Responsibilities',
+      content: `As a user of RentHouseBD, you agree to:
+
+• Comply with all applicable laws and regulations
+• Not misuse our services for illegal purposes
+• Not interfere with the proper working of the service
+• Not attempt to gain unauthorized access
+• Not harass or abuse other users
+• Provide accurate information in listings and communications
+• Respect the privacy and rights of other users`
+    },
+    content: {
+      title: 'Content Guidelines',
+      content: `When posting content on RentHouseBD, you must follow these guidelines:
+
+• Only post accurate and truthful information
+• Include clear and recent photos of properties
+• Not post discriminatory or offensive content
+• Not infringe on others' intellectual property rights
+• Not post spam or misleading information
+• Not include personal contact information in public areas`
+    },
+    payments: {
+      title: 'Payments & Fees',
+      content: `RentHouseBD's payment terms include:
+
+• Service fees for property listings
+• Security deposit handling
+• Payment processing fees
+• Refund policies
+• Cancellation fees
+• Premium service charges
+
+All fees are non-refundable unless otherwise specified. We reserve the right to change our fee structure with notice to users.`
+    },
+    termination: {
+      title: 'Account Termination',
+      content: `We may terminate or suspend your account if you:
+
+• Violate these Terms
+• Provide false information
+• Engage in fraudulent activity
+• Harass other users
+• Misuse our services
+
+You may also terminate your account at any time. Upon termination, you lose access to our services.`
+    },
+    liability: {
+      title: 'Limitation of Liability',
+      content: `RentHouseBD is not liable for:
+
+• Disputes between users
+• Property conditions or misrepresentations
+• Financial losses
+• Data loss or security breaches
+• Service interruptions
+• Third-party actions
+
+We provide our service "as is" without any express or implied warranties.`
+    },
+    privacy: {
+      title: 'Privacy & Data',
+      content: `We collect and process user data as described in our Privacy Policy. By using our service, you agree to:
+
+• Our data collection practices
+• Cookie usage
+• Information sharing policies
+• Data storage and protection measures
+• Your privacy rights and choices
+
+Please review our Privacy Policy for complete details.`
+    },
+    changes: {
+      title: 'Changes to Terms',
+      content: `We may modify these Terms at any time. We will notify users of significant changes through:
+
+• Email notifications
+• Website announcements
+• App notifications
+
+Continued use of our service after changes constitutes acceptance of new terms.`
+    },
+    contact: {
+      title: 'Contact Us',
+      content: `For questions about these Terms, contact us at:
+
+• Email: legal@renthousebd.com
+• Phone: +880 1234-567890
+• Address: [Your Address], Bangladesh
+
+We aim to respond to all inquiries within 2 business days.`
+    }
+  };
+
+  const scrollToSection = (sectionId) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <>
       <Head>
-        <title>Terms and Conditions | RentHouse BD</title>
-        <meta name="description" content="Terms and conditions for using RentHouse BD's property rental services" />
+        <title>Terms of Service | RentHouseBD</title>
+        <meta name="description" content="Terms of Service for RentHouseBD's property rental platform" />
       </Head>
 
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8"
-      >
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <motion.div variants={itemVariants} className="text-center mb-12">
-            <FileText className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Terms and Conditions</h1>
-            <p className="text-lg text-gray-600">
-              Last updated: February 20, 2024
-            </p>
-          </motion.div>
-
-          {/* Introduction */}
-          <motion.div
-            variants={itemVariants}
-            className="bg-white rounded-lg shadow-sm p-6 mb-8"
-          >
-            <p className="text-gray-600">
-              Welcome to RentHouse BD. These terms and conditions outline the rules and regulations
-              for the use of our property rental platform. By accessing this website, we assume
-              you accept these terms and conditions in full.
-            </p>
-          </motion.div>
-
-          {/* Terms Sections */}
-          <motion.div variants={containerVariants} className="space-y-6">
-            {sections.map((section, index) => (
-              <motion.section
-                key={index}
-                variants={itemVariants}
-                className="bg-white rounded-lg shadow-sm p-6"
-              >
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  {section.title}
-                </h2>
-                <div className="text-gray-600 whitespace-pre-line">
-                  {section.content}
-                </div>
-              </motion.section>
-            ))}
-          </motion.div>
-
-          {/* Contact Information */}
-          <motion.div
-            variants={itemVariants}
-            className="mt-12 bg-blue-50 rounded-lg p-6 text-center"
-          >
-            <Shield className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Questions about our terms?
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Contact our legal team for clarification
-            </p>
-            <a
-              href="mailto:legal@renthousebd.com"
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Contact Legal Team
-            </a>
-          </motion.div>
+      <div className="pt-24 pb-16">
+        {/* Hero Section */}
+        <div className="container mx-auto px-4 text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            Terms of Service
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Please read these terms carefully before using RentHouseBD
+          </p>
         </div>
-      </motion.div>
+
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Navigation Sidebar */}
+            <div className="lg:w-1/4">
+              <div className="bg-white rounded-xl shadow-soft p-6 sticky top-24">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Contents</h2>
+                <nav className="space-y-2">
+                  {sections.map((section) => (
+                    <button
+                      key={section.id}
+                      onClick={() => scrollToSection(section.id)}
+                      className={`w-full text-left px-4 py-2 rounded-lg flex items-center justify-between group transition-colors duration-200 ${
+                        activeSection === section.id
+                          ? 'bg-primary-50 text-primary-600'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span>{section.title}</span>
+                      <FiChevronRight
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          activeSection === section.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </nav>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="lg:w-3/4">
+              <div className="bg-white rounded-xl shadow-soft p-8">
+                {sections.map((section) => (
+                  <div
+                    key={section.id}
+                    id={section.id}
+                    className={`mb-12 last:mb-0 scroll-mt-24`}
+                  >
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                      {content[section.id].title}
+                    </h2>
+                    <div className="prose prose-lg max-w-none">
+                      {content[section.id].content.split('\n\n').map((paragraph, index) => (
+                        <p key={index} className="text-gray-600 mb-4 last:mb-0">
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

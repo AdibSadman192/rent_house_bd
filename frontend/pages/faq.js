@@ -1,237 +1,163 @@
-import { useState } from 'react';
 import Head from 'next/head';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, HelpCircle, Search } from 'lucide-react';
+import { useState } from 'react';
+import { FiChevronDown, FiHelpCircle } from 'react-icons/fi';
 
 const FAQPage = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('general');
-  const [openQuestions, setOpenQuestions] = useState(new Set());
+  const [openIndex, setOpenIndex] = useState(null);
 
-  const categories = [
-    { id: 'general', name: 'General Questions' },
-    { id: 'rental', name: 'Rental Process' },
-    { id: 'payment', name: 'Payments & Fees' },
-    { id: 'legal', name: 'Legal & Documentation' },
-    { id: 'maintenance', name: 'Maintenance & Support' },
+  const faqs = [
+    {
+      category: 'General',
+      questions: [
+        {
+          q: 'What is RentHouseBD?',
+          a: 'RentHouseBD is a comprehensive property rental platform in Bangladesh that connects property owners with potential tenants. We provide a secure and efficient way to list, search, and rent properties.'
+        },
+        {
+          q: 'Is RentHouseBD free to use?',
+          a: 'Basic property search and browsing is free for all users. Property owners may need to pay a small fee to list their properties with additional features.'
+        },
+        {
+          q: 'How do I contact support?',
+          a: 'You can reach our support team through the Contact page, by email at support@renthousebd.com, or by phone at +880 1234-567890.'
+        }
+      ]
+    },
+    {
+      category: 'For Tenants',
+      questions: [
+        {
+          q: 'How do I search for properties?',
+          a: 'Use our search feature to filter properties by location, price range, number of rooms, and other amenities. You can also save your favorite properties and set up alerts.'
+        },
+        {
+          q: 'Is the listed price negotiable?',
+          a: 'Price negotiation depends on individual property owners. You can discuss the price directly with them through our messaging system.'
+        },
+        {
+          q: 'How can I schedule a property viewing?',
+          a: 'Once you find a property you\'re interested in, you can request a viewing through the property listing page. The owner will then contact you to arrange a suitable time.'
+        }
+      ]
+    },
+    {
+      category: 'For Property Owners',
+      questions: [
+        {
+          q: 'How do I list my property?',
+          a: 'Sign up for an owner account, verify your identity, and use our "Add Property" feature to create your listing. Make sure to include clear photos and accurate details.'
+        },
+        {
+          q: 'What are the listing fees?',
+          a: 'We offer different listing packages starting from free basic listings to premium featured listings. Visit our pricing page for detailed information.'
+        },
+        {
+          q: 'How are tenants verified?',
+          a: 'We verify tenant identities through a combination of phone verification, email verification, and optional NID verification. Premium owners can also request additional verification.'
+        }
+      ]
+    },
+    {
+      category: 'Security & Privacy',
+      questions: [
+        {
+          q: 'How do you protect my personal information?',
+          a: 'We use industry-standard encryption and security measures to protect your data. Your personal information is never shared without your consent.'
+        },
+        {
+          q: 'Are the listed properties verified?',
+          a: 'We encourage property verification and mark verified properties with a badge. However, we recommend users to exercise due diligence and verify properties in person.'
+        },
+        {
+          q: 'What should I do if I suspect fraud?',
+          a: 'Report suspicious activities immediately using the "Report" button on listings or contact our support team. We take fraud very seriously and investigate all reports.'
+        }
+      ]
+    }
   ];
 
-  const faqs = {
-    general: [
-      {
-        id: 'g1',
-        question: 'What is RentHouse BD?',
-        answer: 'RentHouse BD is a comprehensive property rental platform in Bangladesh that connects property owners with potential tenants. We provide a secure and efficient way to list, search, and rent properties across the country.'
-      },
-      {
-        id: 'g2',
-        question: 'How do I create an account?',
-        answer: 'You can create an account by clicking the \'Sign Up\' button in the top right corner. Fill in your details, verify your email address and you are ready to start using our platform.'
-      } 
-      // Add more general FAQs
-    ],
-    rental: [
-      {
-        id: 'r1',
-        question: 'How do I search for properties?',
-        answer: 'Use our search feature to filter properties by location, price range, number of rooms, and other criteria. You can also save your favorite properties and set up alerts for new listings.'
-      },
-      {
-        id: 'r2',
-        question: 'How do I schedule a property viewing?',
-        answer: 'Once you find a property you\'re interested in, click the "Schedule Viewing" button on the property page. Choose your preferred date and time, and we\'ll coordinate with the property owner.'
-      },
-      // Add more rental FAQs
-    ],
-    payment: [
-      {
-        id: 'p1',
-        question: 'What payment methods are accepted?',
-        answer: 'We accept various payment methods including bank transfers, bKash, Nagad, and credit/debit cards. All payments are processed securely through our platform.'
-      },
-      {
-        id: 'p2',
-        question: 'Is there a security deposit?',
-        answer: 'Security deposit requirements vary by property and landlord. Typically, it\'s equivalent to 2-3 months\' rent and is refundable at the end of your tenancy, subject to property condition.'
-      },
-      // Add more payment FAQs
-    ],
-    legal: [
-      {
-        id: 'l1',
-        question: 'What documents do I need for renting?',
-        answer: 'Required documents typically include valid ID (NID/Passport), proof of income, employment verification, and references. Specific requirements may vary by property owner.'
-      },
-      {
-        id: 'l2',
-        question: 'How long is the typical lease agreement?',
-        answer: 'Most lease agreements are for 12 months, but shorter or longer terms may be available depending on the property owner\'s preferences.'
-      },
-      // Add more legal FAQs
-    ],
-    maintenance: [
-      {
-        id: 'm1',
-        question: 'How do I report maintenance issues?',
-        answer: 'You can report maintenance issues through your dashboard. Click on "Report Issue," describe the problem, and attach photos if needed. We\'ll coordinate with the property owner for resolution.'
-      },
-      {
-        id: 'm2',
-        question: 'What\'s the typical response time for maintenance requests?',
-        answer: 'Response times vary based on the urgency of the issue. Emergency issues are addressed within 24 hours, while non-emergency requests are typically handled within 3-5 business days.'
-      },
-      // Add more maintenance FAQs
-    ],
-  };
-
-  const toggleQuestion = (questionId) => {
-    const newOpenQuestions = new Set(openQuestions);
-    if (newOpenQuestions.has(questionId)) {
-      newOpenQuestions.delete(questionId);
-    } else {
-      newOpenQuestions.add(questionId);
-    }
-    setOpenQuestions(newOpenQuestions);
-  };
-
-  const filteredFaqs = faqs[activeCategory].filter(faq =>
-    faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1
-    }
+  const toggleAccordion = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
     <>
       <Head>
-        <title>FAQ | RentHouse BD</title>
-        <meta name="description" content="Frequently asked questions about property rental in Bangladesh" />
+        <title>FAQ | RentHouseBD</title>
+        <meta name="description" content="Frequently asked questions about RentHouseBD's property rental services" />
       </Head>
 
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8"
-      >
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <motion.div variants={itemVariants} className="text-center mb-12">
-            <HelpCircle className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h1>
-            <p className="text-lg text-gray-600">Find answers to common questions about RentHouse BD</p>
-          </motion.div>
+      <div className="pt-24 pb-16">
+        {/* Hero Section */}
+        <div className="container mx-auto px-4 text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            Frequently Asked Questions
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Find answers to common questions about using RentHouseBD. Can't find what you're looking for? Contact our support team.
+          </p>
+        </div>
 
-          {/* Search Bar */}
-          <motion.div variants={itemVariants} className="mb-8">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search questions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            </div>
-          </motion.div>
+        {/* FAQ Categories */}
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            {faqs.map((category, categoryIndex) => (
+              <div key={categoryIndex} className="mb-8">
+                <div className="flex items-center space-x-3 mb-6">
+                  <FiHelpCircle className="w-6 h-6 text-primary-600" />
+                  <h2 className="text-2xl font-bold text-gray-900">{category.category}</h2>
+                </div>
+                <div className="space-y-4">
+                  {category.questions.map((faq, faqIndex) => {
+                    const index = `${categoryIndex}-${faqIndex}`;
+                    const isOpen = openIndex === index;
 
-          {/* Categories */}
-          <motion.div variants={itemVariants} className="flex flex-wrap gap-2 mb-8">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setActiveCategory(category.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-                  activeCategory === category.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {category.name}
-              </button>
+                    return (
+                      <div
+                        key={faqIndex}
+                        className="bg-white rounded-xl shadow-soft overflow-hidden"
+                      >
+                        <button
+                          onClick={() => toggleAccordion(index)}
+                          className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
+                        >
+                          <span className="text-lg font-medium text-gray-900">{faq.q}</span>
+                          <FiChevronDown
+                            className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
+                              isOpen ? 'transform rotate-180' : ''
+                            }`}
+                          />
+                        </button>
+                        <div
+                          className={`px-6 overflow-hidden transition-all duration-200 ${
+                            isOpen ? 'py-4' : 'max-h-0'
+                          }`}
+                        >
+                          <p className="text-gray-600">{faq.a}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             ))}
-          </motion.div>
+          </div>
 
-          {/* FAQ List */}
-          <motion.div variants={containerVariants} className="space-y-4">
-            {filteredFaqs.map((faq) => (
-              <motion.div
-                key={faq.id}
-                variants={itemVariants}
-                className="bg-white rounded-lg shadow-sm"
-              >
-                <button
-                  onClick={() => toggleQuestion(faq.id)}
-                  className="w-full px-6 py-4 flex items-center justify-between text-left"
-                >
-                  <span className="font-medium text-gray-900">{faq.question}</span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
-                      openQuestions.has(faq.id) ? 'transform rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                <AnimatePresence>
-                  {openQuestions.has(faq.id) && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="px-6 pb-4"
-                    >
-                      <p className="text-gray-600">{faq.answer}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* Empty State */}
-          {filteredFaqs.length === 0 && (
-            <motion.div
-              variants={itemVariants}
-              className="text-center py-12"
-            >
-              <p className="text-gray-500 text-lg">No matching questions found.</p>
-              <p className="text-gray-400">Try adjusting your search terms.</p>
-            </motion.div>
-          )}
-
-          {/* Contact Support */}
-          <motion.div
-            variants={itemVariants}
-            className="mt-12 text-center bg-blue-50 rounded-lg p-6"
-          >
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Still have questions?</h2>
-            <p className="text-gray-600 mb-4">We're here to help! Contact our support team.</p>
+          {/* Still Have Questions */}
+          <div className="max-w-4xl mx-auto mt-16 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Still Have Questions?</h2>
+            <p className="text-gray-600 mb-8">
+              Can't find the answer you're looking for? Please chat to our friendly team.
+            </p>
             <a
               href="/contact"
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors duration-200"
             >
               Contact Support
             </a>
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </>
   );
 };
