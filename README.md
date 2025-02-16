@@ -13,9 +13,9 @@
 ### Dashboard
 ![Dashboard Preview](/preview/Dashboard_user.jpeg)
 ### Contact Page
-![Contact Preview](/preview/contact_page.jpeg)
+![Contact Preview](/preview/Contact_page.jpeg)
 ### FAQ Page
-![FAQ Preview](/preview/faq_page.jpeg)
+![FAQ Preview](/preview/FAQ_page.jpeg)
 ### About Page
 ![About Preview](/preview/about_page.jpeg)
 ### Help Center
