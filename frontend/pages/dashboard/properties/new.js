@@ -1,20 +1,17 @@
 import { useState } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
-  Plus,
   X,
   ImagePlus,
   MapPin,
-  Building2,
   Ruler,
   DollarSign,
   Save,
   ChevronRight
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import { Image } from 'next/image';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -303,9 +300,10 @@ export default function NewPropertyPage() {
               <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
                 {formData.images.map((image, index) => (
                   <div key={index} className="relative group">
-                    <img
+                    <Image
                       src={image}
                       alt={`Property image ${index + 1}`}
+                      fill
                       className="w-full h-32 object-cover rounded-lg"
                     />
                     <button

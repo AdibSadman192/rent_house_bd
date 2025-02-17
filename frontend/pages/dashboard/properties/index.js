@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import {
   Plus,
   Search,
-  Filter,
   MoreVertical,
   Edit,
   Trash2,
@@ -16,6 +15,7 @@ import {
   Calendar
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import Image from 'next/image';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -188,10 +188,11 @@ export default function PropertiesPage() {
             >
               {/* Property Image */}
               <div className="relative h-48">
-                <img
+                <Image
                   src={property.image}
                   alt={property.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
                 <div className="absolute top-4 right-4">
                   <div className="relative">

@@ -102,6 +102,43 @@ const userSchema = new mongoose.Schema({
     default: 'user'
   },
 
+  connections: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
+  }],
+
+  following: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
+  }],
+
+  followers: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
+  }],
+
+  preferences: {
+    emailNotifications: { 
+      type: Boolean, 
+      default: true 
+    },
+    pushNotifications: { 
+      type: Boolean, 
+      default: true 
+    },
+    privacySettings: {
+      profileVisibility: {
+        type: String,
+        enum: ['public', 'connections', 'private'],
+        default: 'public'
+      },
+      activityVisibility: {
+        type: String,
+        enum: ['public', 'connections', 'private'],
+        default: 'public'
+      }
+    }
+  },
   /**
    * Profile picture URL
    * @type {String}

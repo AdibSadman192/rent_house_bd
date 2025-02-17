@@ -1,19 +1,26 @@
 import { useState, useEffect } from 'react';
-import Head from 'next/head';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Filter as FilterIcon,
-  Home,
   MapPin,
-  DollarSign,
   Bed,
   Bath,
   Square,
-  Check,
-  Sliders,
 } from 'lucide-react';
+import Image from 'next/image';
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+};
 
+const stagger = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 const AdvancedPropertyFilter = () => {
   const [properties, setProperties] = useState([]);
   const [filteredProperties, setFilteredProperties] = useState([]);
@@ -54,7 +61,11 @@ const AdvancedPropertyFilter = () => {
     fetchProperties();
   }, []);
 
-  const applyFilters = () => {
+  useEffect(() => {
+    applyFilters();
+  }, [filters, properties]);
+
+  const applyFilters = useCallback(() => {
     let result = properties;
 
     // Type filter
@@ -99,8 +110,7 @@ const AdvancedPropertyFilter = () => {
     }
 
     setFilteredProperties(result);
-  };
-
+  }, [filters, properties]);
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => {
       const currentFilter = prev[filterType];
@@ -332,7 +342,7 @@ const AdvancedPropertyFilter = () => {
                   >
                     <Link href={`/properties/${property.id}`}>
                       <div className="relative h-48">
-                        <img
+                        <Image
                           src={property.images[0]}
                           alt={property.title}
                           fill

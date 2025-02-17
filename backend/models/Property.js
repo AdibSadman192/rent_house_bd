@@ -28,6 +28,48 @@ const mongoose = require('mongoose');
  */
 const propertySchema = new mongoose.Schema({
   /**
+   * Real-time property status
+   * @type {Object}
+   */
+  realTimeStatus: {
+    isAvailable: { type: Boolean, default: true },
+    lastUpdated: { type: Date, default: Date.now },
+    currentViewers: { type: Number, default: 0 }
+  },
+
+  /**
+   * Virtual tour information
+   * @type {Object}
+   */
+  virtualTour: {
+    enabled: { type: Boolean, default: false },
+    url: String,
+    type: { type: String, enum: ['3D', '360', 'Video'], default: '360' },
+    lastUpdated: Date
+  },
+
+  /**
+   * Property analytics
+   * @type {Object}
+   */
+  analytics: {
+    views: { type: Number, default: 0 },
+    saves: { type: Number, default: 0 },
+    shares: { type: Number, default: 0 },
+    lastViewed: Date
+  },
+
+  /**
+   * Geolocation data
+   * @type {Object}
+   */
+  geolocation: {
+    type: { type: String, default: 'Point' },
+    coordinates: [Number],  // [longitude, latitude]
+    accuracy: Number,
+    lastUpdated: Date
+  },
+  /**
    * Title of the property listing
    * @type {String}
    * @required

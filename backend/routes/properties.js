@@ -9,7 +9,9 @@ const {
   updateProperty,
   deleteProperty,
   getPropertiesInRadius,
-  addPropertyRating
+  addPropertyRating,
+  updateRealTimeStatus,
+  getNearbyProperties
 } = require('../controllers/propertyController');
 const {
   uploadPropertyImages,
@@ -18,12 +20,16 @@ const {
 
 // Public routes
 router.get('/radius/:zipcode/:distance', getPropertiesInRadius);
+router.get('/nearby', getNearbyProperties);
 router.get('/search', getProperties); 
 router.get('/', getProperties);
 router.get('/:id', getProperty);
 
 // Protected routes
 router.use(protect);
+
+// Real-time status routes
+router.put('/:id/status', authorize('renter', 'admin'), updateRealTimeStatus);
 
 // Renter routes
 router.post('/', authorize('renter', 'admin'), createProperty);

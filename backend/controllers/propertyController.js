@@ -4,6 +4,67 @@ const { getValidImageUrl } = require('../utils/imagePlaceholder');
 // @desc    Get all properties with filtering, sorting, and pagination
 // @route   GET /api/properties
 // @access  Public
+// @desc    Update real-time property status
+// @route   PUT /api/properties/:id/status
+// @access  Private
+exports.updateRealTimeStatus = async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+
+    property.realTimeStatus = {
+      ...property.realTimeStatus,
+      ...req.body,
+      lastUpdated: Date.now()
+    };
+
+    await property.save();
+    res.json({ success: true, data: property.realTimeStatus });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get properties within radius
+// @route   GET /api/properties/nearby
+// @access  Public
+exports.getNearbyProperties = async (req, res) => {
+  try {
+    const { longitude, latitude, radius } = req.query;
+
+    // Validate coordinates
+    if (!longitude || !latitude || !radius) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide longitude, latitude and radius'
+      });
+    }
+
+    // Find properties within radius (in kilometers)
+    const properties = await Property.find({
+      geolocation: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(longitude), parseFloat(latitude)]
+          },
+          $maxDistance: parseFloat(radius) * 1000 // Convert to meters
+        }
+      }
+    }).populate('owner', 'firstName lastName email phone avatar');
+
+    res.json({
+      success: true,
+      count: properties.length,
+      data: properties
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.getProperties = async (req, res) => {
   try {
     // Copy req.query

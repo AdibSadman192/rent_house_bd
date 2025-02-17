@@ -1,5 +1,7 @@
 const { catchAsync, NotFoundError, AuthorizationError } = require('../utils/errorHandler');
 const Review = require('../models/Review');
+const Property = require('../models/Property');
+const Notification = require('../models/Notification');
 
 // Get all reviews
 exports.getReviews = catchAsync(async (req, res) => {
@@ -31,46 +33,88 @@ exports.getReview = catchAsync(async (req, res) => {
 });
 
 // Create review
-exports.createReview = async (req, res) => {
-  try {
-    const { propertyId, rating, comment } = req.body;
-    const userId = req.user.id;
-
-    // Validate property existence
-    const property = await Property.findById(propertyId);
-    if (!property) {
-      return res.status(404).json({
-        message: 'Property not found'
-      });
-    }
-
-    // Check if user has already reviewed the property
-    const existingReview = await Review.findOne({ propertyId: propertyId, userId: userId });
-    if (existingReview) {
-      return res.status(400).json({
-        message: 'You have already reviewed this property'
-      });
-    }
-
-    // Add review
-    req.body.userId = req.user.id;
-    req.body.propertyId = req.params.propertyId;
-    
-    const review = await Review.create(req.body);
-    
-    res.status(201).json({
-      success: true,
-      data: review
-    });
-  } catch (error) {
-    console.error('Error adding review:', error);
-    res.status(500).json({
-      message: 'An error occurred while adding the review. Please try again later.',
-      error: error.message
-    });
+exports.createReview = catchAsync(async (req, res) => {
+  const { propertyId, rating, comment, aspects } = req.body;
+  const userId = req.user.id;
+  
+  // Validate property existence and booking
+  const property = await Property.findById(propertyId);
+  if (!property) {
+    throw new NotFoundError('Property not found');
   }
-};
+  
+  // Check if user has already reviewed the property
+  const existingReview = await Review.findOne({ propertyId, userId });
+  if (existingReview) {
+    throw new Error('You have already reviewed this property');
+  }
+  
+  // Create review with detailed ratings
+  const review = await Review.create({
+    userId,
+    propertyId,
+    rating,
+    comment,
+    aspects: aspects || {},
+    status: 'active',
+    helpful: [],
+    reported: false,
+    media: req.body.media || [],
+    verified: false
+  });
+  
+  // Update property ratings
+  await updatePropertyRatings(propertyId);
+  
+  // Send notification to property owner
+  await Notification.create({
+    recipients: [property.owner],
+    type: 'review',
+    title: 'New Review Received',
+    message: `Your property received a new ${rating}-star review`,
+    data: { reviewId: review._id, propertyId }
+  });
+  
+  res.status(201).json({
+    success: true,
+    data: review
+  });
+});
 
+// Helper function to update property ratings
+const updatePropertyRatings = async (propertyId) => {
+  const reviews = await Review.find({ propertyId, status: 'active' });
+  
+  const ratings = {
+    overall: 0,
+    aspects: {
+      location: 0,
+      cleanliness: 0,
+      communication: 0,
+      accuracy: 0,
+      value: 0
+    }
+  };
+  
+  reviews.forEach(review => {
+    ratings.overall += review.rating;
+    Object.keys(review.aspects).forEach(aspect => {
+      ratings.aspects[aspect] += review.aspects[aspect] || 0;
+    });
+  });
+  
+  const count = reviews.length;
+  ratings.overall = count > 0 ? ratings.overall / count : 0;
+  
+  Object.keys(ratings.aspects).forEach(aspect => {
+    ratings.aspects[aspect] = count > 0 ? ratings.aspects[aspect] / count : 0;
+  });
+  
+  await Property.findByIdAndUpdate(propertyId, {
+    ratings,
+    reviewCount: count
+  });
+};
 // Update review
 exports.updateReview = catchAsync(async (req, res) => {
   let review = await Review.findById(req.params.id);

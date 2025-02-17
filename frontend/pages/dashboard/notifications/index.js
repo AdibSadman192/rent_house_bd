@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Bell,
@@ -10,7 +9,6 @@ import {
   MessageCircle,
   X,
   Search,
-  Filter,
   Trash2
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';

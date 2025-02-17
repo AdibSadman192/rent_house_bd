@@ -77,7 +77,7 @@ export default function VerifyEmailPage() {
               Verification Failed
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-              We couldn't verify your email address. The link may be invalid or expired.
+              We couldn&apos;t verify your email address. The link may be invalid or expired.
             </p>
             <div className="mt-6">
               <Link

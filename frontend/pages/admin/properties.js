@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { AuthContext } from '@/contexts/AuthContext';
 import Image from 'next/image';
@@ -9,7 +9,6 @@ import {
   Home,
   Edit,
   Trash2,
-  Filter,
   Search,
   PlusCircle,
   CheckCircle,
@@ -41,17 +40,7 @@ const PropertyManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Check user role and redirect if not admin
-    if (!user || user.role !== 'admin') {
-      router.push('/access-denied');
-      return;
-    }
-
-    fetchProperties();
-  }, [user, router, filters, pagination.currentPage]);
-
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/admin/properties', {
@@ -90,7 +79,17 @@ const PropertyManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, pagination.currentPage, pagination.propertiesPerPage]);
+
+  useEffect(() => {
+    // Check user role and redirect if not admin
+    if (!user || user.role !== 'admin') {
+      router.push('/access-denied');
+      return;
+    }
+
+    fetchProperties();
+  }, [user, router, fetchProperties]);
 
   const handleSearch = (term) => {
     setFilters(prev => ({ ...prev, searchTerm: term }));

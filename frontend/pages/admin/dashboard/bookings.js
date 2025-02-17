@@ -3,11 +3,9 @@ import Head from 'next/head';
 import { motion } from 'framer-motion';
 import {
   Search,
-  Filter,
   Calendar,
   MapPin,
   User,
-  Home,
   Check,
   X,
   Clock,

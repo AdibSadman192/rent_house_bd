@@ -27,7 +27,7 @@
 
 
 
-*Note: The platform features a modern, responsive design with glass-morphism UI elements. More previews are coming soon as the project progresses.*
+*Note: The platform features a modern, responsive design elements. More previews are coming soon as the project progresses.*
 
 ## 🌟 Overview
 A modern social media platform and service for house rentals in Bangladesh, connecting tenants with property owners through a community-driven approach.
@@ -80,33 +80,47 @@ The platform serves as both a social network and rental service, making it easie
 - 🔍 Input Validation
 - 📝 Activity Logging
 
+## 📚 Documentation
+
+### Development & Deployment
+- [API Documentation](/docs/API.md) - Detailed API endpoints and usage
+- [Contributing Guide](/docs/CONTRIBUTING.md) - Guidelines for contributing to the project
+- [Deployment Guide](/docs/DEPLOYMENT.md) - Instructions for deploying the application
+- [Implementation Guide](/docs/IMPLEMENTATION_GUIDE.md) - Guide for implementing new features
+
+### Project Analysis & Planning
+- [Project Analysis](/docs/PROJECT_ANALYSIS.md) - Current state analysis and feature status
+- [Sequence Diagrams](/docs/SEQUENCES.md) - System flow and interaction diagrams
+- [Social Platform Roadmap](/docs/SOCIAL_PLATFORM_ROADMAP.md) - Future development plans
+- [Project Status](/docs/Status.md) - Current development status and progress
+
 ## 🗺️ Project Roadmap
 
 ### Phase 1: Foundation (Current)
 - [x] Project setup and architecture
 - [x] Basic UI components with glass-morphism design
 - [x] Authentication system
-- [ ] Property listing core features
-- [ ] Search and filter functionality
+- [x] Property listing core features
+- [x] Search and filter functionality
 
 ### Phase 2: Enhanced Features (Q1 2025)
-- [ ] Advanced property search with map integration
-- [ ] Real-time chat between users and property owners
-- [ ] Virtual tour integration
-- [ ] Review and rating system
-- [ ] Payment integration
+- [x] Advanced property search with map integration
+- [x] Real-time chat between users and property owners
+- [x] Virtual tour integration
+- [x] Review and rating system
+- [x] Payment integration
 
 ### Phase 3: Advanced Features (Q2 2025)
-- [ ] AI-powered property recommendations
-- [ ] Automated rental agreement generation
+- [x] AI-powered property recommendations
+- [x] Automated rental agreement generation
 - [ ] Mobile app development
-- [ ] Analytics dashboard for property owners
+- [x] Analytics dashboard for property owners
 - [ ] Multi-language support
 
 ### Phase 4: Scaling & Optimization (Q3 2025)
 - [ ] Performance optimization
 - [ ] SEO enhancement
-- [ ] Advanced analytics
+- [x] Advanced analytics
 - [ ] Market analysis tools
 - [ ] API marketplace for third-party integrations
 

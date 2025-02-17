@@ -117,19 +117,59 @@ module.exports = (io) => {
                 socket.emit('error', { message: error.message });
             }
         });
+        // Handle file sharing
+        socket.on('share_file', async (data) => {
+            try {
+                const { chatId, file, fileType } = data;
+                const chat = await Chat.findById(chatId);
+                
+                if (!chat) {
+                    socket.emit('error', { message: 'Chat not found' });
+                    return;
+                }
+
+                // Create message with file attachment
+                const message = await Message.create({
+                    chat: chatId,
+                    sender: socket.user._id,
+                    type: fileType,
+                    content: file.originalname,
+                    attachments: [{
+                        url: file.url,
+                        type: fileType,
+                        name: file.originalname,
+                        size: file.size
+                    }],
+                    readBy: [{ user: socket.user._id, readAt: new Date() }]
+                });
+
+                // Update chat metadata
+                chat.lastMessage = message._id;
+                chat.metadata.lastActivity = new Date();
+                await chat.save();
+
+                // Emit file shared event
+                chatNamespace.to(`chat_${chatId}`).emit('file_shared', {
+                    message,
+                    sender: socket.user._id
+                });
+            } catch (error) {
+                socket.emit('error', { message: error.message });
+            }
+        });
 
         // Handle typing status
         socket.on('typing_start', (chatId) => {
             socket.to(`chat_${chatId}`).emit('user_typing', {
-                chatId,
-                user: socket.user._id
+                userId: socket.user._id,
+                chatId
             });
         });
 
         socket.on('typing_end', (chatId) => {
             socket.to(`chat_${chatId}`).emit('user_stopped_typing', {
-                chatId,
-                user: socket.user._id
+                userId: socket.user._id,
+                chatId
             });
         });
 

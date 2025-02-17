@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import AdminLayout from '@/components/layout/AdminLayout';
 import {
@@ -32,11 +32,7 @@ const UserManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
-    fetchUsers();
-  }, [filters, pagination.currentPage]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/users', {
         method: 'POST',
@@ -57,8 +53,11 @@ const UserManagement = () => {
       setUsers([]);
       setFilteredUsers([]);
     }
-  };
+  }, [filters, pagination.currentPage, pagination.usersPerPage]);
 
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
   const handleSearch = (term) => {
     setFilters(prev => ({ ...prev, searchTerm: term }));
   };

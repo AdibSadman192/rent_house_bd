@@ -43,7 +43,6 @@ class PropertyService {
       throw error;
     }
   }
-
   // Get all property types
   async getPropertyTypes() {
     try {
@@ -60,7 +59,6 @@ class PropertyService {
       throw error;
     }
   }
-
   // Get featured properties
   async getFeaturedProperties() {
     try {

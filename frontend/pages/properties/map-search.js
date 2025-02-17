@@ -1,11 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  FiMapPin, 
-  FiSearch, 
-  FiFilter, 
-  FiX 
-} from 'react-icons/fi';
+import { FiMapPin } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
 
 // Dynamically import MapContainer to avoid SSR issues
@@ -38,7 +33,7 @@ const PropertyMapSearch = () => {
     amenities: []
   });
 
-  const mockProperties = [
+  const mockProperties = useMemo(() => [
     {
       id: 1,
       title: 'Modern Apartment in Gulshan',
@@ -69,13 +64,10 @@ const PropertyMapSearch = () => {
       type: 'Apartment',
       amenities: ['Elevator', 'Security', 'Generator']
     }
-  ];
-
+  ], []);
   useEffect(() => {
-    setProperties(mockProperties);
     setFilteredProperties(mockProperties);
-  }, []);
-
+  }, [mockProperties]);
   const applyFilters = useCallback(() => {
     const filtered = mockProperties.filter(property => {
       const matchPrice = 

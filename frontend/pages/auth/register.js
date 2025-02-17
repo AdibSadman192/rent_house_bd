@@ -41,7 +41,7 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!formData.email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
+    if (!formData.email.match(/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\w{2,3})+$/)) {
       toast.error('Please enter a valid email address');
       return;
     }

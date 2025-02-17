@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     totalUsers: 1250,
     totalProperties: 450,
     totalBookings: 320,

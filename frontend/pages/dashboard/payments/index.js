@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   DollarSign,
-  Calendar,
   CreditCard,
   FileText,
   Download,
   Search,
-  Filter,
   ChevronDown
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
