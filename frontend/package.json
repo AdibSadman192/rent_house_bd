@@ -45,6 +45,7 @@
     "lucide-react": "^0.462.0",
     "mongodb": "^6.11.0",
     "mongoose": "^8.10.1",
+    "moongoose": "^0.0.5",
     "next": "^13.5.7",
     "next-auth": "^4.24.10",
     "postcss": "^8.4.21",

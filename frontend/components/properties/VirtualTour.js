@@ -1,25 +1,25 @@
 import React, { useEffect, useRef } from 'react';
 import { Box, Button, Text, Spinner, Alert, AlertIcon } from '@chakra-ui/react';
 import { FaVrCardboard } from 'react-icons/fa';
+import virtualTourService from '../../services/virtualTourService';
 
 const VirtualTour = ({ tourData, isLoading }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
-    if (tourData?.url && containerRef.current) {
-      // Initialize virtual tour viewer
-      // You can integrate with services like Matterport, 3DVista, or custom 360 viewers
-      const iframe = document.createElement('iframe');
-      iframe.src = tourData.url;
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      iframe.style.border = 'none';
-      containerRef.current.appendChild(iframe);
+    if (tourData?.panoramaUrl && containerRef.current) {
+      // Initialize WebGL viewer
+      virtualTourService.initialize(containerRef.current);
+      virtualTourService.loadPanorama(tourData.panoramaUrl)
+        .then(() => {
+          virtualTourService.animate();
+        })
+        .catch((error) => {
+          console.error('Failed to load panorama:', error);
+        });
 
       return () => {
-        if (containerRef.current) {
-          containerRef.current.innerHTML = '';
-        }
+        virtualTourService.dispose();
       };
     }
   }, [tourData]);

@@ -1,13 +1,12 @@
-const { Configuration, OpenAIApi } = require('openai');
+const OpenAI = require('openai');
 const Chatbot = require('../models/Chatbot');
 const ChatbotInteraction = require('../models/ChatbotInteraction');
 
 class AIChatbotService {
     constructor() {
-        this.configuration = new Configuration({
+        this.openai = new OpenAI({
             apiKey: process.env.OPENAI_API_KEY
         });
-        this.openai = new OpenAIApi(this.configuration);
     }
 
     // Process user message with AI and get intelligent response
@@ -50,19 +49,55 @@ class AIChatbotService {
 
     // Get response from OpenAI
     async getAIResponse(context) {
-        const completion = await this.openai.createCompletion({
-            model: "text-davinci-003",
-            prompt: context,
+        const completion = await this.openai.createChatCompletion({
+            model: "gpt-4",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a helpful real estate assistant that provides accurate and relevant information about properties and housing."
+                },
+                {
+                    role: "user",
+                    content: context
+                }
+            ],
             max_tokens: 150,
             temperature: 0.7,
             top_p: 1,
-            frequency_penalty: 0,
-            presence_penalty: 0
+            frequency_penalty: 0.2,
+            presence_penalty: 0.1
         });
-
-        return completion.data.choices[0].text.trim();
+        const response = completion.data.choices[0].message.content.trim();
+        
+        // Analyze sentiment
+        const sentiment = await this.analyzeSentiment(context);
+        
+        return {
+            text: response,
+            sentiment: sentiment
+        };
     }
 
+    // Analyze message sentiment
+    async analyzeSentiment(text) {
+        const completion = await this.openai.createChatCompletion({
+            model: "gpt-4",
+            messages: [
+                {
+                    role: "system",
+                    content: "Analyze the sentiment of the following text and respond with only one word: POSITIVE, NEGATIVE, or NEUTRAL"
+                },
+                {
+                    role: "user",
+                    content: text
+                }
+            ],
+            max_tokens: 10,
+            temperature: 0
+        });
+
+        return completion.data.choices[0].message.content.trim();
+    }
     // Save chat interaction
     async saveInteraction(userId, userMessage, botResponse) {
         await ChatbotInteraction.create({

@@ -1,24 +1,21 @@
 const { catchAsync } = require('../utils/errorHandler');
+const AIChatbotService = require('../services/aiChatbotService');
+const ChatbotInteraction = require('../models/ChatbotInteraction');
 
-// Process user message and return a response
+const chatbotService = new AIChatbotService();
+
+// Process user message and return an AI-powered response
 exports.processMessage = catchAsync(async (req, res) => {
   const { message } = req.body;
-  
-  // Basic responses for demonstration
-  const responses = [
-    "I can help you find the perfect rental property in Bangladesh.",
-    "Would you like to search for properties in a specific area?",
-    "I can show you properties within your budget.",
-    "Let me know what features you're looking for in a rental property.",
-    "I can help you schedule property viewings.",
-  ];
-  
-  const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+  const userId = req.user._id;
+
+  // Get AI-powered response
+  const response = await chatbotService.processMessage(userId, message);
   
   res.status(200).json({
     success: true,
     data: {
-      message: randomResponse,
+      message: response,
       timestamp: new Date(),
     }
   });
@@ -27,18 +24,22 @@ exports.processMessage = catchAsync(async (req, res) => {
 // Save user feedback about chatbot responses
 exports.saveFeedback = catchAsync(async (req, res) => {
   const { userMessage, botResponse, isHelpful } = req.body;
-  
-  // Log feedback for now, can be stored in DB later
-  console.log('Feedback received:', {
-    userId: req.user._id,
+  const userId = req.user._id;
+
+  // Store feedback in database
+  await ChatbotInteraction.create({
+    user: userId,
     userMessage,
     botResponse,
     isHelpful,
-    timestamp: new Date(),
+    timestamp: new Date()
   });
+
+  // Update analytics
+  await chatbotService.updateAnalytics(userId, isHelpful);
   
   res.status(200).json({
     success: true,
-    message: 'Feedback received successfully'
+    message: 'Feedback saved successfully'
   });
 });

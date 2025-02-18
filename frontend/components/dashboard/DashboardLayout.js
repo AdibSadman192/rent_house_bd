@@ -99,10 +99,10 @@ export default function DashboardLayout({ children }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg flex flex-col
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg flex flex-col h-screen overflow-hidden
           transform transition-transform duration-200 ease-in-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:translate-x-0 md:relative`}
+          md:translate-x-0 md:sticky md:top-0`}
       >
         {/* Mobile close button */}
         {isMobile && (
@@ -116,7 +116,7 @@ export default function DashboardLayout({ children }) {
 
         <div className="flex flex-col h-full">
           {/* Navigation Menu */}
-          <nav className="flex-1 pt-6 px-4 space-y-1 overflow-y-auto scrollbar-thin">
+          <nav className="flex-1 pt-4 px-4 space-y-1 overflow-y-auto scrollbar-thin">
             {filteredMenuItems.map((item) => (
               <Link
                 key={item.href}
@@ -136,7 +136,7 @@ export default function DashboardLayout({ children }) {
           </nav>
 
           {/* Logout Button */}
-          <div className="p-4 mt-auto border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 sticky bottom-0 bg-white">
             <button
               onClick={handleLogout}
               className="flex items-center w-full px-4 py-3 text-sm text-red-600 rounded-lg 
@@ -151,7 +151,7 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Menu Toggle */}
         {isMobile && (
           <button
@@ -165,7 +165,7 @@ export default function DashboardLayout({ children }) {
         )}
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-x-hidden">
+        <main className="flex-1 p-6 overflow-y-auto">
           {children}
         </main>
       </div>

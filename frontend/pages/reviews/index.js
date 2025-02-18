@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { 
   FiStar, 
   FiThumbsUp, 
@@ -169,7 +170,9 @@ const ReviewsPage = () => {
                     className="w-12 h-12 rounded-full object-cover"
                   />
                   <div>
-                    <h3 className="font-semibold text-gray-900">{review.user}</h3>
+                    <Link href={`/profile/${review.user.toLowerCase().replace(' ', '-')}`} className="font-semibold text-gray-900 hover:text-primary-600 transition-colors">
+                      {review.user}
+                    </Link>
                     <p className="text-sm text-gray-500">{review.date}</p>
                   </div>
                 </div>
@@ -182,9 +185,9 @@ const ReviewsPage = () => {
               <p className="text-gray-700 mb-4">{review.comment}</p>
 
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500">
+                <Link href={`/properties/${review.id}`} className="text-sm text-gray-500 hover:text-primary-600 transition-colors">
                   Reviewed {review.property}
-                </p>
+                </Link>
                 
                 <div className="flex items-center space-x-4">
                   <button className="flex items-center space-x-1 text-gray-600 hover:text-green-600">

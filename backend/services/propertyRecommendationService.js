@@ -37,6 +37,10 @@ class PropertyRecommendationService {
         try {
             const userProfile = await this.generateUserPreferenceProfile(userId);
             
+            // Apply collaborative filtering
+            const similarUsers = await this._findSimilarUsers(userId, userProfile);
+            const collaborativeScores = await this._getCollaborativeScores(similarUsers);
+            
             const recommendations = await Property.aggregate([
                 {
                     $match: {
@@ -56,8 +60,12 @@ class PropertyRecommendationService {
                                 { $multiply: [this._calculateLocationScore("$location", userProfile.preferredLocations), this.weightFactors.location] },
                                 { $multiply: [this._calculateAmenityScore("$amenities", userProfile.preferredAmenities), this.weightFactors.amenities] },
                                 { $multiply: ["$averageRating", this.weightFactors.ratings] },
-                                { $multiply: [this._calculatePropertyTypeScore("$propertyType", userProfile.propertyTypes), this.weightFactors.propertyType] }
+                                { $multiply: [this._calculatePropertyTypeScore("$propertyType", userProfile.propertyTypes), this.weightFactors.propertyType] },
+                                { $multiply: [{ $ifNull: [{ $arrayElemAt: [collaborativeScores, { $indexOfArray: [collaborativeScores.propertyId, "$_id"] }] }, 0] }, 0.2] }
                             ]
+                        },
+                        matchPercentage: {
+                            $multiply: [{ $divide: ["$score", 5] }, 100]
                         }
                     }
                 },
@@ -71,6 +79,53 @@ class PropertyRecommendationService {
         }
     }
 
+    async _findSimilarUsers(userId, userProfile) {
+        return await User.aggregate([
+            {
+                $match: {
+                    _id: { $ne: mongoose.Types.ObjectId(userId) }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'properties',
+                    localField: 'viewHistory',
+                    foreignField: '_id',
+                    as: 'viewedProperties'
+                }
+            },
+            {
+                $addFields: {
+                    similarityScore: {
+                        $add: [
+                            this._calculatePreferenceSimilarity("$preferences", userProfile),
+                            this._calculateBehaviorSimilarity("$viewedProperties", userProfile)
+                        ]
+                    }
+                }
+            },
+            { $sort: { similarityScore: -1 } },
+            { $limit: 10 }
+        ]);
+    }
+
+    async _getCollaborativeScores(similarUsers) {
+        const propertyScores = {};
+        
+        for (const user of similarUsers) {
+            for (const property of user.viewedProperties) {
+                if (!propertyScores[property._id]) {
+                    propertyScores[property._id] = 0;
+                }
+                propertyScores[property._id] += user.similarityScore;
+            }
+        }
+        
+        return Object.entries(propertyScores).map(([propertyId, score]) => ({
+            propertyId: mongoose.Types.ObjectId(propertyId),
+            score: score / similarUsers.length
+        }));
+    }
     async getSimilarProperties(propertyId, limit = 5) {
         try {
             const sourceProperty = await Property.findById(propertyId);

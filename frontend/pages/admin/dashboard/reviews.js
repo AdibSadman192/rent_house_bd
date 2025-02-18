@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Star,
@@ -167,22 +168,22 @@ const ReviewsManagement = () => {
                 <div className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                          <User className="h-6 w-6 text-gray-500" />
+                      <Link href={`/admin/users/${review.reviewer.toLowerCase().replace(' ', '-')}`} className="flex items-center space-x-3 hover:text-blue-600 transition-colors">
+                        <div className="flex-shrink-0">
+                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                            <User className="h-6 w-6 text-gray-500" />
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-900">
-                          {review.reviewer}
-                        </h3>
-                        <div className="flex items-center mt-1">
-                          {renderStars(review.rating)}
-                          <span className="ml-2 text-sm text-gray-500">
-                            {review.rating} out of 5
-                          </span>
+                        <div>
+                          <span className="text-sm font-medium">{review.reviewer}</span>
+                          <div className="flex items-center mt-1">
+                            {renderStars(review.rating)}
+                            <span className="ml-2 text-sm text-gray-500">
+                              {review.rating} out of 5
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      </Link>
                     </div>
                     <div className="flex items-center space-x-4">
                       <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(review.status)}`}>
@@ -198,10 +199,10 @@ const ReviewsManagement = () => {
                   </div>
 
                   <div className="mt-4">
-                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                    <Link href={`/admin/properties/${review.id}`} className="flex items-center text-sm text-gray-500 hover:text-blue-600 transition-colors mb-2">
                       <Home className="h-4 w-4 mr-1" />
                       {review.propertyTitle}
-                    </div>
+                    </Link>
                     <p className="text-sm text-gray-600">{review.comment}</p>
                   </div>
 

@@ -37,10 +37,16 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             <Link 
-              href="/search" 
-              className={`text-sm ${router.pathname === '/search' ? 'text-primary-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
+              href="/properties" 
+              className={`text-sm ${router.pathname === '/properties' ? 'text-primary-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
             >
               Properties
+            </Link>
+            <Link 
+              href="/reviews" 
+              className={`text-sm ${router.pathname === '/reviews' ? 'text-primary-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              Reviews
             </Link>
             <Link 
               href="/agents" 
@@ -135,11 +141,18 @@ const Navbar = () => {
           <div className="md:hidden absolute top-14 left-0 right-0 bg-white border-t border-gray-100 shadow-lg">
             <div className="px-4 py-3 space-y-3">
               <Link 
-                href="/search" 
-                className={`block text-sm ${router.pathname === '/search' ? 'text-primary-600 font-medium' : 'text-gray-600'}`}
+                href="/properties" 
+                className={`block text-sm ${router.pathname === '/properties' ? 'text-primary-600 font-medium' : 'text-gray-600'}`}
                 onClick={() => setIsOpen(false)}
               >
                 Properties
+              </Link>
+              <Link 
+                href="/reviews" 
+                className={`block text-sm ${router.pathname === '/reviews' ? 'text-primary-600 font-medium' : 'text-gray-600'}`}
+                onClick={() => setIsOpen(false)}
+              >
+                Reviews
               </Link>
               <Link 
                 href="/agents" 
