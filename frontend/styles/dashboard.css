@@ -1,0 +1,146 @@
+/* Apple-inspired Dashboard Styles */
+
+:root {
+  --primary-bg: #ffffff;
+  --secondary-bg: #f5f5f7;
+  --accent-color: #0071e3;
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --success-color: #00b06b;
+  --warning-color: #ff9f0a;
+  --error-color: #ff3b30;
+  --border-radius: 12px;
+  --transition-speed: 0.2s;
+}
+
+.dashboard-container {
+  background-color: var(--primary-bg);
+  min-height: 100vh;
+}
+
+.stats-card {
+  background: var(--primary-bg);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: transform var(--transition-speed) ease-in-out;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+}
+
+.stats-value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0.5rem 0;
+}
+
+.stats-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.stats-trend {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.stats-trend.positive {
+  background-color: rgba(0, 176, 107, 0.1);
+  color: var(--success-color);
+}
+
+.stats-trend.negative {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: var(--error-color);
+}
+
+.quick-action-card {
+  background: var(--secondary-bg);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  transition: all var(--transition-speed) ease-in-out;
+  border: 1px solid transparent;
+}
+
+.quick-action-card:hover {
+  background: var(--primary-bg);
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.quick-action-icon {
+  background: var(--accent-color);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.quick-action-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.quick-action-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.period-selector {
+  display: inline-flex;
+  background: var(--secondary-bg);
+  border-radius: 2rem;
+  padding: 0.25rem;
+}
+
+.period-selector button {
+  padding: 0.5rem 1rem;
+  border-radius: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.period-selector button.active {
+  background: var(--primary-bg);
+  color: var(--text-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+  background: var(--primary-bg);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.activity-item {
+  padding: 1rem;
+  border-bottom: 1px solid var(--secondary-bg);
+  transition: background-color var(--transition-speed) ease-in-out;
+}
+
+.activity-item:hover {
+  background-color: var(--secondary-bg);
+}
+
+.activity-time {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.activity-description {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  margin: 0.25rem 0;
+}

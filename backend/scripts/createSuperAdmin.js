@@ -28,7 +28,7 @@ const createSuperAdmin = async () => {
       email: 'admin@renthouse.com',
       password: hashedPassword,
       role: 'super_admin',
-      phone: '+880123456789',
+      phone: '01712345678',
       nid: 'ADMIN123456',
       address: 'Admin Office, Dhaka',
       isVerified: true,

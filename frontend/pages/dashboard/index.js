@@ -1,7 +1,11 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+
+import dynamic from 'next/dynamic';
+
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 import { 
   FiHome,
   FiUsers,
@@ -19,6 +23,40 @@ import {
 
 export default function DashboardPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('week');
+  const [chartData, setChartData] = useState({
+    options: {
+      chart: {
+        id: 'activity-chart',
+        toolbar: {
+          show: false
+        },
+        zoom: {
+          enabled: false
+        }
+      },
+      stroke: {
+        curve: 'smooth'
+      },
+      xaxis: {
+        categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      },
+      colors: ['#0071e3']
+    },
+    series: [{
+      name: 'Activity',
+      data: [30, 40, 35, 50, 49, 60, 70]
+    }]
+  });
+
+  useEffect(() => {
+    // Simulate data fetching based on period
+    const fetchData = () => {
+      // This would be replaced with actual API calls
+      console.log('Fetching data for period:', selectedPeriod);
+    };
+
+    fetchData();
+  }, [selectedPeriod]);
 
   // Mock data (replace with API data)
   const user = {
@@ -162,8 +200,7 @@ export default function DashboardPage() {
         <title>Dashboard | RentHouseBD</title>
         <meta name="description" content="Manage your properties and rentals" />
       </Head>
-
-      <div className="space-y-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-2xl p-8">
           <div className="flex items-center justify-between">
@@ -177,83 +214,88 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-
-        {/* Quick Actions */}
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {quickActions.map((action) => (
-              <Link
-                key={action.label}
-                href={action.href}
-                className="group bg-white rounded-xl shadow-soft p-6 hover:shadow-medium transition-shadow duration-200"
-              >
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center mr-4">
-                    <action.icon className="w-6 h-6 text-primary-600" />
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats[user.role].map((stat) => (
+            <div
+              key={stat.label}
+              className="bg-white rounded-xl shadow-soft p-6 hover:shadow-medium transition-all duration-200"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center">
+                  <stat.icon className="w-6 h-6 text-primary-600" />
+                </div>
+                <div className={`flex items-center ${stat.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                  <FiTrendingUp className={`w-4 h-4 mr-1 ${!stat.isPositive && 'transform rotate-180'}`} />
+                  <span className="text-sm font-medium">{stat.trend}</span>
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-600 mb-1">{stat.label}</h3>
+              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Activity Chart */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-soft p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Activity Overview</h2>
+              <div className="flex items-center space-x-2 bg-gray-50 rounded-lg p-1">
+                {['week', 'month', 'year'].map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => setSelectedPeriod(period)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedPeriod === period
+                        ? 'bg-primary-50 text-primary-600'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    {period.charAt(0).toUpperCase() + period.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="h-80">
+              <Chart
+                options={chartData.options}
+                series={chartData.series}
+                type="area"
+                height="100%"
+              />
+            </div>
+          </div>
+          {/* Quick Actions */}
+          <div className="bg-white rounded-xl shadow-soft p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+            <div className="space-y-4">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.label}
+                  href={action.href}
+                  className="group flex items-center p-4 rounded-xl hover:bg-primary-50 transition-all duration-200"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center mr-4 group-hover:bg-white">
+                    <action.icon className="w-5 h-5 text-primary-600" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{action.label}</h3>
+                  <div className="flex-1">
+                    <h3 className="text-base font-semibold text-gray-900">{action.label}</h3>
                     <p className="text-sm text-gray-600">{action.description}</p>
                   </div>
-                </div>
-                <div className="flex items-center text-primary-600 text-sm font-medium group-hover:translate-x-1 transition-transform duration-200">
-                  <span>Get started</span>
-                  <FiChevronRight className="w-4 h-4 ml-1" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Overview */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Overview</h2>
-            <div className="flex items-center space-x-2 bg-white rounded-lg shadow-soft p-1">
-              {['week', 'month', 'year'].map((period) => (
-                <button
-                  key={period}
-                  onClick={() => setSelectedPeriod(period)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    selectedPeriod === period
-                      ? 'bg-primary-50 text-primary-600'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  {period.charAt(0).toUpperCase() + period.slice(1)}
-                </button>
+                  <FiChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary-600 group-hover:translate-x-1 transition-all duration-200" />
+                </Link>
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats[user.role].map((stat) => (
-              <div
-                key={stat.label}
-                className="bg-white rounded-xl shadow-soft p-6"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center">
-                    <stat.icon className="w-6 h-6 text-primary-600" />
-                  </div>
-                  <div className={`flex items-center ${stat.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                    <FiTrendingUp className={`w-4 h-4 mr-1 ${!stat.isPositive && 'transform rotate-180'}`} />
-                    <span className="text-sm font-medium">{stat.trend}</span>
-                  </div>
-                </div>
-                <h3 className="text-sm font-medium text-gray-600 mb-1">{stat.label}</h3>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              </div>
-            ))}
-          </div>
         </div>
-
         {/* Recent Activity */}
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
-          <div className="bg-white rounded-xl shadow-soft divide-y divide-gray-100">
+        <div className="bg-white rounded-xl shadow-soft">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
+          </div>
+          <div className="divide-y divide-gray-100">
             {recentActivities.map((activity) => (
-              <div key={activity.id} className="p-6 flex items-start space-x-4">
+              <div key={activity.id} className="p-6 flex items-start space-x-4 hover:bg-gray-50 transition-colors duration-200">
                 <div className="w-10 h-10 rounded-full bg-primary-50 flex-shrink-0 flex items-center justify-center">
                   <activity.icon className="w-5 h-5 text-primary-600" />
                 </div>

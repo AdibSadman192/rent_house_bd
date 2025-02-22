@@ -1,6 +1,7 @@
 const Property = require('../models/Property');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const { propertyCache, userCache } = require('../utils/cacheManager');
 
 class PropertyRecommendationService {
     constructor() {
@@ -15,6 +16,13 @@ class PropertyRecommendationService {
 
     async generateUserPreferenceProfile(userId) {
         try {
+            const cacheKey = `user_preference:${userId}`;
+            const cachedProfile = await userCache.get(cacheKey);
+            
+            if (cachedProfile) {
+                return cachedProfile;
+            }
+
             const user = await User.findById(userId)
                 .populate('viewHistory')
                 .populate('savedProperties')
@@ -27,6 +35,7 @@ class PropertyRecommendationService {
                 propertyTypes: await this._analyzePropertyTypePreferences(user)
             };
 
+            await userCache.set(cacheKey, profile, 3600); // Cache for 1 hour
             return profile;
         } catch (error) {
             throw new Error(`Failed to generate user preference profile: ${error.message}`);
@@ -35,6 +44,13 @@ class PropertyRecommendationService {
 
     async getPersonalizedRecommendations(userId, limit = 10) {
         try {
+            const cacheKey = `recommendations:${userId}:${limit}`;
+            const cachedRecommendations = await propertyCache.get(cacheKey);
+            
+            if (cachedRecommendations) {
+                return cachedRecommendations;
+            }
+
             const userProfile = await this.generateUserPreferenceProfile(userId);
             
             // Apply collaborative filtering

@@ -3,6 +3,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const Payment = require('../models/Payment');
 const Property = require('../models/Property');
 const RentalAgreement = require('../models/RentalAgreement');
+const FraudDetectionService = require('../services/fraudDetectionService');
 const axios = require('axios');
 
 // Utility function to get payment gateway credentials
@@ -66,6 +67,16 @@ exports.initializePayment = asyncHandler(async (req, res) => {
       throw new ErrorResponse('Unsupported payment gateway', 400);
   }
 
+  // Validate payment for fraud
+  const fraudCheck = await FraudDetectionService.validatePayment(
+    { amount, gateway, propertyId, createdAt: new Date() },
+    req.user
+  );
+
+  if (!fraudCheck.isValid) {
+    throw new ErrorResponse(`Payment flagged as potentially fraudulent. Risk level: ${fraudCheck.riskLevel}`, 400);
+  }
+
   // Create payment record
   const payment = await Payment.create({
     user: req.user.id,
@@ -74,7 +85,9 @@ exports.initializePayment = asyncHandler(async (req, res) => {
     gateway,
     paymentType,
     transactionId: paymentResponse.transactionId,
-    status: 'pending'
+    status: 'pending',
+    riskScore: fraudCheck.riskScore,
+    requiresReview: fraudCheck.requiresManualReview
   });
 
   res.status(200).json({

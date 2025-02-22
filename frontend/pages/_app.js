@@ -4,6 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '@/styles/globals.css';
+import '@/styles/dashboard.css';
 import theme from '@/theme';
 import { AuthProvider } from '@/contexts/AuthContext';
 import Layout from '../components/layout/Layout';

@@ -4,7 +4,7 @@ const isSuperAdmin = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
     
-    if (!user || user.role !== 'superadmin') {
+    if (!user || user.role !== 'super_admin') {
       return res.status(403).json({
         message: 'Access denied. Super admin privileges required.'
       });
