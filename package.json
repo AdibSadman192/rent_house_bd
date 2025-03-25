@@ -12,7 +12,7 @@
     "@google-cloud/dialogflow": "^4.7.0",
     "apexcharts": "^4.5.0",
     "aws-sdk": "^2.1450.0",
-    "axios": "^1.5.0",
+    "axios": "^1.8.2",
     "bcryptjs": "^2.4.3",
     "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
