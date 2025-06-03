@@ -26,7 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.0",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.0.0",
     "react-apexcharts": "^1.7.0",
     "recharts": "^2.8.0",
     "sharp": "^0.32.5",
