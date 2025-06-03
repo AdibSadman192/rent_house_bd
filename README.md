@@ -1,6 +1,6 @@
 # 🏠 RentHouseBD
 
-[![Create Release](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml/badge.svg)](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml) <div align='center'><a href='https://www.websitecounterfree.com'><img src='https://www.websitecounterfree.com/c.php?d=9&id=65510&s=3' border='0' alt='Free Website Counter'></a></div>
+[![Create Release](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml/badge.svg)](https://github.com/AdibSadman192/rent_house_bd/actions/workflows/release.yml) <div align='center'>⚠️Currently Working on Company's Project - Developement Paused for Now⚠️ </div>
 
 
 
