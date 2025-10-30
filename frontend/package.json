@@ -48,7 +48,7 @@
     "mongoose": "^8.10.1",
     "moongoose": "^0.0.5",
     "next": "^15.5.2",
-    "next-auth": "^4.24.10",
+    "next-auth": "^4.24.12",
     "postcss": "^8.4.21",
     "prisma": "^6.0.0",
     "react": "^18.2.0",
