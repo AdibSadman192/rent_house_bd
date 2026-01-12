@@ -11,7 +11,7 @@
   "dependencies": {
     "@google-cloud/dialogflow": "^4.7.0",
     "apexcharts": "^4.5.0",
-    "aws-sdk": "^2.1450.0",
+    "aws-sdk": "^2.1693.0",
     "axios": "^1.12.0",
     "bcryptjs": "^2.4.3",
     "cheerio": "^1.0.0-rc.12",
